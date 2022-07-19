@@ -1,0 +1,1467 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="Fuzzing 101, Closure">
+    <meta name="description" content="Fuzzing 101：1、Xpdf：目标简介：Xpdf是一个免费的PDF查看器和工具包，包括文本提取器，HTML转换器
+目标采用Xpdf 3.02版本，其中存在不受控制的递归漏洞CVE-2019-13288
+漏洞介绍：该漏洞通过构造文件的">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>Fuzzing 101 | Closure</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size: 100% 100%;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Closure</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Closure</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/zh-Closure" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/zh-Closure" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://raw.githubusercontent.com/zh-Closure/images/main/202207191709231.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">Fuzzing 101</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Fuzz/">
+                                <span class="chip bg-color">Fuzz</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-05-01
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h1 id="Fuzzing-101："><a href="#Fuzzing-101：" class="headerlink" title="Fuzzing 101："></a>Fuzzing 101：</h1><h2 id="1、Xpdf："><a href="#1、Xpdf：" class="headerlink" title="1、Xpdf："></a>1、Xpdf：</h2><h3 id="目标简介："><a href="#目标简介：" class="headerlink" title="目标简介："></a>目标简介：</h3><p>Xpdf是一个免费的PDF查看器和工具包，包括文本提取器，HTML转换器</p>
+<p>目标采用Xpdf 3.02版本，其中存在不受控制的递归漏洞CVE-2019-13288</p>
+<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>该漏洞通过构造文件的方式，使Parser.cc文件中的Parser::getObj()函数多次调用，由于每个调用的函数都会在栈上开辟一块新的使用空间&#x3D;》栈帧&#x3D;&#x3D;》如果一个函数被递归调用多次&#x3D;&#x3D;》导致栈内存耗尽并导致程序崩溃&#x3D;&#x3D;》DOS攻击</p>
+<h3 id="目标安装，插桩，编译"><a href="#目标安装，插桩，编译" class="headerlink" title="目标安装，插桩，编译"></a>目标安装，插桩，编译</h3><p>1、对目标进行安装：</p>
+<pre class="language-none"><code class="language-none">&#x2F;&#x2F;安装存放路径
+cd $HOME
+mkdir fuzzing_xpdf &amp;&amp; cd fuzzing_xpdf
+
+&#x2F;&#x2F;下载Xpdf 3.02
+wget https:&#x2F;&#x2F;dl.xpdfreader.com&#x2F;old&#x2F;xpdf-3.02.tar.gz
+tar -xvzf xpdf-3.02.tar.gz
+cd xpdf-3.02&#x2F;</code></pre>
+
+<p>2、设置环境变量：将编译命令指定为afl-clang-fast</p>
+<pre class="language-none"><code class="language-none">export CC&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast++</code></pre>
+
+<p>3、编译程序，指定将编译好的程序存放在**$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;**</p>
+<pre class="language-none"><code class="language-none">.&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;&quot;
+make
+sudo make install</code></pre>
+
+
+
+<p>4、确认插桩是否成功：</p>
+<p>进入程序目录：</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin</code></pre>
+
+<p>由于是使用afl-clang-fast进行插桩&#x3D;&#x3D;》搜索关键字__sanitizer_cov&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">strings .&#x2F;pdftotext | grep __sanitizer_cov</code></pre>
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321010954649.png" style="zoom: 50%;" />
+
+
+
+<h3 id="FUZZ"><a href="#FUZZ" class="headerlink" title="FUZZ"></a>FUZZ</h3><p>1、准备种子</p>
+<p>&#x3D;&#x3D;》需要输入的测试用例&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf
+mkdir pdf_examples &amp;&amp; cd pdf_examples
+wget https:&#x2F;&#x2F;github.com&#x2F;mozilla&#x2F;pdf.js-sample-files&#x2F;raw&#x2F;master&#x2F;helloworld.pdf
+wget http:&#x2F;&#x2F;www.africau.edu&#x2F;images&#x2F;default&#x2F;sample.pdf
+wget https:&#x2F;&#x2F;www.melbpc.org.au&#x2F;wp-content&#x2F;uploads&#x2F;2017&#x2F;10&#x2F;small-example-pdf-file.pdf</code></pre>
+
+<p>检测下载的文件是否可用&#x3D;&#x3D;》调用fuzzing_xpdf&#x2F;install&#x2F;bin下的pdfinfo&#x3D;&#x3D;》</p>
+<p>2、对helloworld.pdf进行基本信息查看：</p>
+<pre class="language-none"><code class="language-none">&#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdfinfo -box -meta &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;pdf_examples&#x2F;helloworld.pdf </code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321011702348.png"></p>
+<p>3、关闭系统的核心存储&#x3D;&#x3D;》确保在fuzz过程中出现crash不会使程序终止</p>
+<pre class="language-none"><code class="language-none">sudo su
+echo core &gt;&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;core_pattern
+exit</code></pre>
+
+<p>4、进行fuzz：</p>
+<pre class="language-none"><code class="language-none">afl-fuzz -i $HOME&#x2F;fuzzing_xpdf&#x2F;pdf_examples&#x2F; -o $HOME&#x2F;fuzzing_xpdf&#x2F;out&#x2F; -s 123 -- $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdftotext @@ $HOME&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321013845102.png"></p>
+<p>出现crash&#x3D;&#x3D;》暂停fuzzing查看out目录下的crash输出&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321074052139.png"></p>
+<h3 id="GDB验证fuzz结果"><a href="#GDB验证fuzz结果" class="headerlink" title="GDB验证fuzz结果"></a>GDB验证fuzz结果</h3><p>1、复现崩溃：</p>
+<p>修改文件名为clo.pdf</p>
+<pre class="language-none"><code class="language-none">$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdftotext &#39;$HOME&#x2F;fuzzing_xpdf&#x2F;out&#x2F;default&#x2F;crashes&#x2F;clo.pdf&#39; $HOME&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321075615580.png"></p>
+<p>2、删除由afl-clang-fast插桩编译的install目录下的内容，重新使用gcc编译：</p>
+<pre class="language-none"><code class="language-none">rm -rf $HOME&#x2F;fuzzing_xpdf&#x2F;install
+cd $HOME&#x2F;fuzzing_xpdf&#x2F;xpdf-3.02&#x2F;
+make clean
+CFLAGS&#x3D;&quot;-g -O0&quot; CXXFLAGS&#x3D;&quot;-g -O0&quot; .&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;&quot;
+make
+sudo make install</code></pre>
+
+<p>3、使用gdb指定pdftotext二进制程序运行fuzz结果文件：</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin
+gdb --args .&#x2F;pdftotext &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;out&#x2F;fuzzer1&#x2F;crashes&#x2F;clo.pdf &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p>run运行&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321075652919.png"></p>
+<p>bt命令回溯执行过的函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321074732635.png"></p>
+<p>发现Parser::getObj函数在不断的被递归调用&#x3D;&#x3D;》</p>
+<p>验证CVE-2019-13288漏洞描述</p>
+<h2 id="2、Libexif："><a href="#2、Libexif：" class="headerlink" title="2、Libexif："></a>2、Libexif：</h2><h3 id="目标简介：-1"><a href="#目标简介：-1" class="headerlink" title="目标简介："></a>目标简介：</h3><p>libexif是一个用于解析，编辑，保存exif数据的库，支持解析，编辑，保存exif数据</p>
+<p>EXIF：可交换图像文件格式，是专门为数码相机的照片设定的，可以记录数码照片的属性信息和拍摄数据</p>
+<p>目标采用libe 0.6.14版本&#x3D;&#x3D;》存在CVE-2009-3895和CVE-2012-2836漏洞</p>
+<h3 id="漏洞介绍：-1"><a href="#漏洞介绍：-1" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2009-3895：</p>
+<p>一种基于堆溢出的缓冲区溢出漏洞，可以通过无效的EXIF图像触发</p>
+<p>详情：在libexif&#x2F;exif-entry.c中的exif_entry_fix函数中基于堆的缓冲区溢出允许远程攻击者导致拒绝服务或可能通过无效的EXIF图像执行任意代码</p>
+<p>CVE-2012-2836：</p>
+<p>一种基于越界读取漏洞，可以通过特殊构造的EXIF标签的图像触发</p>
+<p>详情：EXIF标签解析库(libexif)中的exif-data.c中的exif-data-load-data函数允许远程攻击者导致拒绝服务（越界读取）或可能通过制作进程从内存中获取敏感信息图像中的EXIF标记</p>
+<h3 id="目标安装，插桩，编译-1"><a href="#目标安装，插桩，编译-1" class="headerlink" title="目标安装，插桩，编译"></a>目标安装，插桩，编译</h3><pre class="language-none"><code class="language-none">&#x2F;&#x2F;创建本次模糊测试目录
+cd $HOME
+mkdir fuzzing_libexif &amp;&amp; cd fuzzing_libexif&#x2F;
+
+&#x2F;&#x2F;安装依赖
+sudo apt-get install autopoint libtool gettext libpopt-dev
+
+&#x2F;&#x2F;获取源码包
+wget https:&#x2F;&#x2F;github.com&#x2F;libexif&#x2F;libexif&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;libexif-0_6_14-release.tar.gz
+tar -xzvf libexif-0_6_14-release.tar.gz
+
+&#x2F;&#x2F;构建并安装libexif
+cd libexif-libexif-0_6_14-release&#x2F;
+autoreconf -fvi
+
+&#x2F;&#x2F;设置环境变量
+export CC&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast++
+export LLVM_CONFIG&#x3D;&quot;llvm-config-11&quot;
+
+&#x2F;&#x2F;编译
+.&#x2F;configure --enable-shared&#x3D;no --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;&quot;
+make
+sudo make install
+
+&#x2F;&#x2F;检查插桩
+cd $HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;lib、
+strings libexif.a | grep __sanitizer_cov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322132920475.png"></p>
+<h4 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h4><p>libexif是一个链接库，无法直接运行&#x3D;&#x3D;》需要一个能够调用libexif库的程序&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_libexif
+wget https:&#x2F;&#x2F;github.com&#x2F;libexif&#x2F;exif&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;exif-0_6_15-release.tar.gz
+tar -xzvf exif-0_6_15-release.tar.gz
+
+cd exif-exif-0_6_15-release&#x2F;
+autoreconf -fvi
+
+&#x2F;&#x2F;用PKG_CONFIG_PATH指定链接库位置
+.&#x2F;configure --enable-shared&#x3D;no --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;&quot; PKG_CONFIG_PATH&#x3D;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;lib&#x2F;pkgconfig
+
+make
+sudo make install</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322132844835.png"></p>
+<p>检查插桩是否完成</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133121028.png"></p>
+<h3 id="FUZZ-1"><a href="#FUZZ-1" class="headerlink" title="FUZZ"></a>FUZZ</h3><h4 id="准备种子："><a href="#准备种子：" class="headerlink" title="准备种子："></a>准备种子：</h4><pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_libexif
+wget https:&#x2F;&#x2F;github.com&#x2F;ianare&#x2F;exif-samples&#x2F;archive&#x2F;refs&#x2F;heads&#x2F;master.zip
+unzip master.zip</code></pre>
+
+<h4 id="进行fuzz："><a href="#进行fuzz：" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>（注意关闭核心存储）</p>
+<pre class="language-none"><code class="language-none">afl-fuzz -i $HOME&#x2F;fuzzing_libexif&#x2F;exif-samples-master&#x2F;jpg&#x2F; -o $HOME&#x2F;fuzzing_libexif&#x2F;out&#x2F; -s 123 -- $HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;bin&#x2F;exif @@</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133451132.png"></p>
+<p>暂停fuzzing查看out目录下的crash输出&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133611913.png"></p>
+<h3 id="eclipse验证fuzz结果"><a href="#eclipse验证fuzz结果" class="headerlink" title="eclipse验证fuzz结果"></a>eclipse验证fuzz结果</h3><p>1、java环境：</p>
+<pre class="language-none"><code class="language-none">sudo apt install default-jdk</code></pre>
+
+<p>2、安装并启动eciopse：</p>
+<pre class="language-none"><code class="language-none">cd $HOME
+mkdir tools &amp;&amp; tools&#x2F;
+
+wget https : &#x2F;&#x2F;www.eclipse.org&#x2F;downloads&#x2F;download.php?file&#x3D;&#x2F;technology&#x2F;epp&#x2F; downloads&#x2F; release&#x2F;2021-03&#x2F;R&#x2F;eclipse-cpp-2021-03 -R-linux-gtk-x86_64.tar.gz
+
+tar -xzvf eclipse-cpp-2021-03-R-linux-gtk-x86_64.tar.gz
+
+cd eclipse&#x2F;
+.&#x2F;eclipse</code></pre>
+
+<p>3、调用Libexif库的程序将exif导入eclipse&#x3D;&#x3D;》</p>
+<p>File &#x3D;&#x3D;》Import &#x3D;&#x3D;》C&#x2F;C++ &#x3D;&#x3D;》 Existing Code as Makefile Project&#x3D;&#x3D;》</p>
+<p>&#x3D;&#x3D;》对项目进行命名&#x3D;&#x3D;》指定exif的源码路径&#x3D;&#x3D;》选择Linux GCC索引器</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134334937.png"></p>
+<p>配置调试参数&#x3D;&#x3D;》</p>
+<p>Run&#x3D;&#x3D;》Debug Configurations&#x3D;&#x3D;》</p>
+<p>C&#x2F;C++ Application&#x3D;&#x3D;》 New_configuration&#x3D;&#x3D;》</p>
+<p>将exif项目导入&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134613919.png"></p>
+<p>配置Argument进行配置&#x3D;&#x3D;》将AFL++跑出来的ctash POC之一的路径填入&#x3D;&#x3D;》Debug</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134629599.png"></p>
+<p>选择Run&#x3D;&#x3D;》Resume</p>
+<p>&#x3D;&#x3D;》程序在段错误的时候停止&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322140015854.png"></p>
+<h3 id="GDB验证fuzz结果-1"><a href="#GDB验证fuzz结果-1" class="headerlink" title="GDB验证fuzz结果"></a>GDB验证fuzz结果</h3><p>使用GDB将crash文件输入到程序中：</p>
+<pre class="language-none"><code class="language-none">gdb --args &#x2F;home&#x2F;closure&#x2F;fuzzing_libexif&#x2F;install&#x2F;bin&#x2F;exif .&#x2F;clo.jpg</code></pre>
+
+<p>run运行</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322141305188.png"></p>
+<h2 id="3、TCPdump"><a href="#3、TCPdump" class="headerlink" title="3、TCPdump"></a>3、TCPdump</h2><h3 id="目标简介：-2"><a href="#目标简介：-2" class="headerlink" title="目标简介："></a>目标简介：</h3><p>TCPdump是一个强大的开源命令行数据包分析器，支持在一些不支持图形界面的系统上使用</p>
+<p>使用TCPdump还需安装跨平台库Libpcap支持使用</p>
+<p>实验中使用TCPdump 4.9.2，存在CVE-2017-13028越界读取漏洞</p>
+<h3 id="漏洞介绍：-2"><a href="#漏洞介绍：-2" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2017-13028是一个越界读取漏洞，通过BOOTP数据包(引导协议)触发，属于溢出</p>
+<p>&#x3D;&#x3D;》允许远程攻击者导致拒绝服务或可能从进程内存中获取潜在的敏感信息</p>
+<h3 id="目标安装，插桩，编译："><a href="#目标安装，插桩，编译：" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-sh" data-language="sh"><code class="language-sh">#首先设置环境变量
+export CC&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast++
+export LLVM_CONFIG&#x3D;&quot;llvm-config-11&quot;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428143507889.png"></p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">#Libpcap获取
+wget https:&#x2F;&#x2F;github.com&#x2F;the-tcpdump-group&#x2F;libpcap&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;libpcap-1.8.0.tar.gz
+tar -xzvf libpcap-1.8.0.tar.gz</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428145621642.png"></p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">#Libpcap安装
+#需要先将目录修改名字，否则后续安装TCPdump的时候找不到libpcap.a的库
+mv libpcap-libpcap-1.8.0&#x2F; libpcap-1.8.0
+
+#编译Libpcap
+cd libpcap-1.8.0
+.&#x2F;configure --enable-shared&#x3D;no --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;&quot;
+AFL_USE_ASAN&#x3D;1 make
+AFL_USE_ASAN&#x3D;1 make install</code></pre>
+
+
+
+<p>等待编译结束，去~&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;lib查看编译后的库是否插桩成功</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">strings lib&#x2F;libpcap.a | grep __sanitizer_cov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428145927896.png"></p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">#TCPdump安装
+cd $HOME&#x2F;fuzzing_tcpdump&#x2F;
+wget https:&#x2F;&#x2F;github.com&#x2F;the-tcpdump-group&#x2F;tcpdump&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;tcpdump-4.9.2.tar.gz
+tar -xzvf tcpdump-4.9.2.tar.gz
+
+#编译
+cd tcpdump-tcpdump-4.9.2&#x2F;
+AFL_USE_ASAN&#x3D;1 .&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;&quot;
+AFL_USE_ASAN&#x3D;1 make
+AFL_USE_ASAN&#x3D;1 make install</code></pre>
+
+
+
+<p>等待编译结束，去~&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;sbin查看编译后的库是否插桩成功</p>
+<pre class="language-none"><code class="language-none">strings tcpdump |grep __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151234235.png"></p>
+<p>查看编译好的程序是否能够正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151401529.png"></p>
+<h3 id="FUZZ-2"><a href="#FUZZ-2" class="headerlink" title="FUZZ"></a>FUZZ</h3><h4 id="准备种子：-1"><a href="#准备种子：-1" class="headerlink" title="准备种子："></a>准备种子：</h4><p>在下载的TCPdump的目录中，存在一个tests目录，该立目录中存放着很多用来使用的例子&#x3D;&#x3D;》作为种子</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151650168.png"></p>
+<p>尝试种子是否可用：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">$HOME&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;sbin&#x2F;tcpdump -vvvvXX -ee -nn -r .&#x2F;tests&#x2F;geneve.pcap</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428152048800.png"></p>
+<h4 id="进行fuzz：-1"><a href="#进行fuzz：-1" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>关闭核心存储（core）</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">sudo su
+echo core &gt;&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;core_pattern
+exit</code></pre>
+
+
+
+<p>开始fuzz：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">AFLplusplus&#x2F;afl-fuzz -m none -i fuzzing_tcpdump&#x2F;tcpdump-tcpdump-4.9.2&#x2F;tests&#x2F; -o fuzzing_tcpdump&#x2F;out&#x2F; -s 123 -- fuzzing_tcpdump&#x2F;install&#x2F;sbin&#x2F;tcpdump -vvvvXX -ee -nn -r @@</code></pre>
+
+<p>-m参数：在使用ASAN模式下对内存的消耗非常大&#x3D;&#x3D;》使用-m none指定禁用内存限制</p>
+<h4 id="fuzz结果："><a href="#fuzz结果：" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428180912853.png"></p>
+<h3 id="结果分析："><a href="#结果分析：" class="headerlink" title="结果分析："></a>结果分析：</h3><p>使用TCPdump读取crash文件&#x3D;&#x3D;》查看ASan检测结果：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">$HOME&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;sbin&#x2F;tcpdump -vvvvXX -ee -nn -r &#39;&#x2F;home&#x2F;closure&#x2F;fuzzing_tcpdump&#x2F;out&#x2F;default&#x2F;crashes&#x2F;id:000000,sig:06,src:000967,time:7691890,execs:2248945,op:havoc,rep:2&#39;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428181614617.png"></p>
+<p><strong>漏洞类型：heap-buffer-overflow</strong></p>
+<h2 id="4、LibTIFF"><a href="#4、LibTIFF" class="headerlink" title="4、LibTIFF"></a>4、LibTIFF</h2><h3 id="目标简介：-3"><a href="#目标简介：-3" class="headerlink" title="目标简介："></a>目标简介：</h3><p>LibTIFF是一个用来读写标签图像文件格式的库，库中包含命令行工具来处理TIFF文件</p>
+<p>实验使用libtiff 4.0.4版本，存在CVE-2016-9297漏洞</p>
+<h3 id="漏洞介绍：-3"><a href="#漏洞介绍：-3" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2016-9297：通过精心设计的TIFF_SETGET_C16ASCII 或 TIFF_SETGET_C32_ASCII 标记值&#x3D;&#x3D;》</p>
+<p>可以进行越界读取&#x3D;&#x3D;》可以进一步造成拒绝服务并从进程内存中获取敏感信息</p>
+<h3 id="目标安装，插桩，编译：-1"><a href="#目标安装，插桩，编译：-1" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-sh" data-language="sh"><code class="language-sh">#获取libtiff
+wget https:&#x2F;&#x2F;download.osgeo.org&#x2F;libtiff&#x2F;tiff-4.0.4.tar.gz
+tar -xzvf tiff-4.0.4.tar.gz</code></pre>
+
+<pre class="language-sh" data-language="sh"><code class="language-sh">#编译libtiff
+.&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_tiff&#x2F;install&#x2F;&quot; --disable-shared
+AFL_USE_ASAN&#x3D;1 make
+AFL_USE_ASAN&#x3D;1 make install</code></pre>
+
+<p>等待编译完成，检测是否插桩成功：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">strings tiffinfo |grep __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194352091.png"></p>
+<p>检查编译好的程序是否能正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194551383.png"></p>
+<h3 id="安装LOCV："><a href="#安装LOCV：" class="headerlink" title="安装LOCV："></a>安装LOCV：</h3><pre class="language-sh" data-language="sh"><code class="language-sh">sudo apt install lcov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194808344.png"></p>
+<h3 id="FUZZ："><a href="#FUZZ：" class="headerlink" title="FUZZ："></a>FUZZ：</h3><h4 id="准备种子：-2"><a href="#准备种子：-2" class="headerlink" title="准备种子："></a>准备种子：</h4><p>在获取的tiff源码包中的test文件夹中包含了很多已经准备好的测试用的种子：</p>
+<pre class="language-none"><code class="language-none">&#x2F;fuzzing_tiff&#x2F;tiff-4.0.4&#x2F;test&#x2F;images</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428195048331.png"></p>
+<p>对种子进行测试：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">.&#x2F;fuzzing_tiff&#x2F;install&#x2F;bin&#x2F;tiffinfo -D -j -c -r -s -w fuzzing_tiff&#x2F;tiff-4.0.4&#x2F;test&#x2F;images&#x2F;palette-1c-1b.tiff</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428195328272.png"></p>
+<h4 id="进行fuzz：-2"><a href="#进行fuzz：-2" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>关闭核心存储（core）</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">sudo su
+echo core &gt;&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;core_pattern
+exit</code></pre>
+
+<p>开始fuzz：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">AFLplusplus&#x2F;afl-fuzz -m none -i fuzzing_tiff&#x2F;tiff-4.0.4&#x2F;test&#x2F;images&#x2F; -o fuzzing_tiff&#x2F;out&#x2F; -s 123 -- fuzzing_tiff&#x2F;install&#x2F;bin&#x2F;tiffinfo -D -j -c -r -s -w @@</code></pre>
+
+<p>-m none：指定禁用内存限制</p>
+<h4 id="fuzz结果：-1"><a href="#fuzz结果：-1" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428202000375.png"></p>
+<h3 id="结果分析：-1"><a href="#结果分析：-1" class="headerlink" title="结果分析："></a>结果分析：</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428202320757.png"></p>
+<p><strong>漏洞类型：heap-buffer-overflow</strong></p>
+<h3 id="查看POC代码覆盖率"><a href="#查看POC代码覆盖率" class="headerlink" title="查看POC代码覆盖率"></a>查看POC代码覆盖率</h3><p>使用–coverage标志重建libTIFF：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">rm -r $HOME&#x2F;fuzzing_tiff&#x2F;install
+cd $HOME&#x2F;fuzzing_tiff&#x2F;tiff-4.0.4&#x2F;
+make clean</code></pre>
+
+<p>设置环境变量并编译：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">CFLAGS&#x3D;&quot;--coverage&quot; LDFLAGS&#x3D;&quot;--coverage&quot; .&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_tiff&#x2F;install&#x2F;&quot; --disable-shared
+
+make
+make install</code></pre>
+
+<p>收集代码覆盖率数据：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">#重置以前的计数器
+lcov --zerocounters --directory .&#x2F;
+
+#返回包含每条检测线的零覆盖率的“基线”覆盖率数据文件
+lcov --capture --initial --directory .&#x2F; --output-file app.info
+
+#运行您要分析的应用程序。您可以使用不同的输入多次运行它
+$HOME&#x2F;fuzzing_tiff&#x2F;install&#x2F;bin&#x2F;tiffinfo -D -j -c -r -s -w &#x2F;home&#x2F;closure&#x2F;fuzzing_tiff&#x2F;out&#x2F;default&#x2F;crashes&#x2F;id\:000000\,sig\:06\,src\:000089\,time\:69903\,execs\:38060\,op\:havoc\,rep\:4
+
+#将当前覆盖状态保存到 app2.info 文件中
+lcov --no-checksum --directory .&#x2F; --capture --output-file app2.info</code></pre>
+
+<p>使用genhtml将app2.info中覆盖率数据转换为HTML可视化状态：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">genhtml --highlight --legend -output-directory .&#x2F;html-coverage&#x2F; .&#x2F;app2.info</code></pre>
+
+<p>&#x3D;&#x3D;》代码覆盖率报告就保存在当前目录下的html-coverage文件夹下，打开index.html即可查看</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428220400438.png"></p>
+<h2 id="5、LibXML2"><a href="#5、LibXML2" class="headerlink" title="5、LibXML2"></a>5、LibXML2</h2><h3 id="目标简介：-4"><a href="#目标简介：-4" class="headerlink" title="目标简介："></a>目标简介：</h3><p>LibXML2是Gnome项目开发的XML C的解析器和工具包，同时也可以在Gnome平台之外使用</p>
+<p>XML本身是一种用于设计标记语言的元语言，使用尖括号之间的额外标记信息将予以结构添加内容</p>
+<p>实验采用LibXML2 2.9.4版本该版本存在漏洞CVE-2017-9048</p>
+<h3 id="漏洞介绍：-4"><a href="#漏洞介绍：-4" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2017-9048为栈溢出漏洞，影响LibXML2的DTD验证功能，远程攻击者可以利用此漏洞在使用受影响库的应用程序上进行命令执行</p>
+<h3 id="目标安装，插桩，编译：-2"><a href="#目标安装，插桩，编译：-2" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-sh" data-language="sh"><code class="language-sh">#目标获取
+mkdir fuzzing_libxml2
+cd $HOME&#x2F;fuzzing_libxml2&#x2F;
+wget http:&#x2F;&#x2F;xmlsoft.org&#x2F;download&#x2F;libxml2-2.9.4.tar.gz
+tar xvf libxml2-2.9.4.tar.gz &amp;&amp; cd libxml2-2.9.4&#x2F;
+
+#安装依赖
+sudo apt-get install python-dev
+
+#设置环境变量
+export CC&#x3D;$HOME&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;$HOME&#x2F;AFLplusplus&#x2F;afl-clang-fast++
+export LLVM_CONFIG&#x3D;&quot;llvm-config-11&quot;
+export CFLAGS&#x3D;&quot;-fsanitize&#x3D;address&quot;
+export CXXFLAGS&#x3D;&quot;-fsanitize&#x3D;address&quot;
+export LDFLAGS&#x3D;&quot;-fsanitize&#x3D;address&quot;
+
+#目标编译
+AFL_USE_ASAN&#x3D;1 .&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;Fuzzing_libxml2&#x2F;libxml2-2.9.4&#x2F;install&quot; --disable-shared --without-debug --without-ftp --without-http --without-legacy --without-python LIBS&#x3D;&#39;-ldl&#39;
+
+AFL_USE_ASAN&#x3D;1 make -j$(nproc)
+AFL_USE_ASAN&#x3D;1 make install</code></pre>
+
+<p>在fuzzing_libxml2&#x2F;install&#x2F;bin目录中检测插桩是否成功：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">strings xmllint |grep __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429145229504.png"></p>
+<p>使用test目录下的测试用例测试编译后的程序可运行性：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">.&#x2F;xmllint --memory test&#x2F;wml.xml</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429145513367.png"></p>
+<h3 id="FUZZ：-1"><a href="#FUZZ：-1" class="headerlink" title="FUZZ："></a>FUZZ：</h3><h4 id="准备种子：-3"><a href="#准备种子：-3" class="headerlink" title="准备种子："></a>准备种子：</h4><pre class="language-sh" data-language="sh"><code class="language-sh">#使用fuzzing 101提供的种子
+mkdir afl_in &amp;&amp; cd afl_in
+
+wget https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;antonio-morales&#x2F;Fuzzing101&#x2F;main&#x2F;Exercise%205&#x2F;SampleInput.xml</code></pre>
+
+<p>准备字典文件：</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">mkdir dictionaries &amp;&amp; cd dictionaries
+wget https:&#x2F;&#x2F;github.com&#x2F;AFLplusplus&#x2F;AFLplusplus&#x2F;blob&#x2F;stable&#x2F;dictionaries&#x2F;xml.dict</code></pre>
+
+
+
+<p>关闭核心存储（core）</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">sudo su
+echo core &gt;&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;core_pattern
+exit</code></pre>
+
+
+
+<h4 id="开始fuzz："><a href="#开始fuzz：" class="headerlink" title="开始fuzz："></a>开始fuzz：</h4><p>采用并行测试</p>
+<pre class="language-sh" data-language="sh"><code class="language-sh">$HOME&#x2F;AFLplusplus&#x2F;afl-fuzz -m none -i afl_in -o out -s 123 -x dictionaries&#x2F;xml.dict -D -M master -- libxml2-2.9.4&#x2F;xmllint --memory --noenc --nocdata --dtdattr --loaddtd --valid --xinclude @@
+
+$HOME&#x2F;AFLplusplus&#x2F;afl-fuzz -m none -i afl_in -o out -s 234 -S slave1 -- libxml2-2.9.4&#x2F;xmllint --memory --noenc --nocdata --dtdattr --loaddtd --valid --xinclude @@</code></pre>
+
+<p>-M:指定主Fuzzer</p>
+<p>-S:指定从Fuzzer</p>
+<h4 id="fuzz结果：-2"><a href="#fuzz结果：-2" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429222502415.png"></p>
+<h3 id="结果分析：-2"><a href="#结果分析：-2" class="headerlink" title="结果分析："></a>结果分析：</h3><p>使用ASan分析fuzz结果（实在后面挂了两天没跑出来，就先放弃了）</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Closure</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="http://example.com/2022/05/01/Fuzzing-101/">http://example.com/2022/05/01/Fuzzing-101/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Closure</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/Fuzz/">
+                                    <span class="chip bg-color">Fuzz</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2022/05/04/Address-Sanitizer%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90/">
+                    <div class="card-image">
+                        
+                        <img src="https://raw.githubusercontent.com/zh-Closure/images/main/202207191710517.jpg" class="responsive-img" alt="Address Sanitizer结果分析">
+                        
+                        <span class="card-title">Address Sanitizer结果分析</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-05-04
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            Closure
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Fuzz/">
+                        <span class="chip bg-color">Fuzz</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/04/28/AFL%E6%80%BB%E7%BB%93/">
+                    <div class="card-image">
+                        
+                        <img src="https://raw.githubusercontent.com/zh-Closure/images/main/202207191709258.jpg" class="responsive-img" alt="AFL总结">
+                        
+                        <span class="card-title">AFL总结</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-28
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            Closure
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Fuzz/">
+                        <span class="chip bg-color">Fuzz</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4, h5, h6'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4, h5, h6').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2022</span>
+            
+            <a href="/about" target="_blank">Closure</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/zh-closure" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2022";
+                        var startMonth = "3";
+                        var startDate = "1";
+                        var startHour = "0";
+                        var startMinute = "0";
+                        var startSecond = "0";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/zh-Closure" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:765003952@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=765003952" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 765003952" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/snow.js"><\/script>');
+            }
+        </script>
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>

