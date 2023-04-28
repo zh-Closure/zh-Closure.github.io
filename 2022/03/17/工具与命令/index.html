@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      工具与命令 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">工具与命令</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-17 13:01:27
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/" title="工具使用">
+                    #工具使用
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="工具使用-长期更新-："><a href="#工具使用-长期更新-：" class="headerlink" title="工具使用(长期更新)："></a>工具使用(长期更新)：</h1><h2 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools:"></a>pwntools:</h2><p>常用模块：</p>
+<p>asm：汇编与反汇编</p>
+<p>dynelf：远程符号泄漏</p>
+<p>elf：elf文件泄漏</p>
+<p>gdb：启用gdb调试</p>
+<p>shellcraft：shellcode生成器</p>
+<p>cyclic pattern：偏移字符计算</p>
+<p>process&#x2F;remote：读写接口</p>
+<p>常用：</p>
+<p>获取字符串：接口.search(‘字符串’).next()</p>
+<h2 id="GDB-x2F-pwndbg-x2F-peda"><a href="#GDB-x2F-pwndbg-x2F-peda" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda:"></a>GDB&#x2F;pwndbg&#x2F;peda:</h2><p>*为可选</p>
+<table>
+<thead>
+<tr>
+<th>GDB原生命令</th>
+<th>缩写</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>gdb &lt;file&gt; &lt;*pid&gt;</td>
+<td></td>
+<td>gdb加载一个程序</td>
+</tr>
+<tr>
+<td>gdb attach &lt;pid&gt;</td>
+<td></td>
+<td>gdb.attach()可写入脚本中&#x3D;&#x3D;》相当于断点</td>
+</tr>
+<tr>
+<td>set args &lt;*argv&gt;</td>
+<td></td>
+<td>设置程序运行参数</td>
+</tr>
+<tr>
+<td>show args</td>
+<td></td>
+<td>查看设置好的运行参数</td>
+</tr>
+<tr>
+<td>quit</td>
+<td>q</td>
+<td>退出gdb</td>
+</tr>
+<tr>
+<td>symbol &lt;filr&gt;</td>
+<td>sy</td>
+<td>导入符号表</td>
+</tr>
+<tr>
+<td>info &lt;*b&gt;</td>
+<td>i</td>
+<td>查看程序的状态&#x2F;*查看断点</td>
+</tr>
+<tr>
+<td>frame</td>
+<td>f</td>
+<td>查看栈帧</td>
+</tr>
+<tr>
+<td>backtrace</td>
+<td>bt</td>
+<td>查看堆栈情况</td>
+</tr>
+<tr>
+<td>list</td>
+<td>l</td>
+<td>显示源代码（debug模式）</td>
+</tr>
+<tr>
+<td>display</td>
+<td>disp</td>
+<td>跟踪查看某个变量</td>
+</tr>
+<tr>
+<td>start</td>
+<td>s</td>
+<td>启动程序并中断在</td>
+</tr>
+<tr>
+<td>run</td>
+<td>r</td>
+<td>直接运行程序直到断点</td>
+</tr>
+<tr>
+<td>continue</td>
+<td>c</td>
+<td>暂停后继续执行程序</td>
+</tr>
+<tr>
+<td>next</td>
+<td>n</td>
+<td>单步步过</td>
+</tr>
+<tr>
+<td>step</td>
+<td>s</td>
+<td>单步步入</td>
+</tr>
+<tr>
+<td>finish</td>
+<td>fin</td>
+<td>跳出，执行到函数返回处</td>
+</tr>
+<tr>
+<td>break &#x2F;*&lt;addr&gt;</td>
+<td>b</td>
+<td>下断点</td>
+</tr>
+<tr>
+<td>watch</td>
+<td></td>
+<td>下内存断点并监视内存情况</td>
+</tr>
+<tr>
+<td>print</td>
+<td>p</td>
+<td>打印符号信息（debug模式）</td>
+</tr>
+<tr>
+<td>i r a</td>
+<td></td>
+<td>查看所有寄存器</td>
+</tr>
+<tr>
+<td>i r &lt;esp&#x2F;ebp..&gt;</td>
+<td></td>
+<td>查看某个寄存器</td>
+</tr>
+<tr>
+<td>set $esp&#x3D;0x01</td>
+<td></td>
+<td>修改某个寄存器的值</td>
+</tr>
+<tr>
+<td>heap</td>
+<td></td>
+<td>查看分配的chunk</td>
+</tr>
+<tr>
+<td>vmmap</td>
+<td></td>
+<td>查看内存分配情况</td>
+</tr>
+<tr>
+<td>bin</td>
+<td></td>
+<td>查看bin情况</td>
+</tr>
+<tr>
+<td>x &#x2F;&lt;num&gt;&lt;n&#x2F;f&#x2F;u&gt;</td>
+<td></td>
+<td>显示内存信息</td>
+</tr>
+<tr>
+<td><strong>pwndbg&#x2F;peda插件命令</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>context</td>
+<td></td>
+<td>打印pwndbg信息</td>
+</tr>
+<tr>
+<td>dps &lt;addr&gt;</td>
+<td></td>
+<td>显示内存信息</td>
+</tr>
+<tr>
+<td>disassemble &lt;func&gt;</td>
+<td></td>
+<td>打印函数信息</td>
+</tr>
+<tr>
+<td>vmmap</td>
+<td></td>
+<td>显示程序内存结构</td>
+</tr>
+<tr>
+<td>search &lt;*argv&gt;</td>
+<td></td>
+<td>搜索内存中的值，search -h可查询用法</td>
+</tr>
+<tr>
+<td>checksec</td>
+<td></td>
+<td>查看保护机制</td>
+</tr>
+<tr>
+<td>parseheap</td>
+<td></td>
+<td>查看分配的chunk</td>
+</tr>
+<tr>
+<td>aslr &lt;on&#x2F;off&gt;</td>
+<td></td>
+<td>打开&#x2F;关闭  ASlR</td>
+</tr>
+<tr>
+<td>pshow</td>
+<td></td>
+<td>显示各种踏板选项和其他设置</td>
+</tr>
+<tr>
+<td>dumpargs &lt;num&gt;</td>
+<td></td>
+<td>显示在调用指令处停止时传递给函数的参数</td>
+</tr>
+<tr>
+<td>dumprop &lt;from&gt; &lt;to&gt;</td>
+<td></td>
+<td>显示特定在内存范围内的所有ROP gadget</td>
+</tr>
+<tr>
+<td>elfheader</td>
+<td></td>
+<td>从调试的elf文件获取头信息</td>
+</tr>
+<tr>
+<td>elfsymbol</td>
+<td></td>
+<td>从ELF文件获取非调试符号信息</td>
+</tr>
+<tr>
+<td>procinfo</td>
+<td></td>
+<td>显示来自&#x2F;proc&#x2F;pid的各种信息</td>
+</tr>
+<tr>
+<td>readelf</td>
+<td></td>
+<td>从elf文件获取头信息</td>
+</tr>
+</tbody></table>
+<p>x指令的具体用法：n f u为控制打印形式的参数、、、也可以显示地址上的指令信息&#x3D;&#x3D;？x&#x2F;i</p>
+<p>‘num’表示打印的数量</p>
+<p>‘n’代表打印格式，可为</p>
+<table>
+<thead>
+<tr>
+<th>o</th>
+<th>八进制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>x</td>
+<td>十六进制</td>
+</tr>
+<tr>
+<td>d</td>
+<td>十进制</td>
+</tr>
+<tr>
+<td>u</td>
+<td>无符号十进制</td>
+</tr>
+<tr>
+<td>t</td>
+<td>二进制</td>
+</tr>
+<tr>
+<td>f</td>
+<td>浮点类型</td>
+</tr>
+<tr>
+<td>a</td>
+<td>地址类型</td>
+</tr>
+<tr>
+<td>i</td>
+<td>解析成命令并反编译</td>
+</tr>
+<tr>
+<td>c</td>
+<td>字符</td>
+</tr>
+<tr>
+<td>s</td>
+<td>字符串</td>
+</tr>
+</tbody></table>
+<p>‘f’：用来表示设定处处长度，b(byte),h(halfword),w(word),giant(8bytes)</p>
+<p>‘u’：指定单位内存单元的字节数（默认dword），可用b(byte),h(halfword),w(word),giant(8bytes)替代</p>
+<p>切换调试：</p>
+<pre class="language-none"><code class="language-none">sudo vim ~&#x2F;.gdbinit</code></pre>
+
+
+
+<h2 id="checksec："><a href="#checksec：" class="headerlink" title="checksec："></a>checksec：</h2><p>检查文件保护</p>
+<p>checksec &lt;file&gt; 或者</p>
+<p>checksec –file&#x3D;filename</p>
+<h2 id="ROPgadget："><a href="#ROPgadget：" class="headerlink" title="ROPgadget："></a>ROPgadget：</h2><p>查找寄存器：</p>
+<p>ROPgadget –binary ELF –only ‘寄存器’</p>
+<p>查找字符串：</p>
+<p>ROPgadget –binary 文件 –string ‘\要找的字符串’</p>
+<h2 id="one-gadget："><a href="#one-gadget：" class="headerlink" title="one_gadget："></a>one_gadget：</h2><p>满足条件获得shell</p>
+<p>one_gadget filename</p>
+<h2 id="LibcSearcher："><a href="#LibcSearcher：" class="headerlink" title="LibcSearcher："></a>LibcSearcher：</h2><p>匹配libc</p>
+<pre class="language-python" data-language="python"><code class="language-python">puts_addr<span class="token operator">=</span>xxxxx
+libc<span class="token operator">=</span>LibcSearcher<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">,</span>puts_addr<span class="token punctuation">)</span>
+libcbase<span class="token operator">=</span>puts_addr<span class="token operator">-</span>libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">)</span>
+
+system_addr<span class="token operator">=</span>libcbase<span class="token operator">+</span>libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'system'</span><span class="token punctuation">)</span>
+binsh<span class="token operator">=</span>libcbase<span class="token operator">+</span>libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'str_bin_sh'</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h2 id="main-arena-offset："><a href="#main-arena-offset：" class="headerlink" title="main_arena_offset："></a>main_arena_offset：</h2><h2 id="glibc-all-in-one-master"><a href="#glibc-all-in-one-master" class="headerlink" title="glibc-all-in-one-master:"></a>glibc-all-in-one-master:</h2><p><a target="_blank" rel="noopener" href="https://github.com/matrix1001/glibc-all-in-one">https://github.com/matrix1001/glibc-all-in-one</a></p>
+<p>获取glibc：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./update_list <span class="token comment">#获取可以下载的glibc</span>
+<span class="token function">cat</span> list <span class="token comment">#list中存放着从./update_list获得的glibc名</span>
+./download list中出现的glibc名   <span class="token comment">#下载指定glibc，下载完的glibc放入libs中</span></code></pre>
+
+
+
+
+
+<h2 id="patchelf"><a href="#patchelf" class="headerlink" title="patchelf:"></a>patchelf:</h2><p><a target="_blank" rel="noopener" href="https://github.com/NixOS/patchelf">https://github.com/NixOS/patchelf</a></p>
+<p>更换文件的glibc</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">例1：<span class="token comment">#改变链接器+改变搜索路径      #推荐使用1</span>
+patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/ld-2.31.so --set-rpath ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64 target_file
+
+例2：<span class="token comment">#改变链接器+直接改变动态库的路径</span>
+patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/ld-2.31.so --replace-needed libc.so.6 ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/libc.so.6 target_file</code></pre>
+
+
+
+<h2 id="qemu："><a href="#qemu：" class="headerlink" title="qemu："></a>qemu：</h2><h2 id="gcc："><a href="#gcc：" class="headerlink" title="gcc："></a>gcc：</h2><p>将lib.c编译成一个共享对象文件;</p>
+<pre class="language-none"><code class="language-none">gcc -fPIC -shared -o lib.so lib.c
+得到lib.so</code></pre>
+
+<p>编译链接(动态链接)</p>
+<pre class="language-none"><code class="language-none">gcc -o p1 p1.c .&#x2F;lib.so</code></pre>
+
+
+
+<h2 id="Qemu-img"><a href="#Qemu-img" class="headerlink" title="Qemu-img:"></a>Qemu-img:</h2><pre class="language-bash" data-language="bash"><code class="language-bash">qemu-img convert <span class="token parameter variable">-p</span> <span class="token parameter variable">-f</span> raw xxxx.raw <span class="token parameter variable">-O</span> vmdk xxxx.vmdk</code></pre>
+
+<pre class="language-none"><code class="language-none">-p 显示转换进度
+-f 原有镜像格式
+-O 输出镜像格式</code></pre>
+
+
+
+<h2 id="BinDiff："><a href="#BinDiff：" class="headerlink" title="BinDiff："></a>BinDiff：</h2><p>二进制对比工具</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.zynamics.com&#x2F;software.html</code></pre>
+
+<p>安装时尽量选择安装在IDA目录中&#x3D;&#x3D;》将会给IDA添加一个插件</p>
+<p>在使用时首先创建工程，再在设置中选择IDA目录</p>
+<p>分析的双方都为IDA分析后的数据文件</p>
+<h2 id="搜索引擎"><a href="#搜索引擎" class="headerlink" title="搜索引擎"></a>搜索引擎</h2><p>知风</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;zhifeng.io&#x2F;web&#x2F;new&#x2F;</code></pre>
+
+<p>fofa：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;fofa.info&#x2F;</code></pre>
+
+<p>shodan：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;www.shodan.io&#x2F;</code></pre>
+
+
+
+<h2 id="deb包安装服务"><a href="#deb包安装服务" class="headerlink" title="deb包安装服务"></a>deb包安装服务</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> path_to_deb_file
+<span class="token comment">#或</span>
+<span class="token function">sudo</span> dpkg <span class="token parameter variable">-i</span> path_to_file</code></pre>
+
+
+
+<h2 id="Ubuntu防火墙"><a href="#Ubuntu防火墙" class="headerlink" title="Ubuntu防火墙"></a>Ubuntu防火墙</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> ufw status
+<span class="token function">sudo</span> ufw stop
+<span class="token function">sudo</span> ufw start</code></pre>
+
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/17/Tcache-attack/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-17 13:01:27
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/" title="工具使用">
+                        #工具使用
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/18/House-Of-Einherjar/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec%EF%BC%9A"><span class="toc-text">checksec：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget%EF%BC%9A"><span class="toc-text">ROPgadget：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget%EF%BC%9A"><span class="toc-text">one_gadget：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher%EF%BC%9A"><span class="toc-text">LibcSearcher：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#main-arena-offset%EF%BC%9A"><span class="toc-text">main_arena_offset：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one-master"><span class="toc-text">glibc-all-in-one-master:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu%EF%BC%9A"><span class="toc-text">qemu：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc%EF%BC%9A"><span class="toc-text">gcc：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff%EF%BC%9A"><span class="toc-text">BinDiff：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F17%2F%25E5%25B7%25A5%25E5%2585%25B7%25E4%25B8%258E%25E5%2591%25BD%25E4%25BB%25A4%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/17/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

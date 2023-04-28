@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      IOT安全基础知识 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">IOT安全基础知识</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-09-05 20:46:57
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="基础知识">
+                    #基础知识
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="IOT安全基础知识"><a href="#IOT安全基础知识" class="headerlink" title="IOT安全基础知识"></a>IOT安全基础知识</h1><h2 id="IOT介绍"><a href="#IOT介绍" class="headerlink" title="IOT介绍"></a>IOT介绍</h2><p><strong>物联网架构</strong>分为：<strong>移动</strong>，<strong>云</strong>，<strong>设备</strong></p>
+<h3 id="分层模型"><a href="#分层模型" class="headerlink" title="分层模型"></a>分层模型</h3><p>1、传感层</p>
+<p>由硬件传感器和传感器网络组成</p>
+<p>2、通信层</p>
+<p>由通信机制组成，该机制允许传感器与管理层进行通信，例：Wi-Fi，3G，LTE，以太网等</p>
+<p>3、管理层</p>
+<p>负责从原始数据中弄清楚意义，并为用户提供可呈现的视图，包括云，存储，应用</p>
+<h3 id="IOT相关技术"><a href="#IOT相关技术" class="headerlink" title="IOT相关技术"></a>IOT相关技术</h3><p>射频识别（RFID）</p>
+<p>无线传感网络（WSN）</p>
+<h3 id="IOT相关协议"><a href="#IOT相关协议" class="headerlink" title="IOT相关协议"></a>IOT相关协议</h3><p><strong>常见协议：</strong></p>
+<p>CoAP，MQTT，AMQP，WebSocket，CANbus，Modbus，Profibus，DNP3，BACNet，HL7，XMPP，UPnP，DNS，SSH</p>
+<p><strong>IOT常用通讯协议：</strong></p>
+<p>WIFI，BLE，ZigBee，ZWave，6LowPAN，蜂窝数据等</p>
+<h2 id="逆向基础"><a href="#逆向基础" class="headerlink" title="逆向基础"></a>逆向基础</h2><h3 id="ARM"><a href="#ARM" class="headerlink" title="ARM"></a>ARM</h3><h4 id="ARM处理模式"><a href="#ARM处理模式" class="headerlink" title="ARM处理模式"></a>ARM处理模式</h4><pre class="language-none"><code class="language-none">用户模式：user，ARM处理器正常的程序执行状态
+快速中断模式：FIQ，用于高速数据传输或通道处理
+外部中断模式：IRQ，用于通用的中断处理
+管理模式：SVC，操作系统使用的保护模式
+数据访问中止模式：Abort，数据或指令预取终止时进入该模式，用于虚拟存储及内存保护
+系统模式：System，运行具有特权的操作系统任务
+未定义指令中止模式：Undifined，当未定义指令运行时进入该模式，可用于支持硬件协处理器的软件仿真
+协处理器：协助中央处理器完成其无法执行或执行效率低下的处理工作而开发和应用的处理器</code></pre>
+
+<h4 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h4><table>
+<thead>
+<tr>
+<th>寄存器</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R0</td>
+<td>函数第一个参数</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>函数第二个参数</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>函数第三个参数</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>函数第四个参数</td>
+</tr>
+<tr>
+<td>R4</td>
+<td></td>
+</tr>
+<tr>
+<td>R5</td>
+<td></td>
+</tr>
+<tr>
+<td>R6</td>
+<td></td>
+</tr>
+<tr>
+<td>R7</td>
+<td>函数调用中存储系统调用号</td>
+</tr>
+<tr>
+<td>R8</td>
+<td></td>
+</tr>
+<tr>
+<td>R9</td>
+<td></td>
+</tr>
+<tr>
+<td>R10</td>
+<td></td>
+</tr>
+<tr>
+<td>R11</td>
+<td>记录回溯信息，也可以当作局部变量使用</td>
+</tr>
+<tr>
+<td>R12</td>
+<td></td>
+</tr>
+<tr>
+<td>R13</td>
+<td>SP（堆栈指针），指向栈顶</td>
+</tr>
+<tr>
+<td>R14</td>
+<td>LR（链接寄存器），在进行函数调用时，LR内保存调用函数的下一条指令地址，用于被调用函数（子函数）结束工作后返回调用函数（父函数）</td>
+</tr>
+<tr>
+<td>PC</td>
+<td>PC（程序计数器），类似EIP，用于存储当前指令+8的地址</td>
+</tr>
+</tbody></table>
+<h4 id="指令集"><a href="#指令集" class="headerlink" title="指令集"></a>指令集</h4><table>
+<thead>
+<tr>
+<th>指令</th>
+<th>功能</th>
+<th>指令</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MOV</td>
+<td>移动数据</td>
+<td>EOR</td>
+<td>按位异或</td>
+</tr>
+<tr>
+<td>MVN</td>
+<td>移动数据并取反</td>
+<td>LDR</td>
+<td>加载</td>
+</tr>
+<tr>
+<td>ADD</td>
+<td>加法</td>
+<td>STR</td>
+<td>存储</td>
+</tr>
+<tr>
+<td>SUB</td>
+<td>减法</td>
+<td>LDM</td>
+<td>加载多个</td>
+</tr>
+<tr>
+<td>MUL</td>
+<td>乘法</td>
+<td>STM</td>
+<td>存储多个</td>
+</tr>
+<tr>
+<td>LSL</td>
+<td>逻辑左移</td>
+<td>PUSH</td>
+<td>入栈</td>
+</tr>
+<tr>
+<td>LSR</td>
+<td>逻辑右移</td>
+<td>POP</td>
+<td>出栈</td>
+</tr>
+<tr>
+<td>ASR</td>
+<td>算术右移</td>
+<td>B</td>
+<td>跳转</td>
+</tr>
+<tr>
+<td>ROR</td>
+<td>右旋</td>
+<td>BL</td>
+<td>Link+分支跳转</td>
+</tr>
+<tr>
+<td>CMP</td>
+<td>比较</td>
+<td>BX</td>
+<td>分支跳转</td>
+</tr>
+<tr>
+<td>AND</td>
+<td>按位与</td>
+<td>BLX</td>
+<td>Linx+分支跳转</td>
+</tr>
+<tr>
+<td>ORR</td>
+<td>按位或</td>
+<td>SWI&#x2F;SVC</td>
+<td>系统调用</td>
+</tr>
+</tbody></table>
+<pre class="language-none"><code class="language-none">LDR：用于将某些内容加载到寄存器中，例：LDR R2， [R0]  从R0寄存器中存储的内存地址的值读入R2寄存器
+
+STR：用于将某些内容从寄存器存储到内存地址中，例：STR R2，[R1]   从R2寄存器中将值存储到R1寄存器中的内存地址中</code></pre>
+
+
+
+
+
+<h3 id="MIPS"><a href="#MIPS" class="headerlink" title="MIPS"></a>MIPS</h3><h4 id="寄存器-1"><a href="#寄存器-1" class="headerlink" title="寄存器"></a>寄存器</h4><h5 id="通用寄存器-GPR"><a href="#通用寄存器-GPR" class="headerlink" title="通用寄存器(GPR)"></a>通用寄存器(GPR)</h5><p>在MIPS架构中有32个通用寄存器，在汇编程序中使用编号$0~$31表示</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>寄存器名称</th>
+<th>寄存器描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>zero</td>
+<td>始终为0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>$at</td>
+<td>保留寄存器</td>
+</tr>
+<tr>
+<td>2~3</td>
+<td>$v0~$v1</td>
+<td>保存表达式或者程序返回结果</td>
+</tr>
+<tr>
+<td>4~7</td>
+<td>$a0~$v3</td>
+<td>函数调用的前4个参数</td>
+</tr>
+<tr>
+<td>8~15</td>
+<td>$t0~$t7</td>
+<td>临时寄存器</td>
+</tr>
+<tr>
+<td>16~23</td>
+<td>$s0~$s7</td>
+<td>子函数使用时需要先保存原寄存器的值</td>
+</tr>
+<tr>
+<td>24~25</td>
+<td>$t8~$t9</td>
+<td>临时寄存器，扩展t0-t7</td>
+</tr>
+<tr>
+<td>26~27</td>
+<td>$k0~$k1</td>
+<td>保留，中断处理函数使用</td>
+</tr>
+<tr>
+<td>28</td>
+<td>$gp</td>
+<td>全局指针</td>
+</tr>
+<tr>
+<td>29</td>
+<td>$sp</td>
+<td>堆栈指针，指向堆栈的栈顶</td>
+</tr>
+<tr>
+<td>30</td>
+<td>$fp</td>
+<td>保存栈指针</td>
+</tr>
+<tr>
+<td>31</td>
+<td>$ra</td>
+<td>保存返回地址</td>
+</tr>
+</tbody></table>
+<h5 id="特殊寄存器"><a href="#特殊寄存器" class="headerlink" title="特殊寄存器"></a>特殊寄存器</h5><pre class="language-none"><code class="language-none">PC：程序计数器
+HI：乘除结果高位寄存器
+LO：乘除结果低位寄存器</code></pre>
+
+<p>在进行乘法运算时，HI存储高32位，LO存储低32位</p>
+<p>在进行除法运算时，HI保存余数，LO存储商</p>
+<h4 id="指令集-1"><a href="#指令集-1" class="headerlink" title="指令集"></a>指令集</h4><p>MIPS固定5字节指令长度</p>
+<p>内存中的数据访问（load&#x2F;store）必须至少4字节对齐</p>
+<p><strong>LOAD&#x2F;STORE指令：</strong></p>
+<pre class="language-none"><code class="language-none">lb,lbu,lh,lhu,ll,lw,lwl,lwr,sb,sc,sh,sw,swl,swr,move</code></pre>
+
+<p>l开头：加载指令</p>
+<p>s开头：存储指令</p>
+<p>move：寄存器之间的值的传递</p>
+<p><strong>算术运算指令：</strong></p>
+<pre class="language-none"><code class="language-none">add,addi,addiu,sub,subu,clo,clz,slt,slti,sltiu,sltu,mul,mult,multu,madd,msub,msubu,div,divu</code></pre>
+
+
+
+<p><strong>类比较指令：</strong></p>
+<pre class="language-none"><code class="language-none">slt,slti,sltiu,sltu</code></pre>
+
+
+
+<p><strong>SYSCALL（SYStem CALL）：</strong></p>
+<p>SYSCALL可以产生一个软中断，实现系统调用&#x3D;&#x3D;》</p>
+<p>系统调用号存放在$v0中，参数存放在$a0~$a3中&#x3D;&#x3D;》</p>
+<p>系统调用的返回值通常放在$v0中</p>
+<p>若系统调用出错&#x3D;&#x3D;》在$a3中返回一个错误号</p>
+<p><strong>分支跳转指令：</strong></p>
+<p>分支跳转指令本身可以通过比较两个寄存器中的值来决定是否进行跳转</p>
+<table>
+<thead>
+<tr>
+<th>指令格式</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>b target</td>
+<td>无条件跳转至target</td>
+</tr>
+<tr>
+<td>beq $t0,$t1, target</td>
+<td>如果$t0 &#x3D;&#x3D; $t1,跳转</td>
+</tr>
+<tr>
+<td>blt $t0,$t1, target</td>
+<td>如果$t0 &lt; $t1,跳转</td>
+</tr>
+<tr>
+<td>ble $t0,$t1, target</td>
+<td>如果$t0 &lt;&#x3D;  $t1,跳转</td>
+</tr>
+<tr>
+<td>bgt $t0,$t1, target</td>
+<td>如果$t0 &gt; $t1,跳转</td>
+</tr>
+<tr>
+<td>bge $t0,$t1, target</td>
+<td>如果$t0 &gt;&#x3D; $t1,跳转</td>
+</tr>
+<tr>
+<td>bne $t0,$t1, target</td>
+<td>如果$t0 !&#x3D; $t1,跳转</td>
+</tr>
+</tbody></table>
+<p><strong>跳转指令：</strong></p>
+<table>
+<thead>
+<tr>
+<th>指令格式</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>j target</td>
+<td>无条件跳转</td>
+</tr>
+<tr>
+<td>jr $t3</td>
+<td>跳转至$t3寄存器指向的地址处</td>
+</tr>
+<tr>
+<td>jal target</td>
+<td>跳转，并保存返回地址至$ra中</td>
+</tr>
+</tbody></table>
+<p>子函数调用：<strong>jal sub_xxx</strong></p>
+<p>首先复制当前的PC值至$ra寄存器中（当前PC为子函数执行完毕后的返回地址）</p>
+<p>&#x3D;&#x3D;》程序跳转</p>
+<p>子函数返回：jr $ra</p>
+<p>若子函数中又调用了其他子函数&#x3D;&#x3D;》$ra的值被保存在堆栈中（当前子函数的返回地址）</p>
+<p><strong>注意点：</strong></p>
+<p>MIPS没有栈底指针，需要通过SP指针</p>
+<p>函数调用：在进入函数三个时将当前栈指针向下偏移n byte到该函数的stack frame存储空间</p>
+<p>函数返回：加上偏移量恢复栈指针</p>
+<p>MIPS架构在调用函数会把返回地址存入t9寄存器，后赋值给RA</p>
+<p>在本函数为叶子函数时，RA寄存器不会入栈</p>
+<p>在本函数为非叶子函数时，RA寄存器入栈&#x3D;&#x3D;》<strong>可以通过栈溢出来劫持控制流</strong></p>
+<p>传参：前4个参数存放在$a0 - $a3，其他的参数会保存在调用函数的预留的栈顶空间中</p>
+<p><strong>叶子函数与非叶子函数：</strong></p>
+<p>叶子函数：在该函数中不再调用其他函数的函数</p>
+<p>非叶子函数：不调用其他函数的函数就是非叶子函数</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">A</span><span class="token punctuation">(</span><span class="token keyword">int</span> <span class="token operator">*</span>a<span class="token punctuation">,</span><span class="token keyword">int</span> <span class="token operator">*</span>b<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> <span class="token function">tmp</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    tmp<span class="token operator">=</span>a<span class="token punctuation">;</span>
+    a<span class="token operator">=</span>b<span class="token punctuation">;</span>
+    b<span class="token operator">=</span>tmp<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">B</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> <span class="token function">a</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token function">b</span><span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">A</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span>b<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>A为叶子函数，B为非叶子函数</p>
+<p>B函数在执行到调用A函数时，先复制$PC寄存器的值到$RA，然后跳转至A函数</p>
+<p>在函数返回时&#x3D;&#x3D;》A是叶子函数&#x3D;&#x3D;》使用jr $ra返回B</p>
+<p>若是非叶子函数返回&#x3D;&#x3D;》先从堆栈中取出返回值，存放至$ra中，之后使用jr $ra返回</p>
+<h2 id="IOT协议介绍"><a href="#IOT协议介绍" class="headerlink" title="IOT协议介绍"></a>IOT协议介绍</h2><ol>
+<li>CoAP – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Constrained_Application_Protocol">https://en.wikipedia.org/wiki/Constrained_Application_Protocol</a></li>
+<li>MQTT – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/MQTT">https://en.wikipedia.org/wiki/MQTT</a></li>
+<li>AMQP – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol">https://en.wikipedia.org/wiki/Advanced_Message_Queuing_Protocol</a></li>
+<li>WebSocket – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/WebSocket">https://en.wikipedia.org/wiki/WebSocket</a></li>
+<li>CANbus – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/CAN_bus">https://en.wikipedia.org/wiki/CAN_bus</a></li>
+<li>Modbus – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Modbus">https://en.wikipedia.org/wiki/Modbus</a></li>
+<li>Profibus – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Profibus">https://en.wikipedia.org/wiki/Profibus</a></li>
+<li>DNP3 – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/DNP3">https://en.wikipedia.org/wiki/DNP3</a></li>
+<li>BACNet – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/BACnet">https://en.wikipedia.org/wiki/BACnet</a></li>
+<li>HL7 – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Health_Level_7">https://zh.wikipedia.org/wiki/Health_Level_7</a></li>
+<li>XMPP – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/XMPP">https://en.wikipedia.org/wiki/XMPP</a></li>
+<li>UPnP – <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Universal_Plug_and_Play">https://en.wikipedia.org/wiki/Universal_Plug_and_Play</a></li>
+</ol>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/07/17/Tenda-AC15/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-09-05 20:46:57
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="基础知识">
+                        #基础知识
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/09/13/TinyHttpd%E5%88%86%E6%9E%90/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#IOT%E5%AE%89%E5%85%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">IOT安全基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT%E4%BB%8B%E7%BB%8D"><span class="toc-text">IOT介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc-text">分层模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOT%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF"><span class="toc-text">IOT相关技术</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOT%E7%9B%B8%E5%85%B3%E5%8D%8F%E8%AE%AE"><span class="toc-text">IOT相关协议</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80"><span class="toc-text">逆向基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ARM"><span class="toc-text">ARM</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ARM%E5%A4%84%E7%90%86%E6%A8%A1%E5%BC%8F"><span class="toc-text">ARM处理模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E4%BB%A4%E9%9B%86"><span class="toc-text">指令集</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MIPS"><span class="toc-text">MIPS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8-1"><span class="toc-text">寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%AF%84%E5%AD%98%E5%99%A8-GPR"><span class="toc-text">通用寄存器(GPR)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">特殊寄存器</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%87%E4%BB%A4%E9%9B%86-1"><span class="toc-text">指令集</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D"><span class="toc-text">IOT协议介绍</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + IOT%E5%AE%89%E5%85%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F09%2F05%2FIOT%25E5%25AE%2589%25E5%2585%25A8%25E5%259F%25BA%25E7%25A1%2580%25E7%259F%25A5%25E8%25AF%2586%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/09/05/IOT%E5%AE%89%E5%85%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Kernel利用 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Kernel利用</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-23 18:16:47
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Kernel/" title="Kernel">
+                    #Kernel
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="kernel利用"><a href="#kernel利用" class="headerlink" title="kernel利用"></a>kernel利用</h1><h2 id="Linux内核漏洞利用目的："><a href="#Linux内核漏洞利用目的：" class="headerlink" title="Linux内核漏洞利用目的："></a>Linux内核漏洞利用目的：</h2><p>1、提权&#x3D;&#x3D;》root（主要）</p>
+<p>2、泄漏敏感信息</p>
+<p>3、Dos&#x3D;&#x3D;》内核崩溃</p>
+<h3 id="提权："><a href="#提权：" class="headerlink" title="提权："></a>提权：</h3><p>普通用户获得root权限，访问原先受限的资源&#x3D;&#x3D;》</p>
+<h4 id="改变自身-Chenge-Self"><a href="#改变自身-Chenge-Self" class="headerlink" title="改变自身 Chenge Self"></a>改变自身 Chenge Self</h4><p>通过改变自身进程的权限</p>
+<p>内核通过进程的task_struct结构体中的cred指针来索引cred结构体，根据cred的内容判断一个进程的拥有的权限</p>
+<p>cred结构体成员uid-fsgid&#x3D;&#x3D;0&#x3D;&#x3D;》进程具有root权限</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">cred</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">atomic_t</span>    usage<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_DEBUG_CREDENTIALS</span></span>
+    <span class="token class-name">atomic_t</span>    subscribers<span class="token punctuation">;</span>    <span class="token comment">/* number of processes subscribed */</span>
+    <span class="token keyword">void</span>        <span class="token operator">*</span>put_addr<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span>    magic<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CRED_MAGIC</span>  <span class="token expression"><span class="token number">0x43736564</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CRED_MAGIC_DEAD</span> <span class="token expression"><span class="token number">0x44656144</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+    <span class="token class-name">kuid_t</span>      uid<span class="token punctuation">;</span>        <span class="token comment">/* real UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      gid<span class="token punctuation">;</span>        <span class="token comment">/* real GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      suid<span class="token punctuation">;</span>       <span class="token comment">/* saved UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      sgid<span class="token punctuation">;</span>       <span class="token comment">/* saved GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      euid<span class="token punctuation">;</span>       <span class="token comment">/* effective UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      egid<span class="token punctuation">;</span>       <span class="token comment">/* effective GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      fsuid<span class="token punctuation">;</span>      <span class="token comment">/* UID for VFS ops */</span>
+    <span class="token class-name">kgid_t</span>      fsgid<span class="token punctuation">;</span>      <span class="token comment">/* GID for VFS ops */</span>
+  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h5 id="利用方式："><a href="#利用方式：" class="headerlink" title="利用方式："></a>利用方式：</h5><h6 id="1、cred结构体"><a href="#1、cred结构体" class="headerlink" title="1、cred结构体"></a>1、cred结构体</h6><p><strong>直接修改cred结构体内容</strong></p>
+<h6 id="1、定位"><a href="#1、定位" class="headerlink" title="1、定位"></a>1、定位</h6><p>直接定位：</p>
+<p><strong>扫描内存定位</strong></p>
+<p>&#x3D;&#x3D;》在定位过程中，会有很多满足条件的cred&#x3D;&#x3D;》因为cred结构体可能会拷贝，释放&#x3D;&#x3D;》</p>
+<p>利用usage不为0筛选cred（cred使用rcu延迟释放）</p>
+<p>间接定位：</p>
+<p><strong>利用task_struct</strong></p>
+<p>定位当前进程task_struct结构体地址&#x3D;&#x3D;》</p>
+<p>根据cred指针相对于task_struct结构体的偏移计算cred指针存储地址&#x3D;&#x3D;》</p>
+<p>获取cred具体地址</p>
+<p><strong>利用comm</strong></p>
+<p>comm使用来标记可执行文件的名字，位于进程的task_struct结构体中</p>
+<pre class="language-c" data-language="c"><code class="language-c">    <span class="token comment">/* Process credentials: */</span>
+
+    <span class="token comment">/* Tracer's credentials at attach: */</span>
+    <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">cred</span> __rcu     <span class="token operator">*</span>ptracer_cred<span class="token punctuation">;</span>
+
+    <span class="token comment">/* Objective and real subjective task credentials (COW): */</span>
+    <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">cred</span> __rcu     <span class="token operator">*</span>real_cred<span class="token punctuation">;</span>
+
+    <span class="token comment">/* Effective (overridable) subjective task credentials (COW): */</span>
+    <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">cred</span> __rcu     <span class="token operator">*</span>cred<span class="token punctuation">;</span>
+
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_KEYS</span></span>
+    <span class="token comment">/* Cached requested key. */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">key</span>          <span class="token operator">*</span>cached_requested_key<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+
+    <span class="token comment">/*
+     * executable name, excluding path.
+     *
+     * - normally initialized setup_new_exec()
+     * - access it with [gs]et_task_comm()
+     * - lock it with task_lock()
+     */</span>
+    <span class="token keyword">char</span>                comm<span class="token punctuation">[</span>TASK_COMM_LEN<span class="token punctuation">]</span><span class="token punctuation">;</span></code></pre>
+
+<p>先定位comm&#x3D;&#x3D;》再定位cred地址</p>
+<h6 id="1、修改"><a href="#1、修改" class="headerlink" title="1、修改"></a>1、修改</h6><p>1、当有任意地址读写权限&#x3D;&#x3D;》直接修改cred</p>
+<p>2、当可以执行ROP执行代码&#x3D;&#x3D;》利用ROP gadget修改cred</p>
+<p>例：</p>
+<p>UAF使用同样的堆块&#x3D;&#x3D;》</p>
+<p>1、申请一块与cred结构体大小相同的堆块</p>
+<p>2、释放该堆块</p>
+<p>3、fork出新进程&#x3D;&#x3D;》cred结构体使用该释放的堆块</p>
+<p>4、修改cred结构体&#x3D;&#x3D;》提权</p>
+<h6 id="2、cred指针"><a href="#2、cred指针" class="headerlink" title="2、cred指针"></a>2、cred指针</h6><p><strong>修改task_struct结构体中的cred指针指向一个满足要求的cred</strong></p>
+<h6 id="2、定位"><a href="#2、定位" class="headerlink" title="2、定位"></a>2、定位</h6><p>直接定位（不推荐）</p>
+<p>间接定位</p>
+<p><strong>利用task_struct</strong></p>
+<p>定位当前进程task_struct结构体的地址&#x3D;&#x3D;》</p>
+<p>根据cred指针相对于task_struct结构体的偏移计算cred指针存储的位置</p>
+<p><strong>利用common</strong></p>
+<p>comm在cred指针下方&#x3D;&#x3D;》通过先定位comm&#x3D;&#x3D;》再定位cred指针的地址</p>
+<p><strong>注意点：</strong>在进程名字不特殊的情况下，内核中可能会有多个同样的字符串，会影响搜索的正确性与效率</p>
+<p>&#x3D;&#x3D;》使用prctl设置进程的comm为一个特殊的字符串，再定位comm</p>
+<h6 id="2、修改"><a href="#2、修改" class="headerlink" title="2、修改"></a>2、修改</h6><p>1、修改cred指针为内核镜像中已有的init_cred的地址（适用于能直接修改cred指针以及知道init_cred地址）</p>
+<p>2、伪造一个cred，然后修改cred指针指向该地址（不推荐）</p>
+<h6 id="3、commit-creds"><a href="#3、commit-creds" class="headerlink" title="3、commit_creds"></a>3、commit_creds</h6><p>使用commit_creds(prepare_kernel_cred(0))来进行提权&#x3D;&#x3D;》</p>
+<p>自动生成一个合法的cred，并定位当前进程的task_struct的位置&#x3D;&#x3D;》修改它的旧的cred为新的cred</p>
+<p>&#x3D;&#x3D;》适用于控制程序执行流，并且不需要知道cred的地址</p>
+<h4 id="改变别人-Change-others"><a href="#改变别人-Change-others" class="headerlink" title="改变别人 Change others"></a>改变别人 Change others</h4><p>通过改变特权进程的执行轨迹</p>
+<h5 id="利用方式：-1"><a href="#利用方式：-1" class="headerlink" title="利用方式："></a>利用方式：</h5><h6 id="1、改数据"><a href="#1、改数据" class="headerlink" title="1、改数据"></a>1、改数据</h6><p><strong>符号链接</strong></p>
+<p>一个root权限的进程会执行一个符号链接的程序，并且该符号链接或者符号链接指向的程序可以由攻击者控制</p>
+<p>&#x3D;&#x3D;》提权</p>
+<p><strong>call_usermodehelper</strong></p>
+<p>call_usermodehelper是一种内核线程执行用户态应用的方式，并且启动的进程具有 root 权限&#x3D;&#x3D;》</p>
+<p>能够控制具体要执行的应用&#x3D;&#x3D;》提权</p>
+<p>call_usermodehelpe具体要执行的应用由某个变量指定&#x3D;&#x3D;》改变变量</p>
+<p>&#x3D;&#x3D;》修改方式</p>
+<p>1、&#x3D;&#x3D;》修改modprobe_path&#x3D;&#x3D;》获取modprobe_path地址&#x3D;&#x3D;》修改modprobe_path指定的程序</p>
+<p>&#x3D;&#x3D;》触发执行call_usermodehelper&#x3D;&#x3D;》触发方式</p>
+<p>&#x3D;&#x3D;》执行一个非法的可执行文件&#x2F;使用未知协议触发</p>
+<p>&#x3D;&#x3D;&#x3D;》定位modprobe_path&#x3D;&#x3D;》</p>
+<p>直接定位：modprobe_path取值确定&#x3D;&#x3D;》直接扫描内存，寻找对应字符串</p>
+<p>间接定位：先获取内核基地址，根据相对偏移获得地址</p>
+<p>2、&#x3D;&#x3D;》修改poweroff_cmd&#x3D;&#x3D;》修改poweroff_cmd为指定的程序&#x3D;&#x3D;》</p>
+<p>劫持控制流执行__orderly_poweroff</p>
+<p>&#x3D;&#x3D;》定位&#x3D;&#x3D;》类似定位modprobe_path</p>
+<h6 id="2、改代码"><a href="#2、改代码" class="headerlink" title="2、改代码"></a>2、改代码</h6><p><strong>修改vDSO代码</strong></p>
+<p>内核中 vDSO 的代码会被映射到所有的用户态进程中&#x3D;&#x3D;》</p>
+<p>当一个高特权的进程周期性调用vDSO中的函数&#x3D;&#x3D;》</p>
+<p>将vDSO中的函数修改为特定的shellcode&#x3D;&#x3D;》当高权限的进程执行相应代码&#x3D;&#x3D;》提权</p>
+<p>定位&#x3D;&#x3D;》</p>
+<p>1、IDA中定位&#x3D;&#x3D;》使用raw_data可知道vDSO在内核镜像中的地址（vDSO以页对齐）</p>
+<p>2、内存中定位&#x3D;&#x3D;》</p>
+<p>直接定位：vDSO是一个ELF可执行文件，有ELF文件头，存储着导出函数的字符串&#x3D;&#x3D;》扫描内存&#x3D;&#x3D;》定位</p>
+<p>间接定位：先获取内核的基地址&#x3D;&#x3D;》根据偏移获得vDSO地址</p>
+<h3 id="DoS"><a href="#DoS" class="headerlink" title="DoS"></a>DoS</h3><p>1、触发内核内某个漏洞让内核崩溃</p>
+<p>2、触发内核中的死锁</p>
+<p>3、触发大量的内核内存泄漏（存在大量的内存被申请但是没有释放）</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/22/Kernel%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-23 18:16:47
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Kernel/" title="Kernel">
+                        #Kernel
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/23/Kernel%E5%9F%BA%E7%A1%80/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#kernel%E5%88%A9%E7%94%A8"><span class="toc-text">kernel利用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E7%9B%AE%E7%9A%84%EF%BC%9A"><span class="toc-text">Linux内核漏洞利用目的：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E6%9D%83%EF%BC%9A"><span class="toc-text">提权：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%94%B9%E5%8F%98%E8%87%AA%E8%BA%AB-Chenge-Self"><span class="toc-text">改变自身 Chenge Self</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%9A"><span class="toc-text">利用方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81cred%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">1、cred结构体</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81%E5%AE%9A%E4%BD%8D"><span class="toc-text">1、定位</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81%E4%BF%AE%E6%94%B9"><span class="toc-text">1、修改</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81cred%E6%8C%87%E9%92%88"><span class="toc-text">2、cred指针</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81%E5%AE%9A%E4%BD%8D"><span class="toc-text">2、定位</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81%E4%BF%AE%E6%94%B9"><span class="toc-text">2、修改</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3%E3%80%81commit-creds"><span class="toc-text">3、commit_creds</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%94%B9%E5%8F%98%E5%88%AB%E4%BA%BA-Change-others"><span class="toc-text">改变别人 Change others</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%9A-1"><span class="toc-text">利用方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81%E6%94%B9%E6%95%B0%E6%8D%AE"><span class="toc-text">1、改数据</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81%E6%94%B9%E4%BB%A3%E7%A0%81"><span class="toc-text">2、改代码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DoS"><span class="toc-text">DoS</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Kernel%E5%88%A9%E7%94%A8 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F23%2FKernel%25E5%2588%25A9%25E7%2594%25A8%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/23/Kernel%E5%88%A9%E7%94%A8/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

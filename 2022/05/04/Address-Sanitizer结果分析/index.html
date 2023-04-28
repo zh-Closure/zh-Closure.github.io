@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Address Sanitizer结果分析 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Address Sanitizer结果分析</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-05-04 13:03:57
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Fuzz/" title="Fuzz">
+                    #Fuzz
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="ASan结果分析"><a href="#ASan结果分析" class="headerlink" title="ASan结果分析"></a>ASan结果分析</h1><h2 id="ASan简介"><a href="#ASan简介" class="headerlink" title="ASan简介"></a>ASan简介</h2><p>Address Sanitizer(ASan)：是一个快速的C&#x2F;C++内存错误检查器</p>
+<p>该工具由一个编译器检测模块和一个提供内存操作函数(malloc&#x2F;free)替代run-time库</p>
+<p>该工具适用于x86,ARM,MIPS,PowerPC64架构，支持Linux，Darwin(OS X和IOS模拟器)，FreeBSD，Android</p>
+<p>ASan可以检测：</p>
+<table>
+<thead>
+<tr>
+<th>漏洞类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UAF</td>
+</tr>
+<tr>
+<td>Heap buffer overflow</td>
+</tr>
+<tr>
+<td>Stack buffer overflow</td>
+</tr>
+<tr>
+<td>Global buffer overflow</td>
+</tr>
+<tr>
+<td>Use after return</td>
+</tr>
+<tr>
+<td>Use after scpoe</td>
+</tr>
+<tr>
+<td>Initialization order bugs</td>
+</tr>
+<tr>
+<td>Memory leak</td>
+</tr>
+</tbody></table>
+<h2 id="demo分析"><a href="#demo分析" class="headerlink" title="demo分析"></a>demo分析</h2><p>来自<a target="_blank" rel="noopener" href="https://hollk.blog.csdn.net/?type=blog">https://hollk.blog.csdn.net/?type=blog</a></p>
+<h3 id="stack-buffer-overflow"><a href="#stack-buffer-overflow" class="headerlink" title="stack buffer overflow"></a>stack buffer overflow</h3><pre class="language-c++" data-language="c++"><code class="language-c++">int main(int argc, char **argv) &#123;
+  int closure[100];
+  closure[1] &#x3D; 0;
+  return closure[argc + 100];  &#x2F;&#x2F; overflow
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address stackdemo.cpp <span class="token parameter variable">-o</span> stackdemo</code></pre>
+
+<p>定义了一个int类型的，长度为100的数组&#x3D;&#x3D;》int为4字节&#x3D;&#x3D;》closure数组占400个字节</p>
+<p>在最后返回closure[argc + 100]出现溢出&#x3D;&#x3D;》argc+100超出了栈空间的大小</p>
+<p>运行编译后的程序&#x3D;&#x3D;》ASan显示检测日志：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428171626611.png"></p>
+<p>初次分析日志内容：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428171819070.png"></p>
+<p>&#x3D;&#x3D;2045857&#x3D;&#x3D;表示检测到问题的进程号为2045867</p>
+<p>ERROR后面为检测到的漏洞类型：stack-buffer-overflow</p>
+<p>漏洞所在地址为0x7fffffffdf34</p>
+<p>漏洞触发时寄存器：</p>
+<p>PC：0x0000004c32f4</p>
+<p>bp：0x7fffffffdd70</p>
+<p>sp：0x7fffffffdd68</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428172231141.png"></p>
+<p>描述主要采用READ操作，在线程T0的0x7fffffffdf34栈地址处读取大小为4的数据</p>
+<p>#0，1，2为函数栈</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428172440926.png"></p>
+<p>漏洞地址0x7fffffffdf34位于T0线程的栈中的栈帧偏移量为436处，并指出被溢出的变量</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428172658215.png"></p>
+<p>其余部分为总结和警告</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428172749080.png"></p>
+<p>shaow字节图：</p>
+<p>其中的一个字节表示源程序内存中的8个字节</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220428172929674.png"></p>
+<p>该图为对shadow字节图解释：</p>
+<p>ASan会对程序中的内存空间右侧或者两侧添加一个不可写区域<strong>redzone</strong></p>
+<p>f1为左侧增加区域</p>
+<p>f3为右侧增加区域</p>
+<p>在shadow图中f1与f3中的00有50个字节，每一个字节又代表源程序中的8个字节&#x3D;&#x3D;》</p>
+<p>对应内存中50*8 &#x3D; 400个字节&#x3D;&#x3D;》closure[100]开辟的空间大小</p>
+<p>在00后第一个f3为**[f3]**:</p>
+<p>表示该字节被溢出&#x3D;&#x3D;》</p>
+<p>在运行程序时没有添加任何参数&#x3D;&#x3D;》argc为1（stackdemo参加计数）&#x3D;&#x3D;》</p>
+<p>所以返回为closure[101]&#x3D;&#x3D;》溢出4个字节&#x3D;&#x3D;》[f3]</p>
+<p>&#x3D;&#x3D;》日志分析总结：</p>
+<p>被溢出变量：closure</p>
+<p>溢出点所在地址：0x7fffffffdf34</p>
+<p>溢出点距离变量起始点偏移：436</p>
+<h3 id="global-buffer-overflow"><a href="#global-buffer-overflow" class="headerlink" title="global-buffer-overflow"></a>global-buffer-overflow</h3><p>溢出全局变量部分的内存</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">int hollk[100] &#x3D; &#123;-1&#125;;
+int main(int argc, char **argv) &#123;
+  return hollk[argc + 100];  &#x2F;&#x2F; overflow
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address glo.cpp <span class="token parameter variable">-o</span> glo</code></pre>
+
+<p>创建了一个int型数组closure[100]&#x3D;&#x3D;》400字节</p>
+<p>argc作为输入参数计数，即使运行程序时不添加额外的参数，argc也会将glo.cpp作为一个计数&#x3D;&#x3D;》</p>
+<p>return返回closure[argc+100]&#x3D;&#x3D;》closure[101]&#x3D;&#x3D;》超过closure数组的内存空间</p>
+<p>编译后运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220430181904885.png"></p>
+<p>根据ASan日志分析：</p>
+<p>溢出点位于：0x0000004f6d34</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc：0x0000004c3142
+bp：0x7ffd2860b3b0
+sp：0x7ffd2860b3a8</code></pre>
+
+<p>存在溢出点的全局变量为closure，溢出4个字节</p>
+<p>shadow中f9为全局变量右侧添加的redzone，溢出4字节&#x3D;&#x3D;》[f9]</p>
+<h3 id="stack-use-after-scope"><a href="#stack-use-after-scope" class="headerlink" title="stack-use-after-scope"></a>stack-use-after-scope</h3><p>局部变量在脱离作用域后再次被使用</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">volatile int *p &#x3D; 0;
+
+int main() &#123;
+  &#123;
+    int closure &#x3D; 0;
+    p &#x3D; &amp;closure;
+  &#125;
+  *p &#x3D; 5;
+  return 0;
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address clo.cpp <span class="token parameter variable">-o</span> clo</code></pre>
+
+<p>使用<strong>volatile</strong>关键字创建int指针p，赋值为0</p>
+<p>创建一个int类型的变量closure，并赋值为0&#x3D;&#x3D;》局部变量</p>
+<p>取closure变量地址赋值给指针p&#x3D;&#x3D;》main函数结束，修改p指针指向的位置的值为5&#x3D;&#x3D;》</p>
+<p>closure变量中的值变为5&#x3D;&#x3D;》因为closure是一个局部变量，超过了main函数的作用范围后发生了变化&#x3D;&#x3D;》</p>
+<p>触发stack-use-after-scope漏洞</p>
+<p><strong>volatile</strong>：提醒编译器该处创建的指针p是会发生变化的，编译后每一次读取或存储p指针，都将会重新进行读操作</p>
+<p><strong>例：</strong></p>
+<p>A，B两个线程同时读取p指针0x7ffffab0中的值&#x3D;&#x3D;》</p>
+<p>此时A读取的的是地址0x7ffffab0中的值0，B读取的也是0x7ffffab0处的0&#x3D;&#x3D;》</p>
+<p><strong>使用该关键字</strong>：</p>
+<p>如果A将p指针修改为0x7ffffcd0并将其中的值修改为1&#x3D;&#x3D;》</p>
+<p>B将重新读取指针p的地址0x7ffffcd0，再读取地址内的值1</p>
+<p><strong>未使用该关键字</strong>：</p>
+<p>如果A将p指针修改为0x7ffffcd0并将其中的值修改为1&#x3D;&#x3D;》</p>
+<p>B将读取0x7ffffab0处的0</p>
+<p>编译后运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220430183247506.png"></p>
+<p>ASan日志分析：</p>
+<p>漏洞出现地址：0x7ffc238179a0</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc 0x0000004c3201 
+bp 0x7ffc23817970 
+sp 0x7ffc23817968</code></pre>
+
+<p>出现漏洞的变量closure</p>
+<p>[f8]代表closure变量所在位置出现漏洞</p>
+<h3 id="stack-use-after-return"><a href="#stack-use-after-return" class="headerlink" title="stack-use-after-return"></a>stack-use-after-return</h3><p>与stack-use-after-scope类似，都是局部变量脱离了作用域再次进行操作</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">int *ptr;
+__attribute__((noinline))
+void FunctionA() &#123;
+  int closure[100];
+  ptr &#x3D; &amp;closure[0];
+&#125;
+
+int main(int argc, char **argv) &#123;
+  FunctionA();
+  return ptr[argc];
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address clo.cpp <span class="token parameter variable">-o</span> clo</code></pre>
+
+<p>首先定义了一个全局变量ptr，定义函数属性为<strong>noinline</strong>&#x3D;&#x3D;》声明函数为非内敛函数</p>
+<p>内敛函数与非内敛函数对比：</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">&#x2F;&#x2F;非内敛
+int funA(int a,int b)&#123;
+    return a+b;
+&#125;
+
+int main()&#123;
+    funA(1,1);
+    return 0;
+&#125;
+
+
+&#x2F;&#x2F;内敛
+int main()&#123;
+    int a &#x3D; 1;
+    int b &#x3D; 1;
+    int c &#x3D; a + b;
+    return 0;
+&#125;</code></pre>
+
+<p>&#x3D;&#x3D;》在funA函数内敛后，编译器会保持原有执行流程的情况下，将funA函数中的执行流程重组进main函数中&#x3D;&#x3D;》demo中指定为非内敛属性&#x3D;&#x3D;》在编译中保持FunctionA函数独立于main函数，成调用关系&#x3D;&#x3D;》</p>
+<p>FunctionA函数中定义了一个int类型的数组closure，并将closure数组起始地址赋值给全局变量指针ptr&#x3D;&#x3D;》</p>
+<p>进入main函数，调用FunctionA函数，返回ptr[argc]</p>
+<p><strong>注意点</strong>：closure是FunctionA函数中的局部变量，却在main函数中返回了closure数组中下标为argc位置的数据</p>
+<p>&#x3D;&#x3D;》在main函数中使用了closure数组属于脱离本身的作用域&#x3D;&#x3D;》stack-use-after-return</p>
+<p>编译后运行：</p>
+<p>由于ASan默认是不检测stack-use-after-return，需要开启检测选项</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token assign-left variable">ASAN_OPTIONS</span><span class="token operator">=</span>detect_stack_use_after_return<span class="token operator">=</span><span class="token number">1</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220430231358993.png"></p>
+<p>ASan日志分析：</p>
+<p>漏洞出现地址：0x7fb4a70e8024</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc 0x0000004c32dc
+bp 0x7ffeae659470
+sp 0x7ffeae659468</code></pre>
+
+<p>f5&#x3D;&#x3D;》表示出现stack after return内存空间的范围</p>
+<p>由于偏移量为36&#x3D;&#x3D;》第五个f5的位置出现中括号（到达漏洞位置）</p>
+<h3 id="heap-buffer-overflow"><a href="#heap-buffer-overflow" class="headerlink" title="heap-buffer-overflow"></a>heap-buffer-overflow</h3><pre class="language-c++" data-language="c++"><code class="language-c++">int main(int argc, char **argv) &#123;
+  int *closure &#x3D; new int[100];
+  closure[0] &#x3D; 0;
+  int res &#x3D; closure[argc + 100];
+  delete [] closure;
+  return res;
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gcc <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address clo.cpp <span class="token parameter variable">-o</span> clo</code></pre>
+
+<p>在C++中使用new来创建堆块（底层由malloc实现），使用delete释放堆块</p>
+<p>首先开辟一个存放整数的空间(int)，整数的初值为100&#x3D;&#x3D;》返回一个指向该存储空间的地址&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c">closure <span class="token operator">=</span> <span class="token function">malloc</span><span class="token punctuation">(</span><span class="token number">400</span><span class="token punctuation">)</span></code></pre>
+
+<p>将堆块中的第一个四字节空间赋值为0&#x3D;&#x3D;》将argc+100处的内容赋值给res变量&#x3D;&#x3D;》</p>
+<p>释放closure堆块并返回res的值&#x3D;&#x3D;》</p>
+<p>argc+100超过了堆块400字节内存空间范围&#x3D;&#x3D;》heap-buffer-overflow</p>
+<p>编译后运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220501204452571.png"></p>
+<p>ASan日志分析：</p>
+<p>漏洞出现地址：0x7ffc238179a0</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc 0x0000004c3201 
+bp 0x7ffc23817970 
+sp 0x7ffc23817968</code></pre>
+
+<p>shadow解析：fa为closure堆块两侧的redzone空间&#x3D;&#x3D;》中间的00&#x3D;&#x3D;》内存空间的400字节</p>
+<p>[fa]&#x3D;&#x3D;》溢出了argc字节</p>
+<h3 id="heap-use-after-free"><a href="#heap-use-after-free" class="headerlink" title="heap-use-after-free"></a>heap-use-after-free</h3><p>释放的堆块没有置空，并且已经释放该指针又进行调用</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">int main(int argc, char **argv) &#123;
+  int *closure &#x3D; new int[100];
+  delete [] closure;
+  return closure[argc];
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gcc <span class="token parameter variable">-O</span> <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address clo.cpp <span class="token parameter variable">-o</span> clo</code></pre>
+
+<p>创建一个400字节大小的堆块，并将malloc指针赋给closure</p>
+<p>释放堆块，返回closure堆块中argc数组下标对应的内容</p>
+<p>编译后运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220502143109957.png"></p>
+<p>ASan日志分析：</p>
+<p>漏洞出现地址：0x614000000044</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc 0x560f6b5b621f
+bp 0x7ffd264ddd60
+sp 0x7ffd264ddd50</code></pre>
+
+<p>shadow解析：紫色的fd表示被释放堆块区域</p>
+<p>return返回时被释放的堆块的第argc数组下标中的内容&#x3D;&#x3D;》[fd]在第一个</p>
+<h3 id="memory-leaks"><a href="#memory-leaks" class="headerlink" title="memory leaks"></a>memory leaks</h3><p>内存泄漏漏洞：</p>
+<p>创建内存空间之后没有释放，导致数据在内存空间中没有消除，可以通过一些手段读取这段数据内容</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">#include &lt;stdlib.h&gt;
+
+void *closure;
+
+int main() &#123;
+  closure &#x3D; malloc(8);
+  closure &#x3D; 0;
+  return 0;
+&#125;</code></pre>
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gcc <span class="token parameter variable">-g</span> <span class="token parameter variable">-fsanitize</span><span class="token operator">=</span>address clo.cpp <span class="token parameter variable">-o</span> clo</code></pre>
+
+<p>创建一个8字节大小的堆块</p>
+<p>在没有将堆块释放的情况下将堆块的malloc指针置空&#x3D;&#x3D;》</p>
+<p>8字节的内存空间只要进程不结束，会一直停留在堆区&#x3D;&#x3D;》memory leaks</p>
+<p>编译后运行：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220502144105888.png"></p>
+<p>ASan日志展示了泄露时的函数栈，泄漏的字节长度</p>
+<h3 id="initialization-order-fiasco"><a href="#initialization-order-fiasco" class="headerlink" title="initialization-order-fiasco"></a>initialization-order-fiasco</h3><p>由变量初始化顺序导致</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">&#x2F;&#x2F;a.cc
+#include &lt;stdio.h&gt;
+extern int extern_global;
+int __attribute__((noinline)) read_extern_global() &#123;
+  return extern_global;
+&#125;
+int x &#x3D; read_extern_global() + 1;
+int main() &#123;
+  printf(&quot;%d\n&quot;, x);
+  return 0;
+&#125;</code></pre>
+
+<p>首先使用extern定义了一个int型全局变量extern_global&#x3D;&#x3D;》</p>
+<p><strong>extern</strong>：扩大作用域&#x3D;&#x3D;》即使extern_global是在a.cc中进行定义的，但是如果是a.cc和b.cc联合编译&#x3D;&#x3D;》</p>
+<p>b.cc也可以使用extern_global变量</p>
+<p>接下来定义一个费内敛函数read_extern_global()&#x3D;&#x3D;》返回extern_global的值</p>
+<p>定义一个变量x&#x3D;&#x3D;》x为read_extern_global()的返回值extern_global的值+1</p>
+<p>在main函数中打印X的值</p>
+<p><strong>注意点：</strong>在编译的时候会优先初始化read_extern_global()函数的返回值，并计算出x的值等待main()进行调用</p>
+<pre class="language-c++" data-language="c++"><code class="language-c++">&#x2F;&#x2F;b.cc
+int foo() &#123; return -2; &#125;
+int extern_global &#x3D; foo();</code></pre>
+
+<p>定义了一个foo()函数，函数直接返回-2，定义extern_global变量为foo()函数的返回值</p>
+<p>编译运行ab：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang++ a.cc b.cc <span class="token parameter variable">-o</span> a_b</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220502162216766.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p>先编译a.cc&#x3D;&#x3D;》优先初始化read_extern_global()&#x3D;&#x3D;》继续初始化x &#x3D; 0 + 1</p>
+<p>编译运行ba：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">clang++ b.cc a.cc <span class="token parameter variable">-o</span> ba</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220502162641990.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p>先编译b.cc&#x3D;&#x3D;》优先初始化foo()&#x3D;&#x3D;》初始化x &#x3D; -2 + 1</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》</p>
+<p>若结果作为其他程序的参数&#x3D;&#x3D;》</p>
+<p>例：read()&#x3D;&#x3D;》出现整数溢出：</p>
+<pre class="language-none"><code class="language-none">read(0,buf,0xffffff)</code></pre>
+
+<p>若buf空间不足&#x3D;&#x3D;》堆溢出&#x2F;栈溢出</p>
+<p>ASan分析：</p>
+<p>联合编译后运行：</p>
+<pre class="language-none"><code class="language-none">clang++ -g -fsanitize&#x3D;address a.cc b.cc -o clo</code></pre>
+
+
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220502163306506.png"></p>
+<p>ASan日志分析：</p>
+<p>漏洞出现地址：0x000000e20e80</p>
+<p>寄存器：</p>
+<pre class="language-none"><code class="language-none">pc 0x0000004c6bc8
+bp 0x7ffe376c2cb0
+sp 0x7ffe376c2ca8</code></pre>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/05/01/Fuzzing-101/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-05-04 13:03:57
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Fuzz/" title="Fuzz">
+                        #Fuzz
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/05/07/CVE-2020-24581-CVE-2020-24579/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ASan%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90"><span class="toc-text">ASan结果分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ASan%E7%AE%80%E4%BB%8B"><span class="toc-text">ASan简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#demo%E5%88%86%E6%9E%90"><span class="toc-text">demo分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#stack-buffer-overflow"><span class="toc-text">stack buffer overflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#global-buffer-overflow"><span class="toc-text">global-buffer-overflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stack-use-after-scope"><span class="toc-text">stack-use-after-scope</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#stack-use-after-return"><span class="toc-text">stack-use-after-return</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#heap-buffer-overflow"><span class="toc-text">heap-buffer-overflow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#heap-use-after-free"><span class="toc-text">heap-use-after-free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#memory-leaks"><span class="toc-text">memory leaks</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#initialization-order-fiasco"><span class="toc-text">initialization-order-fiasco</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Address%20Sanitizer%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F05%2F04%2FAddress-Sanitizer%25E7%25BB%2593%25E6%259E%259C%25E5%2588%2586%25E6%259E%2590%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/05/04/Address-Sanitizer%E7%BB%93%E6%9E%9C%E5%88%86%E6%9E%90/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

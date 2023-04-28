@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      AFL总结 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">AFL总结</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-04-28 22:20:12
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Fuzz/" title="Fuzz">
+                    #Fuzz
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="AFL总结"><a href="#AFL总结" class="headerlink" title="AFL总结"></a>AFL总结</h1><h2 id="简介："><a href="#简介：" class="headerlink" title="简介："></a>简介：</h2><p>基于覆盖引导的模糊测试工具，它通过记录输入样本的代码覆盖率&#x3D;&#x3D;》从而调整输入样本以提高覆盖率&#x3D;&#x3D;》</p>
+<p>增加发现漏洞的概率</p>
+<h2 id="工作流程："><a href="#工作流程：" class="headerlink" title="工作流程："></a>工作流程：</h2><p>1、从源码编译程序时进行插桩，以记录代码覆盖率</p>
+<p>2、选择一些输入文件，作为初始测试集加入输入队列（queue）</p>
+<p>3、将队列中的文件按照一定的策略进行”变异”</p>
+<p>4、如果经过变异文件更新了覆盖范围，则将其保留添加到队列中</p>
+<p>5、上述流程会一直循环进行，期间触发crash的文件会被记录</p>
+<h2 id="相关概念："><a href="#相关概念：" class="headerlink" title="相关概念："></a>相关概念：</h2><h3 id="代码覆盖率："><a href="#代码覆盖率：" class="headerlink" title="代码覆盖率："></a>代码覆盖率：</h3><p>一种度量代码的覆盖程度的方式&#x3D;&#x3D;》指源代码中的某行代码是否已经执行&#x3D;&#x3D;》</p>
+<p>计量方式：函数，基本快，边界三种级别的覆盖率检测</p>
+<p>计算方式：计算在在一次运行中，相应边执行的次数，次数单位为2的幂 </p>
+<h3 id="基本块-Basic-Block-："><a href="#基本块-Basic-Block-：" class="headerlink" title="基本块(Basic Block)："></a>基本块(Basic Block)：</h3><p>缩写为BB，指一组顺序执行的指令，BB中第一条指令被执行后，后续的指令也会被全部执行</p>
+<p>每一个BB中所有指令的执行次数是相同的&#x3D;&#x3D;》</p>
+<p>BB特征：</p>
+<p>只有一个入口点，BB中的指令不是任何跳转指令的目标</p>
+<p>只有一个退出点，只有最后一条指令使执行流程转移到另一个BB</p>
+<h3 id="边界-edge-："><a href="#边界-edge-：" class="headerlink" title="边界(edge)："></a>边界(edge)：</h3><p>fuzzer通过插桩代码捕获边（edge）覆盖率&#x3D;&#x3D;》</p>
+<p>可以将程序看成是一个控制流图(CFG)&#x3D;&#x3D;》图的每一个节点表示一个基本块&#x3D;&#x3D;》</p>
+<p>而edge就被表示在基本块之间的跳转&#x3D;&#x3D;》</p>
+<p>知道了每一个基本块和跳转的执行次数，就可以知道程序中的每一个语句和分支的执行次数&#x3D;&#x3D;》</p>
+<p>从而获得比记录BB更细粒度的覆盖率信息</p>
+<h3 id="元组-tuple-："><a href="#元组-tuple-：" class="headerlink" title="元组(tuple)："></a>元组(tuple)：</h3><p>在AFL实现中，使用二元组来记录当前基本块+前一个基本块的信息&#x3D;&#x3D;》</p>
+<p>从而获取目标的执行流程和代码覆盖率</p>
+<h3 id="插桩："><a href="#插桩：" class="headerlink" title="插桩："></a>插桩：</h3><p>在AFL变异文件的时候afl-gcc会在规定的位置插入桩代码&#x3D;&#x3D;》</p>
+<p>一个个的探针，但是没有暂停功能，在后续的fuzz过程中会根据这些桩代码进行路径探索，测试等</p>
+<p>AFL通过插桩的形式注入到被编译的程序中，实现分支覆盖率的捕获，以及分支节点计数</p>
+<pre class="language-c" data-language="c"><code class="language-c">cur_location <span class="token operator">=</span> <span class="token operator">&lt;</span>COMPILE_TIME_RANDOM<span class="token operator">></span><span class="token punctuation">;</span>
+<span class="token comment">//使用一个随机数cur_location标记当前块</span>
+
+shared_mem<span class="token punctuation">[</span>cur_location <span class="token operator">^</span> prev_location<span class="token punctuation">]</span><span class="token operator">++</span><span class="token punctuation">;</span><span class="token comment">//将当前块和前一块异或保存到shared_mem[]</span>
+<span class="token comment">//shared_mem[]数组是一个被调用者传入插桩二进制的64KB SHM大小的区域</span>
+
+prev_location <span class="token operator">=</span> cur_location <span class="token operator">>></span> <span class="token number">1</span><span class="token punctuation">;</span><span class="token comment">//cur_location右移1位区分从当前块到当前块的转跳</span></code></pre>
+
+
+
+<h2 id="目标选择与使用"><a href="#目标选择与使用" class="headerlink" title="目标选择与使用"></a>目标选择与使用</h2><h3 id="目标选择："><a href="#目标选择：" class="headerlink" title="目标选择："></a>目标选择：</h3><p>通常时接收外部输入的程序或库，输入一般来自文件</p>
+<p>AFL主要用于C&#x2F;C++程序的测试</p>
+<p>目标应是该软件的最新版本</p>
+<p>AFL的fuzz途径：</p>
+<p>1、开源软件：AFL软件进行编译的同时进行插桩，效率相对于闭源软件来说更高</p>
+<p>2、闭源软件：使用AFL的QEMU mode对二进制文件进行插桩</p>
+<h3 id="使用："><a href="#使用：" class="headerlink" title="使用："></a>使用：</h3><p>构建语料库：</p>
+<p>AFL需要一些初始输入数据（种子文件）作为fuzzing的起点&#x3D;》</p>
+<p>这些输入可以是毫无意义的数据，AFL可以通过启发式算法自动确定文件格式机构&#x3D;&#x3D;》</p>
+<p><strong>选择输入文件</strong>：有效的输入和尽量小的体积</p>
+<p><strong>寻找文件</strong>：使用项目自身提供的测试用例，目标程序bug提交页面，使用格式转换器，用从现有的文件格式生成一些不容易找到的文件格式，afl源码的testcases目录下提供了一些测试用例</p>
+<p>其他开源的语料库</p>
+<p><strong>修剪</strong>：网上寻找的一些大型语料库中往往包含大量文件&#x3D;&#x3D;》需要对其精简&#x3D;&#x3D;》</p>
+<p>该过程称为语料库蒸馏&#x3D;&#x3D;》AFL提供两个工具来帮助完成：afl-cmin和afl-tmin</p>
+<p>afl-cmin：移除执行相同代码的输入文件&#x3D;&#x3D;》</p>
+<p>核心：尝试找到与语料库全集具有相同覆盖范围的最小子集</p>
+<p>（多个文件，都覆盖了相同的代码，丢弃多余的文件）</p>
+<p>使用：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-cmin <span class="token parameter variable">-i</span> input_dir <span class="token parameter variable">-o</span> output_dir -- /path/to/tested/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span>
+
+<span class="token comment">#当需要从文件中获取输入==>使用@@代替被测试程序命令行中输入文件名的位置</span>
+<span class="token comment">#fuzzer会将其替换为实际执行的文件</span>
+afl-cmin <span class="token parameter variable">-i</span> input_dir <span class="token parameter variable">-o</span> output_dir -- /path/to/tested/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span> @@</code></pre>
+
+
+
+<p>afl-tmin：减小单个输入文件的大小&#x3D;&#x3D;》</p>
+<p>两种工作方式：</p>
+<p><strong>instrumented mode</strong>（默认）</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-tmin <span class="token parameter variable">-i</span> input_file <span class="token parameter variable">-o</span> output_file -- /path/to/tested/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span> @@</code></pre>
+
+<p><strong>crash mode</strong></p>
+<p>指定参数-x&#x3D;&#x3D;》会导致程序非正常退出的文件被直接剔除</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-tmin <span class="token parameter variable">-x</span> <span class="token parameter variable">-i</span> input_file <span class="token parameter variable">-o</span> output_file -- /path/to/tested/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span> @@</code></pre>
+
+
+
+
+
+<h2 id="目标构建："><a href="#目标构建：" class="headerlink" title="目标构建："></a>目标构建：</h2><p>1、afl-gcc模式：</p>
+<p>afl-gcc&#x2F;afl-g++作为gcc&#x2F;g++的wrapper，它们的用法完全一样，前者会将接收到的参数传递给后者，我们编译程序时只需要将编译器设置为afl-gcc&#x2F;afl-g++</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./configure <span class="token assign-left variable">CC</span><span class="token operator">=</span><span class="token string">"afl-gcc"</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span><span class="token string">"afl-g++"</span></code></pre>
+
+<p>Fuzzing共享库：需要编写一个demo，将输入传递给要Fuzzing的库</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./configure --disable-shared <span class="token assign-left variable">CC</span><span class="token operator">=</span><span class="token string">"afl-gcc"</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span><span class="token string">"afl-g++"</span> </code></pre>
+
+<p>2、LLVM模式：</p>
+<p>LLVM mode模式编译程序可以获得更快的Fuzzing速度&#x3D;&#x3D;》</p>
+<p>进入llvm_mode目录进行编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> llvm_mode
+<span class="token function">sudo</span> <span class="token function">apt-get</span> clang
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">LLVM_CONFIG</span><span class="token operator">=</span><span class="token variable"><span class="token variable">`</span><span class="token function">which</span> llvm-config<span class="token variable">`</span></span> <span class="token operator">&amp;&amp;</span> <span class="token function">make</span> <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">cd</span> <span class="token punctuation">..</span>
+./configure --disable-shared <span class="token assign-left variable">CC</span><span class="token operator">=</span><span class="token string">"afl-clang-fast"</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span><span class="token string">"afl-clang-fast++"</span> </code></pre>
+
+
+
+<h2 id="Fuzzing："><a href="#Fuzzing：" class="headerlink" title="Fuzzing："></a>Fuzzing：</h2><h3 id="白盒测试："><a href="#白盒测试：" class="headerlink" title="白盒测试："></a>白盒测试：</h3><p><strong>测试插桩程序</strong>：</p>
+<p>编译好插桩程序后，使用afl-showmap跟踪单个输入的执行路径，并打印程序的输出，捕获的元组</p>
+<p>tuple用于获取分支信息，从而衡量程序的覆盖情况</p>
+<pre class="language-none"><code class="language-none">afl-showmap -m none -o &#x2F;dev&#x2F;null -- .&#x2F;build&#x2F;bin&#x2F;imagew 23.bmp out.png
+
+afl-showmap -m none -o &#x2F;dev&#x2F;null -- .&#x2F;build&#x2F;bin&#x2F;imagew 111.pgm out.png</code></pre>
+
+<p>使用不同的输入，正常情况下afl-showmap会捕获到不同二点tuples&#x3D;&#x3D;》说明插桩有效</p>
+<p><strong>执行Fuzzing</strong>：</p>
+<p>在执行afl-fuzz之前，如果系统配置为将核心转储文件（core）通知发送到外部程序&#x3D;&#x3D;》</p>
+<p>将导致将崩溃信息发送到Fuzzer之间的延迟增大&#x3D;&#x3D;》将崩溃误报为超时&#x3D;&#x3D;》</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">echo</span> core <span class="token operator">></span>/proc/sys/kernel/core_pattern</code></pre>
+
+<p>执行afl-fuzz：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-fuzz <span class="token parameter variable">-i</span> testcase_dir <span class="token parameter variable">-o</span> findings_dir /path/to/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span></code></pre>
+
+<p>可以使用@@替代输入文件，Fuzzer会将替换位实际执行的文件：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-fuzz <span class="token parameter variable">-i</span> testcase_dir <span class="token parameter variable">-o</span> findings_dir /path/to/program @@</code></pre>
+
+
+
+<h3 id="黑盒测试："><a href="#黑盒测试：" class="headerlink" title="黑盒测试："></a>黑盒测试：</h3><p>对没有源代码的程序进行测试&#x3D;&#x3D;&gt;使用AFL的QEMU模式&#x3D;&#x3D;》</p>
+<p>启用方式：与LLVM模式类似，先进行编译</p>
+<p>启动方式：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">afl-fuzz <span class="token parameter variable">-Q</span> <span class="token parameter variable">-i</span> testcase_dir <span class="token parameter variable">-o</span> findings_dir /path/to/program <span class="token punctuation">[</span>params<span class="token punctuation">]</span> @@</code></pre>
+
+
+
+<h3 id="并行测试："><a href="#并行测试：" class="headerlink" title="并行测试："></a>并行测试：</h3><p>查看核心数：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">cat</span> /proc/cpuinfo<span class="token operator">|</span> <span class="token function">grep</span> <span class="token string">"cpu cores"</span><span class="token operator">|</span> <span class="token function">uniq</span></code></pre>
+
+<p>afl&#x3D;fuzz并行Fuzzing，通过-M参数指定一个主Fuzzer，通过-S参数指定多个从Fuzzer</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">screen</span> afl-fuzz <span class="token parameter variable">-i</span> testcases/ <span class="token parameter variable">-o</span> sync_dir/ <span class="token parameter variable">-M</span> fuzzer1 -- ./program
+
+<span class="token function">screen</span> afl-fuzz <span class="token parameter variable">-i</span> testcases/ <span class="token parameter variable">-o</span> sync_dir/ <span class="token parameter variable">-S</span> fuzzer2 -- ./program
+
+<span class="token function">screen</span> afl-fuzz <span class="token parameter variable">-i</span> testcases/ <span class="token parameter variable">-o</span> sync_dir/ <span class="token parameter variable">-S</span> fuzzer3 -- ./program</code></pre>
+
+<p>两种类型的Fuzzer执行不同的Fuzzing策略</p>
+<p>-M执行确定性测试&#x3D;&#x3D;》对输入文件进行一些特殊而非随机的变异</p>
+<p>-S进行完全随机的变异</p>
+<p>命令中使用-o指定的是一个同步目录，并行测试中，所有的Fuzzer将相互协作，在找到新的代码路径时，相互传递新的测试用例</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/04/27/AFL%E6%B3%A8%E9%87%8A/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-04-28 22:20:12
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Fuzz/" title="Fuzz">
+                        #Fuzz
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/05/01/Fuzzing-101/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#AFL%E6%80%BB%E7%BB%93"><span class="toc-text">AFL总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B%EF%BC%9A"><span class="toc-text">简介：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%EF%BC%9A"><span class="toc-text">工作流程：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="toc-text">相关概念：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E8%A6%86%E7%9B%96%E7%8E%87%EF%BC%9A"><span class="toc-text">代码覆盖率：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E5%9D%97-Basic-Block-%EF%BC%9A"><span class="toc-text">基本块(Basic Block)：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C-edge-%EF%BC%9A"><span class="toc-text">边界(edge)：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%83%E7%BB%84-tuple-%EF%BC%9A"><span class="toc-text">元组(tuple)：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E6%A1%A9%EF%BC%9A"><span class="toc-text">插桩：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E9%80%89%E6%8B%A9%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="toc-text">目标选择与使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E9%80%89%E6%8B%A9%EF%BC%9A"><span class="toc-text">目标选择：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%EF%BC%9A"><span class="toc-text">使用：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87%E6%9E%84%E5%BB%BA%EF%BC%9A"><span class="toc-text">目标构建：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fuzzing%EF%BC%9A"><span class="toc-text">Fuzzing：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%99%BD%E7%9B%92%E6%B5%8B%E8%AF%95%EF%BC%9A"><span class="toc-text">白盒测试：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%BB%91%E7%9B%92%E6%B5%8B%E8%AF%95%EF%BC%9A"><span class="toc-text">黑盒测试：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E6%B5%8B%E8%AF%95%EF%BC%9A"><span class="toc-text">并行测试：</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + AFL%E6%80%BB%E7%BB%93 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F04%2F28%2FAFL%25E6%2580%25BB%25E7%25BB%2593%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/04/28/AFL%E6%80%BB%E7%BB%93/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

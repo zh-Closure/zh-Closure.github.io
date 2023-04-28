@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      vps节点搭建 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">vps节点搭建</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-02-10 10:13:41
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="环境搭建">
+                    #环境搭建
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="vps节点搭建"><a href="#vps节点搭建" class="headerlink" title="vps节点搭建"></a>vps节点搭建</h1><h2 id="节点准备"><a href="#节点准备" class="headerlink" title="节点准备"></a>节点准备</h2><h3 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h3><p>注：以下产品购买或多或少都有优惠码（能薅就薅）</p>
+<p>vps购买：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">#搬瓦工
+https:&#x2F;&#x2F;bwh81.net
+#或者
+https:&#x2F;&#x2F;bandwagonhost.com
+
+#hostwinds
+https:&#x2F;&#x2F;clients.hostwinds.com
+
+#hostens
+https:&#x2F;&#x2F;billing.hostens.com</code></pre>
+
+
+
+<h3 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h3><p>采用V2ray</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;github.com&#x2F;v2ray&#x2F;v2ray-core</code></pre>
+
+<p>目前V2ray支持的功能：</p>
+<ul>
+<li>VMESS：最普通的V2ray服务器，无伪装</li>
+<li>VMESS+KCP：使用mKCP传输协议</li>
+<li>VMESS+TCP+TLS：带伪装的V2ray，不能通过CDN中转</li>
+<li>VMESS+WS+TLS（推荐使用）：通用的V2ray伪装方式，能通过CDN中转</li>
+<li>VLESS+KCP：使用mKCP传输协议</li>
+<li>VLESS+TCP+TLS：通用的VLESS，不能通过CDN中转，比VMESS+TCP+TLS方式性能更高</li>
+<li>VLESS+WS+TLS：基于websocket的V2ray伪装的VLESS，能通过CDN中转</li>
+<li>VLESS+TCP+XTLS：支持客户端较少</li>
+<li>Shadowsocks配置</li>
+</ul>
+<h2 id="搭建方式"><a href="#搭建方式" class="headerlink" title="搭建方式"></a>搭建方式</h2><h3 id="VMESS"><a href="#VMESS" class="headerlink" title="VMESS"></a>VMESS</h3><p><strong>服务端配置</strong>：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">bash</span> <span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token function">curl</span> <span class="token parameter variable">-s</span> <span class="token parameter variable">-L</span> https://git.io/v2ray.sh<span class="token punctuation">)</span>
+
+<span class="token number">1</span>
+<span class="token comment">#接下来默认回车</span>
+<span class="token comment">#最后确定回车</span>
+
+<span class="token comment">#获得V2ray配置信息</span></code></pre>
+
+<p><strong>客户端Vray配置</strong>：</p>
+<p>服务器&#x3D;&#x3D;》添加VMess服务器&#x3D;&#x3D;》将V2ray配置信息填入&#x3D;&#x3D;》确定&#x3D;&#x3D;》设为活动服务器</p>
+<h3 id="VMESS-WS-TLS（推荐使用）"><a href="#VMESS-WS-TLS（推荐使用）" class="headerlink" title="VMESS+WS+TLS（推荐使用）"></a>VMESS+WS+TLS（推荐使用）</h3><p><strong>域名购买</strong>：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;www.namesilo.com</code></pre>
+
+<p>域名购买后记得添加DNS解析（也可以在Cloudflare中进行DNS解析）：</p>
+<p>点击右上角Manage My Domains，进入管理域名&#x3D;&#x3D;》点击蓝色按钮进入DNS解析：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202302100157074.png"></p>
+<p>在Existing Resource Records（资源记录）栏进行修改：</p>
+<p>删除多余记录，随便留下一条记录，修改该记录：</p>
+<pre class="language-none"><code class="language-none">hostname：*  #泛解析
+ipv4 address：vps ip</code></pre>
+
+<p>再添加一条A记录：</p>
+<pre class="language-none"><code class="language-none">hostname：不填，留空
+ipv4 address：vps ip</code></pre>
+
+<p>注：DNS解析需要10-20分钟时间</p>
+<p>解析验证：</p>
+<p>cmd&#x3D;&#x3D;》ping 你的域名&#x3D;&#x3D;》解析为vps ip即正确</p>
+<p><strong>节点搭建</strong>：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#更新软件源</span>
+<span class="token function">apt</span> update
+<span class="token comment">#启用 BBR TCP 拥塞控制算法</span>
+<span class="token builtin class-name">echo</span> <span class="token string">"net.core.default_qdisc=fq"</span> <span class="token operator">>></span> /etc/sysctl.conf
+<span class="token builtin class-name">echo</span> <span class="token string">"net.ipv4.tcp_congestion_control=bbr"</span> <span class="token operator">>></span> /etc/sysctl.conf
+<span class="token function">sysctl</span> <span class="token parameter variable">-p</span>
+
+<span class="token comment">#安装x-ui：</span>
+<span class="token function">bash</span> <span class="token operator">&lt;</span><span class="token punctuation">(</span><span class="token function">curl</span> <span class="token parameter variable">-Ls</span> https://raw.githubusercontent.com/vaxilu/x-ui/master/install.sh<span class="token punctuation">)</span>
+<span class="token comment">#在x-ui安装中需要创建用户名，密码，端口号，需记住</span>
+
+<span class="token comment">#安装nginx</span>
+<span class="token function">apt</span> <span class="token function">install</span> nginx
+<span class="token comment">#安装acme：</span>
+<span class="token function">curl</span> https://get.acme.sh <span class="token operator">|</span> <span class="token function">sh</span>
+<span class="token comment">#添加软链接：</span>
+<span class="token function">ln</span> <span class="token parameter variable">-s</span>  /root/.acme.sh/acme.sh /usr/local/bin/acme.sh
+<span class="token comment">#切换CA机构： </span>
+acme.sh --set-default-ca <span class="token parameter variable">--server</span> letsencrypt
+<span class="token comment">#申请证书： </span>
+acme.sh  <span class="token parameter variable">--issue</span> <span class="token parameter variable">-d</span> 你的域名 <span class="token parameter variable">-k</span> ec-256 <span class="token parameter variable">--webroot</span>  /var/www/html
+<span class="token comment">#安装证书：</span>
+acme.sh --install-cert <span class="token parameter variable">-d</span> 你的域名 <span class="token parameter variable">--ecc</span> --key-file /etc/x-ui/server.key  --fullchain-file /etc/x-ui/server.crt <span class="token parameter variable">--reloadcmd</span> <span class="token string">"systemctl force-reload nginx"</span></code></pre>
+
+<p><strong>访问x-ui</strong>：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">域名:刚刚设置的端口</code></pre>
+
+<p>用户名与密码都为刚刚设置</p>
+<p>面板设置：</p>
+<p>1、系统状态&#x3D;&#x3D;》xray切换版本&#x3D;&#x3D;》换至最新版本</p>
+<p>2、入站列表&#x3D;&#x3D;》+&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">备注：自定义
+监听IP：127.0.0.1
+端口：10000   #端口可自定义，但是记得在下文的nginx配置文件中进行端口修改
+传输：ws
+路径：&#x2F;复制id至此处    #id很重要，可拿记事本之类记一下
+
+最后点击添加即可</code></pre>
+
+<p>3、面板设置&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">面板监听IP：127.0.0.1
+面板监听端口：为上文配置，不需要改变
+面板url根路径：&#x2F;id字符串-xui&#x2F;</code></pre>
+
+<p>&#x3D;&#x3D;》保存配置&#x3D;&#x3D;》重启面板&#x3D;&#x3D;》确认</p>
+<p>&#x3D;&#x3D;》此时x-ui面板将无法被正常访问到了</p>
+<p><strong>寻找伪装站点</strong>：</p>
+<pre class="language-none"><code class="language-none">#浏览器匹配（搜索）
+intext:登录 Cloudreve</code></pre>
+
+<p><strong>配置nginx</strong>：</p>
+<p>配置文件路径：&#x2F;etc&#x2F;nginx.conf</p>
+<p>将配置文件中内容修改为：</p>
+<pre class="language-nginx" data-language="nginx"><code class="language-nginx"><span class="token directive"><span class="token keyword">user</span> www-data</span><span class="token punctuation">;</span>
+<span class="token directive"><span class="token keyword">worker_processes</span> auto</span><span class="token punctuation">;</span>
+<span class="token directive"><span class="token keyword">pid</span> /run/nginx.pid</span><span class="token punctuation">;</span>
+<span class="token directive"><span class="token keyword">include</span> /etc/nginx/modules-enabled/*.conf</span><span class="token punctuation">;</span>
+
+<span class="token directive"><span class="token keyword">events</span></span> <span class="token punctuation">&#123;</span>
+    <span class="token directive"><span class="token keyword">worker_connections</span> <span class="token number">1024</span></span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token directive"><span class="token keyword">http</span></span> <span class="token punctuation">&#123;</span>
+    <span class="token directive"><span class="token keyword">sendfile</span> <span class="token boolean">on</span></span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">tcp_nopush</span> <span class="token boolean">on</span></span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">tcp_nodelay</span> <span class="token boolean">on</span></span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">keepalive_timeout</span> <span class="token number">65</span></span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">types_hash_max_size</span> <span class="token number">2048</span></span><span class="token punctuation">;</span>
+
+    <span class="token directive"><span class="token keyword">include</span> /etc/nginx/mime.types</span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">default_type</span> application/octet-stream</span><span class="token punctuation">;</span>
+    <span class="token directive"><span class="token keyword">gzip</span> <span class="token boolean">on</span></span><span class="token punctuation">;</span>
+
+    <span class="token directive"><span class="token keyword">server</span></span> <span class="token punctuation">&#123;</span>
+        <span class="token directive"><span class="token keyword">listen</span> <span class="token number">443</span> ssl</span><span class="token punctuation">;</span>
+        
+        <span class="token directive"><span class="token keyword">server_name</span> nicename.co</span><span class="token punctuation">;</span>  <span class="token comment">#你的域名    								#需要修改</span>
+        <span class="token directive"><span class="token keyword">ssl_certificate</span>       /etc/x-ui/server.crt</span><span class="token punctuation">;</span>  <span class="token comment">#证书位置</span>
+        <span class="token directive"><span class="token keyword">ssl_certificate_key</span>   /etc/x-ui/server.key</span><span class="token punctuation">;</span> <span class="token comment">#私钥位置</span>
+        
+        <span class="token directive"><span class="token keyword">ssl_session_timeout</span> <span class="token number">1d</span></span><span class="token punctuation">;</span>
+        <span class="token directive"><span class="token keyword">ssl_session_cache</span> shared:MozSSL:10m</span><span class="token punctuation">;</span>
+        <span class="token directive"><span class="token keyword">ssl_session_tickets</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+        <span class="token directive"><span class="token keyword">ssl_protocols</span>    TLSv1.2 TLSv1.3</span><span class="token punctuation">;</span>
+        <span class="token directive"><span class="token keyword">ssl_prefer_server_ciphers</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+
+        <span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
+            <span class="token directive"><span class="token keyword">proxy_pass</span> https://bing.com</span><span class="token punctuation">;</span> <span class="token comment">#伪装网址                         #需要修改</span>
+            <span class="token directive"><span class="token keyword">proxy_redirect</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_ssl_server_name</span> <span class="token boolean">on</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">sub_filter_once</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">sub_filter</span> <span class="token string">"bing.com"</span> <span class="token variable">$server_name</span></span><span class="token punctuation">;</span>					<span class="token comment">#需要修改为伪装站点</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Host <span class="token string">"bing.com"</span></span><span class="token punctuation">;</span>					<span class="token comment">#需要修改为伪装站点</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Referer <span class="token variable">$http_referer</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> X-Real-IP <span class="token variable">$remote_addr</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> User-Agent <span class="token variable">$http_user_agent</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> X-Forwarded-For <span class="token variable">$proxy_add_x_forwarded_for</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> X-Forwarded-Proto https</span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Accept-Encoding <span class="token string">""</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Accept-Language <span class="token string">"zh-CN"</span></span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+
+
+        <span class="token directive"><span class="token keyword">location</span> /ray</span> <span class="token punctuation">&#123;</span>   <span class="token comment">#分流路径                                  #需要将ray修改为x-ui中的id</span>
+            <span class="token directive"><span class="token keyword">proxy_redirect</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_pass</span> http://127.0.0.1:10000</span><span class="token punctuation">;</span> <span class="token comment">#Xray端口</span>
+            <span class="token directive"><span class="token keyword">proxy_http_version</span> 1.1</span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Upgrade <span class="token variable">$http_upgrade</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Connection <span class="token string">"upgrade"</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Host <span class="token variable">$host</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> X-Real-IP <span class="token variable">$remote_addr</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> X-Forwarded-For <span class="token variable">$proxy_add_x_forwarded_for</span></span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        
+        <span class="token directive"><span class="token keyword">location</span> /xui</span> <span class="token punctuation">&#123;</span>   <span class="token comment">#xui路径</span>
+            <span class="token directive"><span class="token keyword">proxy_redirect</span> <span class="token boolean">off</span></span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_pass</span> http://127.0.0.1:9999</span><span class="token punctuation">;</span>  <span class="token comment">#xui监听端口</span>
+            <span class="token directive"><span class="token keyword">proxy_http_version</span> 1.1</span><span class="token punctuation">;</span>
+            <span class="token directive"><span class="token keyword">proxy_set_header</span> Host <span class="token variable">$host</span></span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token directive"><span class="token keyword">server</span></span> <span class="token punctuation">&#123;</span>
+        <span class="token directive"><span class="token keyword">listen</span> <span class="token number">80</span></span><span class="token punctuation">;</span>
+        <span class="token directive"><span class="token keyword">location</span> /.well-known/</span> <span class="token punctuation">&#123;</span>
+               <span class="token directive"><span class="token keyword">root</span> /var/www/html</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token directive"><span class="token keyword">location</span> /</span> <span class="token punctuation">&#123;</span>
+                <span class="token directive"><span class="token keyword">rewrite</span> ^(.*)$ https://<span class="token variable">$host</span><span class="token variable">$1</span> permanent</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>最后重新加载配置文件即可</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">systemctl raload nginx</code></pre>
+
+
+
+<p><strong>验证服务端</strong>：</p>
+<p>访问x-ui面板：</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;域名&#x2F;id-xui</code></pre>
+
+<p>使用用户名与密码成功登陆</p>
+<p>直接访问你的域名，将会跳转至伪装站点</p>
+<p><strong>配置客户端V2ray</strong>：</p>
+<p>访问x-ui面板&#x3D;&#x3D;》入站列表&#x3D;&#x3D;》进度条右拉，查看&#x3D;&#x3D;》复制链接</p>
+<p>打开V2ray客户端&#x3D;&#x3D;》服务器&#x3D;&#x3D;》从剪切板导入服务器&#x3D;&#x3D;》修改导入的节点信息：</p>
+<pre class="language-none"><code class="language-none">地址：域名
+端口：443
+加密方式：zero
+传输层安全：tls</code></pre>
+
+<p>&#x3D;&#x3D;》确定</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》完成节点搭建</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/12/24/DNS%E6%BC%8F%E6%B4%9E%E5%88%9D%E6%8E%A2/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-02-10 10:13:41
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="环境搭建">
+                        #环境搭建
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2023/04/03/C-%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#vps%E8%8A%82%E7%82%B9%E6%90%AD%E5%BB%BA"><span class="toc-text">vps节点搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%87%86%E5%A4%87"><span class="toc-text">节点准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-text">服务端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-text">客户端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%AD%E5%BB%BA%E6%96%B9%E5%BC%8F"><span class="toc-text">搭建方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VMESS"><span class="toc-text">VMESS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VMESS-WS-TLS%EF%BC%88%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A8%EF%BC%89"><span class="toc-text">VMESS+WS+TLS（推荐使用）</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + vps%E8%8A%82%E7%82%B9%E6%90%AD%E5%BB%BA + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F02%2F10%2Fvps%25E8%258A%2582%25E7%2582%25B9%25E6%2590%25AD%25E5%25BB%25BA%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/02/10/vps%E8%8A%82%E7%82%B9%E6%90%AD%E5%BB%BA/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

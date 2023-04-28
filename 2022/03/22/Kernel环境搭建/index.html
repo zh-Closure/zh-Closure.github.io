@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Kernel环境搭建 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Kernel环境搭建</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2022-03-22 07:35:57
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="环境搭建">
+                    #环境搭建
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Kernel环境搭建"><a href="#Kernel环境搭建" class="headerlink" title="Kernel环境搭建"></a>Kernel环境搭建</h1><h2 id="内核下载与编译"><a href="#内核下载与编译" class="headerlink" title="内核下载与编译"></a>内核下载与编译</h2><h4 id="Linux-5-4-98下载"><a href="#Linux-5-4-98下载" class="headerlink" title="Linux-5.4.98下载"></a>Linux-5.4.98下载</h4><pre class="language-none"><code class="language-none">curl -O -L https:&#x2F;&#x2F;mirrors.tuna.tsinghua.edu.cn&#x2F;kernel&#x2F;v5.x&#x2F;linux-5.4.98.tar.xz
+
+unxz linux-5.4.98.tar.xz</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323141515024.png"></p>
+<p><strong>验证内核签名</strong></p>
+<p>防止内核被恶意修改</p>
+<pre class="language-none"><code class="language-none">curl -O -L https:&#x2F;&#x2F;mirrors.tuna.tsinghua.edu.cn&#x2F;kernel&#x2F;v5.x&#x2F;linux-5.4.98.tar.sign
+
+gpg --verify linux-5.4.98.tar.sign</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323141547747.png"></p>
+<p><strong>使用相应的公钥验证签名</strong></p>
+<p>下载对应内核个版本发布者的公钥</p>
+<pre class="language-none"><code class="language-none">gpg --locate-keys torvalds@kernel.org gregkh@kernel.org</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323141851610.png"></p>
+<p>导入torvalds的公钥</p>
+<pre class="language-none"><code class="language-none">gpg --verify linux-5.4.98.tar.sign</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323141912402.png"></p>
+<p>消除警告：选择使用TOFU信任对应的密钥</p>
+<pre class="language-none"><code class="language-none">gpg --tofu-policy good 647F28654894E3BD457199BE38DBBDC86092693E
+
+gpg --trust-model tofu --verify linux-5.4.98.tar.sign</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323141928232.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323142101944.png"></p>
+<p>解压压缩包得到内核源码</p>
+<pre class="language-none"><code class="language-none">tar -xf linux-5.4.98.tar</code></pre>
+
+
+
+<h4 id="Linux-5-4-98编译"><a href="#Linux-5-4-98编译" class="headerlink" title="Linux-5.4.98编译"></a>Linux-5.4.98编译</h4><p>编译选项配置</p>
+<pre class="language-none"><code class="language-none">make menuconfig</code></pre>
+
+<p>选择：Kernel hacking&#x3D;&#x3D;》Compile-time checks and compiler options&#x3D;&#x3D;》</p>
+<p>勾选Compile the kernel with debug info用于调试（默认已勾选）</p>
+<p>编译内核</p>
+<pre class="language-none"><code class="language-none">sudo -s
+
+make bzImage -j4</code></pre>
+
+<p>出现报错</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323142548585.png"></p>
+<p>解决</p>
+<pre class="language-none"><code class="language-none">sudo vim .config
+
+\\修改为
+CONFIG_SYSTEM_TRUSTED_KEYS&#x3D;&quot;&quot;
+CONFIG_SYSTEM_REVOCATION_KEYS&#x3D;&quot;&quot;</code></pre>
+
+
+
+<p>编译成功：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220323220248875.png"></p>
+<h3 id="内核常见文件："><a href="#内核常见文件：" class="headerlink" title="内核常见文件："></a>内核常见文件：</h3><p><strong>bzImage</strong>：目前主流的kernel镜像格式&#x3D;&#x3D;》big zImage&#x3D;&#x3D;》适用于大于512kb的kernel</p>
+<p>该镜像会被加载至内存的高地址，高于1MB</p>
+<p>bzImage使用gzip压缩，文件的开头部分有gzip解压缩的代码&#x3D;&#x3D;》不能使用gunzip解压缩</p>
+<p>文件目录：arch&#x2F;x86&#x2F;boot&#x2F;bzImage</p>
+<p><strong>zImage</strong>：比较老的kernel镜像格式，适用于不大于512kb的kernel</p>
+<p>这个镜像会被加载至内存的低地，内存的前640kb</p>
+<p>不能使用gunzip解压缩</p>
+<p><strong>vmlinuz</strong>：包含压缩后的vmlinux，还包含gzip解压缩的代码（zImage或者bzImage文件）</p>
+<p>该文件是bootable&#x3D;&#x3D;》</p>
+<p>bootable：它能够把内核加载至内存中，对于Linux来说，该文件位于&#x2F;boot目录下</p>
+<p>该目录包含了启动系统时所需要的文件</p>
+<p><strong>vmlinux</strong>：静态链接的Linux kernel，以可执行文件的形式存在，未经过压缩</p>
+<p>该文件为再生成vmlinuz的过程中产生&#x3D;&#x3D;》适合于调试，不是bootable的</p>
+<p><strong>vmlinux.bin</strong>：静态链接的Linux kernel，只是一个可启动的(bootable)二进制文件</p>
+<p>所有的符号信息和重定位信息都被删除</p>
+<p>生成命令：</p>
+<pre class="language-none"><code class="language-none">objcopy -O binary vmlinux vmlinux.bin</code></pre>
+
+
+
+<p><strong>uImage</strong>：是U-boot专用的镜像文件，它是在zImage之前加上一个长度为0x40的tag构成</p>
+<p>tag&#x3D;&#x3D;》说明这个镜像文件的类型，加载的位置，生成时间，大小等信息</p>
+<h2 id="下载编译busybox"><a href="#下载编译busybox" class="headerlink" title="下载编译busybox"></a>下载编译busybox</h2><h4 id="busybox下载"><a href="#busybox下载" class="headerlink" title="busybox下载"></a>busybox下载</h4><pre class="language-none"><code class="language-none">wget https:&#x2F;&#x2F;busybox.net&#x2F;downloads&#x2F;busybox-1.32.1.tar.bz2
+
+tar -jxf busybox-1.32.1.tar.bz2</code></pre>
+
+<h4 id="busybox编译"><a href="#busybox编译" class="headerlink" title="busybox编译"></a>busybox编译</h4><p>配置编译参数</p>
+<pre class="language-none"><code class="language-none">make menuconfig</code></pre>
+
+<p>Setttings&#x3D;&#x3D;》选中Build static binary (no shared libs) busybox编译为静态文件</p>
+<p>&#x3D;&#x3D;》Linux System Utilities&#x3D;&#x3D;》取消Support mounting NFS file systems on Linux &lt; 2.6.23(NEW)</p>
+<p>&#x3D;&#x3D;》Networking Utilities&#x3D;&#x3D;》取消inetd</p>
+<p>编译</p>
+<pre class="language-none"><code class="language-none">make -j4</code></pre>
+
+
+
+<h3 id="配置文件系统"><a href="#配置文件系统" class="headerlink" title="配置文件系统"></a>配置文件系统</h3><p>使用busybox创建_install目录</p>
+<pre class="language-none"><code class="language-none">make install</code></pre>
+
+<p>编译完成后，进入_install目录，创建文件夹</p>
+<pre class="language-none"><code class="language-none">cd _install
+mkdir -pv &#123;bin,sbin,etc,proc,sys,home,lib64,lib&#x2F;x86_64-linux-gnu,usr&#x2F;&#123;bin,sbin&#125;&#125;
+touch etc&#x2F;inittab
+mkdir etc&#x2F;init.d
+touch etc&#x2F;init.d&#x2F;rcS
+chmod +x .&#x2F;etc&#x2F;init.d&#x2F;rcS</code></pre>
+
+<p>配置初始化脚本</p>
+<p>首先配置etc&#x2F;inttab，指定系统初始化脚本</p>
+<pre class="language-none"><code class="language-none">::sysinit:&#x2F;etc&#x2F;init.d&#x2F;rcS
+::askfirst:&#x2F;bin&#x2F;ash
+::ctrlaltdel:&#x2F;sbin&#x2F;reboot
+::shutdown:&#x2F;sbin&#x2F;swapoff -a
+::shutdown:&#x2F;bin&#x2F;umount -a -r
+::restart:&#x2F;sbin&#x2F;init</code></pre>
+
+<p>配置etc&#x2F;init.d&#x2F;rcS，配置目录的挂载</p>
+<pre class="language-none"><code class="language-none">#!&#x2F;bin&#x2F;sh
+mount -t proc none &#x2F;proc
+mount -t sys none &#x2F;sys
+&#x2F;bin&#x2F;mount -n -t sysfs none &#x2F;sys
+&#x2F;bin&#x2F;mount -t ramfs none &#x2F;dev
+&#x2F;sbin&#x2F;mdev -s</code></pre>
+
+<p>也可以在根目录下创建init</p>
+<pre class="language-none"><code class="language-none">#!&#x2F;bin&#x2F;sh
+
+mount -t proc none &#x2F;proc
+mount -t sysfs none &#x2F;sys
+mount -t devtmpfs devtmpfs &#x2F;dev
+
+exec 0&lt;&#x2F;dev&#x2F;console
+exec 1&gt;&#x2F;dev&#x2F;console
+exec 2&gt;&#x2F;dev&#x2F;console
+
+echo -e &quot;\nBoot took $(cut -d&#39; &#39; -f1 &#x2F;proc&#x2F;uptime) seconds\n&quot;
+setsid cttyhack setuidgid 1000 sh
+
+umount &#x2F;proc
+umount &#x2F;sys
+poweroff -d 0  -f</code></pre>
+
+<pre class="language-none"><code class="language-none">chmod +x .&#x2F;init</code></pre>
+
+
+
+<p>配置用户组，创建两个用户组root和ctf，两个用户root和ctf</p>
+<pre class="language-none"><code class="language-none">echo &quot;root:x:0:0:root:&#x2F;root:&#x2F;bin&#x2F;sh&quot; &gt; etc&#x2F;passwd
+echo &quot;ctf:x:1000:1000:ctf:&#x2F;home&#x2F;ctf:&#x2F;bin&#x2F;sh&quot; &gt;&gt; etc&#x2F;passwd
+echo &quot;root:x:0:&quot; &gt; etc&#x2F;group
+echo &quot;ctf:x:1000:&quot; &gt;&gt; etc&#x2F;group
+echo &quot;none &#x2F;dev&#x2F;pts devpts gid&#x3D;5,mode&#x3D;620 0 0&quot; &gt; etc&#x2F;fstab</code></pre>
+
+
+
+<p>打包文件系统为镜像文件</p>
+<pre class="language-none"><code class="language-none">find . | cpio -o --format&#x3D;newc &gt; ..&#x2F;..&#x2F;rootfs.cpio
+\\或者
+find . | cpio -o -H newc &gt; ..&#x2F;core.cpio</code></pre>
+
+<p>若后续需要向文件系统中添加其他文件，可以选择在_install文件夹中添加（不推荐）</p>
+<p>也可以解压文件系统镜像后添加文件再重新打包</p>
+<pre class="language-none"><code class="language-none">\\解压磁盘镜像
+cpio -idv &lt; .&#x2F;rootfs.cpio
+
+\\打包文件镜像
+find . | cpio -o --format&#x3D;newc &gt; ..&#x2F;new_rootfs.cpio</code></pre>
+
+
+
+<h2 id="使用qemu运行内核"><a href="#使用qemu运行内核" class="headerlink" title="使用qemu运行内核"></a>使用qemu运行内核</h2><p>1、将bzImage和rootfs.cpio复制到同一个目录下</p>
+<p>2、编写启动脚本</p>
+<pre class="language-none"><code class="language-none">vim boot.sh</code></pre>
+
+<pre class="language-none"><code class="language-none">#!&#x2F;bin&#x2F;sh
+qemu-system-x86_64 \
+    -m 128M \
+    -kernel .&#x2F;bzImage \
+    -initrd  .&#x2F;rootfs.cpio \
+    -monitor &#x2F;dev&#x2F;null \
+    -append &quot;root&#x3D;&#x2F;dev&#x2F;ram rdinit&#x3D;&#x2F;sbin&#x2F;init console&#x3D;ttyS0 oops&#x3D;panic panic&#x3D;1 loglevel&#x3D;3 quiet nokaslr&quot; \
+    -cpu kvm64,+smep \
+    -smp cores&#x3D;2,threads&#x3D;1 \
+    -netdev user,id&#x3D;t0, -device e1000,netdev&#x3D;t0,id&#x3D;nic0 \
+    -nographic \
+    -s</code></pre>
+
+
+
+<p>参数说明：</p>
+<pre class="language-none"><code class="language-none">-m：虚拟机内存大小
+-kernel：内存镜像路径
+-initrd：磁盘镜像路径
+-append：附加参数
+nokalsr：关闭内核地址随机化，方便调试
+rdinit：指定初始启动进程,&#x2F;sbin&#x2F;init进程默认以&#x2F;etc&#x2F;init.d&#x2F;rcS作为启动脚本
+loglevel&#x3D;3&amp;quiet:不输出log
+consolve&#x3D;tty50：指定终端为&#x2F;dev&#x2F;tty50,启动就能进入终端界面
+-monitor：将监视器重定向到主机设备&#x2F;dev&#x2F;null&#x3D;&#x3D;&gt;防止CTF被人偷了qemu拿flag
+-cpu：设置CPU安全选项，在这里开启了smep保护
+-s：相当于-gdb tcp::1234简写，可以通过gdb连接本地端口进行调试</code></pre>
+
+
+
+<p>运行boot.sh,启动</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220324165520034.png"></p>
+<h2 id="编译内核模块"><a href="#编译内核模块" class="headerlink" title="编译内核模块"></a>编译内核模块</h2><p>在载入&#x2F;卸载时通过printk()在内核缓冲区进行输出</p>
+<pre class="language-none"><code class="language-none">#include &lt;linux&#x2F;module.h&gt;
+#include &lt;linux&#x2F;kernel.h&gt;
+#include &lt;linux&#x2F;init.h&gt;
+
+static int __init kernel_module_init(void)
+&#123;
+    printk(&quot;&lt;1&gt;Hello the Linux kernel world!\n&quot;);
+    return 0;
+&#125;
+
+static void __exit kernel_module_exit(void)
+&#123;
+    printk(&quot;&lt;1&gt;Good bye the Linux kernel world! See you again!\n&quot;);
+&#125;
+
+module_init(kernel_module_init);
+module_exit(kernel_module_exit);
+MODULE_LICENSE(&quot;GPL&quot;);
+MODULE_AUTHOR(&quot;arttnba3&quot;);</code></pre>
+
+<h4 id="头文件介绍"><a href="#头文件介绍" class="headerlink" title="头文件介绍"></a>头文件介绍</h4><p>linux&#x2F;module.h：对于LKM是一个必须的头文件</p>
+<p>linux&#x2F;kernel,h：载入内核相关信息</p>
+<p>linux&#x2F;init.h：包含一些有用的宏</p>
+<p><strong>入口点&#x2F;出口点：</strong></p>
+<p>内核模块的入口在module_init()，出口在module_exit()</p>
+<p>在内核载入&#x2F;卸载内核模块时调用这两个函数</p>
+<h4 id="编译内核模块-1"><a href="#编译内核模块-1" class="headerlink" title="编译内核模块"></a>编译内核模块</h4><p>Makefile</p>
+<p>本地：</p>
+<pre class="language-none"><code class="language-none">obj-m +&#x3D; clo.o
+CURRENT_PATH :&#x3D; $(shell pwd)
+LINUX_KERNEL :&#x3D; $(shell uname -r)
+LINUX_KERNEL_PATH :&#x3D; &#x2F;usr&#x2F;src&#x2F;linux-headers-$(LINUX_KERNEL)
+all:
+	make -C $(LINUX_KERNEL_PATH) M&#x3D;$(CURRENT_PATH) modules
+clean:
+	make -C $(LINUX_KERNEL_PATH) M&#x3D;$(CURRENT_PATH) clean</code></pre>
+
+<p>&#x2F;&#x2F;模拟kernel</p>
+<pre class="language-none"><code class="language-none">obj-m +&#x3D; clo.o
+
+KDIR &#x3D;&#x2F;home&#x2F;closure&#x2F;kernel&#x2F;linux-5.4.98
+
+all:
+    $(MAKE) -C $(KDIR) M&#x3D;$(PWD) modules
+
+clean:
+    rm -rf *.o *.ko *.mod.* *.symvers *.order</code></pre>
+
+
+
+<p><strong>Makefile简介：</strong></p>
+<p><strong>obj-m：</strong>指定编译的结果为.ko文件&#x3D;&#x3D;》可装载内核模块</p>
+<p><strong>CURRENT_PATH &amp; LINUX_KERNEL &amp; LINUX_KERNEL_PATH：</strong></p>
+<p>三个自定义变量&#x3D;&#x3D;》</p>
+<p>通过shell命令获得当前路径，内核版本，内核源码路径</p>
+<p><strong>KDIR：</strong>标识内核源码目录，提供驱动编译所需要的环境</p>
+<p><strong>all：</strong>编译指令</p>
+<p><strong>clean：</strong>清理指令</p>
+<h5 id="编译："><a href="#编译：" class="headerlink" title="编译："></a>编译：</h5><pre class="language-none"><code class="language-none">make</code></pre>
+
+<p>编译成功：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220324205133824.png"></p>
+<h5 id="测试内核模块："><a href="#测试内核模块：" class="headerlink" title="测试内核模块："></a>测试内核模块：</h5><pre class="language-none"><code class="language-none">sudo insmod clo.ko
+sudo rmmod clo
+dmesg</code></pre>
+
+<p>本地实现：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220324204935659.png"></p>
+<p>模拟实现：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/image-20220324205644577.png"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2022/03/20/AFL++-%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2022-03-22 07:35:57
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="环境搭建">
+                        #环境搭建
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2022/03/23/Kernel%E5%88%A9%E7%94%A8/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Kernel%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-text">Kernel环境搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E4%B8%8B%E8%BD%BD%E4%B8%8E%E7%BC%96%E8%AF%91"><span class="toc-text">内核下载与编译</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux-5-4-98%E4%B8%8B%E8%BD%BD"><span class="toc-text">Linux-5.4.98下载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux-5-4-98%E7%BC%96%E8%AF%91"><span class="toc-text">Linux-5.4.98编译</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E5%B8%B8%E8%A7%81%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="toc-text">内核常见文件：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E7%BC%96%E8%AF%91busybox"><span class="toc-text">下载编译busybox</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#busybox%E4%B8%8B%E8%BD%BD"><span class="toc-text">busybox下载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#busybox%E7%BC%96%E8%AF%91"><span class="toc-text">busybox编译</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-text">配置文件系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8qemu%E8%BF%90%E8%A1%8C%E5%86%85%E6%A0%B8"><span class="toc-text">使用qemu运行内核</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97"><span class="toc-text">编译内核模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%B4%E6%96%87%E4%BB%B6%E4%BB%8B%E7%BB%8D"><span class="toc-text">头文件介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97-1"><span class="toc-text">编译内核模块</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%EF%BC%9A"><span class="toc-text">编译：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%9A"><span class="toc-text">测试内核模块：</span></a></li></ol></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Kernel%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F22%2FKernel%25E7%258E%25AF%25E5%25A2%2583%25E6%2590%25AD%25E5%25BB%25BA%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/22/Kernel%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
