@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Android逆向(一) 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Android逆向(一)</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-05-07 20:39:37
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Android%E9%80%86%E5%90%91/" title="Android逆向">
+                    #Android逆向
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Android-RE"><a href="#Android-RE" class="headerlink" title="Android RE"></a>Android RE</h1><h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="模拟器"><a href="#模拟器" class="headerlink" title="模拟器"></a>模拟器</h3><p>雷电9模拟器：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.ldmnq.com&#x2F;</code></pre>
+
+<p>开启Root，开启System.vmdk可写入，配置ADB至环境变量（后续在进行动态调试时用到）</p>
+<h3 id="Android工具清单"><a href="#Android工具清单" class="headerlink" title="Android工具清单"></a>Android工具清单</h3><pre class="language-none"><code class="language-none">阿里云盘：
+https:&#x2F;&#x2F;www.aliyundrive.com&#x2F;s&#x2F;JTSiQ7fpS78
+
+密码：3b2j</code></pre>
+
+<p>Magisk：</p>
+<p>功能：</p>
+<ul>
+<li>MagiskSU：为应用程序提供<strong>root访问权限</strong></li>
+<li>Magisk模块：通过模块修改只读分区</li>
+<li>MagiskHide：从根&#x2F;系统完整性检查中隐藏 Magisk(Shamiko)</li>
+<li>MagiskBoot：最完整的安卓启动镜像解包和重新打包工具</li>
+</ul>
+<p>LSPosed：一个是在Magisk中安装的模块，一个是该模块的寄生程序</p>
+<p>开发者助手：用于定位（弹窗，字符串，图片等资源）</p>
+<p>开发助手：用于定位（弹窗，字符串，图片等资源），更好用一点</p>
+<p>MT管理器：对APK进行处理</p>
+<p>NP管理器：对APK进行处理</p>
+<p>Smali语法查询</p>
+<p>核心破解：签名相关</p>
+<p>XAppDebug：动态调试</p>
+<p>Jdk：用于给Jeb提供JAVA环境</p>
+<p>Jadx-gui：反编译等</p>
+<p>Jeb：反编译，动态调试等</p>
+<p>算法助手：Hook，拦截日志等</p>
+<p>platform-tools：其他版本的ADB</p>
+<p>日志插桩.dex</p>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="APK"><a href="#APK" class="headerlink" title="APK"></a>APK</h3><p>Android Package，相当于一个压缩文件，只需将apk后缀改为zip即可解压</p>
+<p>APK<strong>文件结构</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>assets目录</td>
+<td>存放静态资源文件，例：视频，音频，图片等</td>
+</tr>
+<tr>
+<td>lib目录</td>
+<td>armeabi-v7a基本通用所有android设备，arm64-v8a只适用于64位的android设备，x86常见用于android模拟器，其目录下的.so文件是c或c++编译的动态链接库文件</td>
+</tr>
+<tr>
+<td>META-INF目录</td>
+<td>保存应用的签名信息，签名信息可以验证APK文件的完整性（验证文件是否被修改）</td>
+</tr>
+<tr>
+<td>res目录</td>
+<td>存放资源文件，包括图片，字符串等</td>
+</tr>
+<tr>
+<td>AndroidManifest.xml</td>
+<td>APK的应用清单信息，它描述了应用的名字，版本，权限，引用的库文件等</td>
+</tr>
+<tr>
+<td>classes.dex</td>
+<td>是java源码编译后生成的java字节码文件，APK运行的主要逻辑</td>
+</tr>
+<tr>
+<td>resources.arsc</td>
+<td>是编译后的二进制资源文件，它是一个映射表，映射着资源和id，通过R文件中的id就可以找到对应的资源</td>
+</tr>
+</tbody></table>
+<p>APP在<strong>开发时的工程结构</strong>：</p>
+<p>manifests：只有一个XML文件，<strong>AndroidManifest.xml</strong>，为App的运行配置文件</p>
+<p>java：3个com.example.myapp包，第一个包存放当前模块java源码，后两个存放测试使用的java代码</p>
+<p>res：存放当前模块的资源文件，之下又有4个子目录：</p>
+<p>​	drawable：存放图形描述文件与图片文件</p>
+<p>​	layout：存放App页面的布局文件</p>
+<p>​	mipmap：存放App的启动图标</p>
+<p>​	values：存放常量定义文件，例：字符串常量strings.xml，像素常量dimens.xml，颜色常量colors.xml</p>
+<p>Gradle Scripts：<strong>Gradle ：自动化构建工具</strong></p>
+<p>build.gradle：分为<strong>项目级和模块级</strong>，用于描述App工程的编译规则</p>
+<p>proguard-rules.pro：描述java代码的混淆规则 </p>
+<p>gradle.properties：配置编译工程的命令行参数，一般无须改动</p>
+<p>settings.gradle：配置了需要编译哪些模块，初始内容为include “.app”，表示只编译app模块</p>
+<p>local.properties：本地配置文件，在工程编译时自动生成，用于描述开发者电脑的环境配置，包括SDK本地路径等</p>
+<p><strong>模块级</strong>：</p>
+<pre class="language-java" data-language="java"><code class="language-java">android <span class="token punctuation">&#123;</span>
+    namespace 'com<span class="token punctuation">.</span>example<span class="token punctuation">.</span>closureapp'
+    <span class="token comment">//指定编译使用的SDK版本号</span>
+    compileSdk <span class="token number">32</span>
+
+    defaultConfig <span class="token punctuation">&#123;</span>
+        <span class="token comment">//指定该模块的应用编号==》App报名</span>
+        applicationId <span class="token string">"com.example.closureapp"</span>
+        <span class="token comment">//指定App适合运行的最小SDK版本号    </span>
+        minSdk <span class="token number">28</span>
+        <span class="token comment">//指定目标设备的SDK版本号    </span>
+        targetSdk <span class="token number">32</span>
+        <span class="token comment">//指定App应用版本号    </span>
+        versionCode <span class="token number">1</span>
+        <span class="token comment">//指定App的应用版本名称    </span>
+        versionName <span class="token string">"1.0"</span>
+
+        testInstrumentationRunner <span class="token string">"androidx.test.runner.AndroidJUnitRunner"</span>
+    <span class="token punctuation">&#125;</span>
+
+    buildTypes <span class="token punctuation">&#123;</span>
+        release <span class="token punctuation">&#123;</span>
+            minifyEnabled <span class="token boolean">false</span>
+            proguardFiles <span class="token function">getDefaultProguardFile</span><span class="token punctuation">(</span>'proguard<span class="token operator">-</span>android<span class="token operator">-</span>optimize<span class="token punctuation">.</span>txt<span class="token char">'), '</span>proguard<span class="token operator">-</span>rules<span class="token punctuation">.</span>pro'
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    compileOptions <span class="token punctuation">&#123;</span>
+        sourceCompatibility <span class="token class-name">JavaVersion</span><span class="token punctuation">.</span><span class="token constant">VERSION_1_8</span>
+        targetCompatibility <span class="token class-name">JavaVersion</span><span class="token punctuation">.</span><span class="token constant">VERSION_1_8</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//依赖</span>
+dependencies <span class="token punctuation">&#123;</span>
+
+    implementation 'androidx<span class="token punctuation">.</span>appcompat<span class="token operator">:</span>appcompat<span class="token operator">:</span><span class="token number">1.4</span><span class="token number">.1</span>'
+    implementation 'com<span class="token punctuation">.</span>google<span class="token punctuation">.</span>android<span class="token punctuation">.</span>material<span class="token operator">:</span>material<span class="token operator">:</span><span class="token number">1.5</span><span class="token number">.0</span>'
+    implementation 'androidx<span class="token punctuation">.</span>constraintlayout<span class="token operator">:</span>constraintlayout<span class="token operator">:</span><span class="token number">2.1</span><span class="token number">.3</span>'
+    testImplementation 'junit<span class="token operator">:</span>junit<span class="token operator">:</span><span class="token number">4.13</span><span class="token number">.2</span>'
+    androidTestImplementation 'androidx<span class="token punctuation">.</span>test<span class="token punctuation">.</span>ext<span class="token operator">:</span>junit<span class="token operator">:</span><span class="token number">1.1</span><span class="token number">.3</span>'
+    androidTestImplementation 'androidx<span class="token punctuation">.</span>test<span class="token punctuation">.</span>espresso<span class="token operator">:</span>espresso<span class="token operator">-</span>core<span class="token operator">:</span><span class="token number">3.4</span><span class="token number">.0</span>'
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h3 id="双开及其原理"><a href="#双开及其原理" class="headerlink" title="双开及其原理"></a>双开及其原理</h3><p>双开：同时运行两个或多个相同的应用</p>
+<p>1、修改包名：生成两个数据存储路径</p>
+<p>2、修改Framework：针对有系统修改权限的厂商，例：小米自带多开</p>
+<p>3、通过虚拟化技术实现：使用虚拟Framework层，虚拟文件系统，模拟Android对组件的管理，虚拟应用进程管理等一整套虚拟技术，及那个APK复制一份到虚拟空间中运行</p>
+<p>4、以插件机制运行：利用反射替换，动态代理，hook了系统的大部分与system-server进程通讯的函数，欺骗系统认为只有一个apk在运行，瞒过插件让其认为自己已经安装，例：VirtualApp</p>
+<h3 id="汉化APK"><a href="#汉化APK" class="headerlink" title="汉化APK"></a>汉化APK</h3><p>汉化：对外文的软件资源进行读取，翻译，修改，回写等，使软件的菜单，对话框等界面显示为中文，而程序的内核和功能保持不变</p>
+<p>1、Arsc汉化</p>
+<p>2、Xml汉化</p>
+<p>3、Dex汉化</p>
+<p>APK中基本上所有的字符串都在arsc中</p>
+<h4 id="汉化实操"><a href="#汉化实操" class="headerlink" title="汉化实操"></a>汉化实操</h4><p> 1、提取应用安装包</p>
+<p>MT管理器（有些功能需要会员）</p>
+<p>左上角三条杠，选择安装包提取</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304071718659.png"></p>
+<p>选择目标应用</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109094.png" alt="image-20230405235856498"></p>
+<p>提取安装包</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109095.png" alt="image-20230405235911867"></p>
+<p>成功提取并保存至相应路径</p>
+<p>NP管理器</p>
+<p>右上角三条杠选择安装包提取</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109097.png"></p>
+<p>选择目标应用程序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109098.png"></p>
+<p>提取安装包</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109099.png"></p>
+<p>运行应用程序，进入第一关：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109100.png"></p>
+<p>对该页面进行汉化：</p>
+<p>首先尝试搜索字符串hello</p>
+<p>在MT管理器中定位至刚刚提取安装包所在的路径</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109101.png"></p>
+<p>进行查看</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109102.png"></p>
+<p>使用搜索功能</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109103.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109105.png"></p>
+<p>搜索结束</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109106.png"></p>
+<p>点击该文件，再次点击该文件选择反编译</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109107.png"></p>
+<p>成功反编译（需要登陆）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109108.png"></p>
+<p>修改，并保存</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109109.png"></p>
+<p>勾选自动签名并确定</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109110.png"></p>
+<p>回退至提取后的安装包所在的路径，点击安装包</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109111.png"></p>
+<p>发现签名不一致</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109112.png"></p>
+<p>选择先将应用程序卸载，再安装该汉化后的安装包</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109113.png" alt="image-20230406003209246"></p>
+<p>此时hello 52pojie已被成功替换，但是其中还有两句话没有翻译，其中一句还是看不懂的语言</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109115.png"></p>
+<p>使用开发者助手，成功启动后将会留下一个瓢虫的浮窗，回到应用，点击浮窗，并点击开始界面分析</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109116.png" alt="image-20230406003721223"></p>
+<p>点击不认识的语言，开发者工具将会提供该控件的属性</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109117.png" alt="image-20230406003817777"></p>
+<p>点击该text，选择复制，并回到MT管理器中搜索该句子</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109118.png"></p>
+<p>成功搜索，位于arsc中，选择翻译模式</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109119.png"></p>
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109120.png" alt="image-20230406004121675"></p>
+<p>成功获得该文件中的字符串</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109121.png"></p>
+<p>对其进行翻译</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109122.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109123.png" alt="image-20230406004419783"></p>
+<p>保存修改并退出，并且自动签名</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109124.png"></p>
+<p>再次选择安装该安装包</p>
+<p>此次签名和上一次修改后的签名是一致的，所以可以直接安装成功</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109125.png" alt="image-20230406004609063"></p>
+<p>再次运行程序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109126.png"></p>
+<p>第三句话同样使用开发者助手复制字符串，进行搜索</p>
+<p>位于dex文件中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109127.png"></p>
+<p>选择打开方式</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109128.png"></p>
+<p>使用搜索功能</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109129.png"></p>
+<p>点击搜索结果，跳转至相应位置</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109131.png"></p>
+<p>进行翻译修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109132.png"></p>
+<p>保存，自动修改签名，安装，运行，成功汉化</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109133.png"></p>
+<h3 id="AndroidManifest-xml"><a href="#AndroidManifest-xml" class="headerlink" title="AndroidManifest.xml"></a>AndroidManifest.xml</h3><p>是整个应用程序的信息描述文件，定义了应用程序中包含的Activity，Service，Content，provider和BroadcastReceiver组件信息；</p>
+<p>每个应用程序在根目录下必须包含一个AndroidManifest.xml文件，且文件名不能修改，它描述了package中暴露的组件，各自的实现类，各种能被处理的数据和启动位置</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>versionCode</td>
+<td>版本号，用来更新</td>
+</tr>
+<tr>
+<td>versionName</td>
+<td>版本号，用户看</td>
+</tr>
+<tr>
+<td>package</td>
+<td>包名</td>
+</tr>
+<tr>
+<td>user-permission android:name&#x3D;””</td>
+<td>应用权限</td>
+</tr>
+<tr>
+<td>android:label</td>
+<td>指定App在手机屏幕上显示的名称</td>
+</tr>
+<tr>
+<td>android:icon</td>
+<td>指定App在手机屏幕上显示的图标</td>
+</tr>
+<tr>
+<td>android:roundIcon</td>
+<td>指定App的圆角图标</td>
+</tr>
+<tr>
+<td>android:supportsRtl</td>
+<td>是否支持阿拉伯语&#x2F;波斯语这种从右向左的文字排序</td>
+</tr>
+<tr>
+<td>android:theme</td>
+<td>指定App显示风格</td>
+</tr>
+<tr>
+<td>android:allowBackup</td>
+<td>是否允许备份，允许用户备份系统应用和第三方应用的apk安装包和应用数据，以便于在刷机或数据丢失后恢复数据。用户可通过adb backup和adb restore进行应用数据的备份和恢复。</td>
+</tr>
+<tr>
+<td>android:debuggable&#x3D;”true”</td>
+<td>应用是否开启debug权限</td>
+</tr>
+</tbody></table>
+<pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token prolog">&lt;?xml version="1.0" encoding="utf-8"?></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>manifest</span> <span class="token attr-name"><span class="token namespace">xmlns:</span>android</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://schemas.android.com/apk/res/android<span class="token punctuation">"</span></span>
+    <span class="token attr-name"><span class="token namespace">xmlns:</span>tools</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://schemas.android.com/tools<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>application</span>
+        <span class="token attr-name"><span class="token namespace">android:</span>allowBackup</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>true<span class="token punctuation">"</span></span>         
+        <span class="token attr-name"><span class="token namespace">android:</span>dataExtractionRules</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@xml/data_extraction_rules<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>fullBackupContent</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@xml/backup_rules<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>icon</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@mipmap/ic_launcher<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>label</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@string/app_name<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>roundIcon</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@mipmap/ic_launcher_round<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>supportsRtl</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>true<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">android:</span>theme</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>@style/Theme.CLosureApp<span class="token punctuation">"</span></span>
+        <span class="token attr-name"><span class="token namespace">tools:</span>targetApi</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>31<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+        &lt;activity
+            android:name=".MainActivity"//第一个运行的Activity
+            android:exported="true">
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>intent-filter</span><span class="token punctuation">></span></span>
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>action</span> <span class="token attr-name"><span class="token namespace">android:</span>name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>android.intent.action.MAIN<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+
+                <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>category</span> <span class="token attr-name"><span class="token namespace">android:</span>name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>android.intent.category.LAUNCHER<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>intent-filter</span><span class="token punctuation">></span></span>
+
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>meta-data</span>
+                <span class="token attr-name"><span class="token namespace">android:</span>name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>android.app.lib_name<span class="token punctuation">"</span></span>
+                <span class="token attr-name"><span class="token namespace">android:</span>value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span><span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>activity</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>application</span><span class="token punctuation">></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>manifest</span><span class="token punctuation">></span></span></code></pre>
+
+<p>Activity：应用程序组件，提供一个屏幕，用户可以用以交互</p>
+<p>查看目标应用程序的AndroidManifest.xml文件</p>
+<p>使用NP管理器，操作与MT管理器差不多，选择编辑AndroidManifest.xml文件</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109134.png"></p>
+<p>尝试替换应用程序的图标和名字：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109135.png"></p>
+<p>选择通用编辑功能进行修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109136.png" alt="image-20230406010046239"></p>
+<p>自定义图标和应用名</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109137.png"></p>
+<p>安装：</p>
+<p>由于与上文使用的MT管理器的签名不一致，所以卸载上文的应用即可（注意安装的是修改后的安装包edit）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109138.png" alt="image-20230406010908845"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109139.png" alt="image-20230406010942339"></p>
+<p>JVM：java虚拟机，运行JAVA字节码程序</p>
+<p>Dalvik：是google专门为Android设计的一个虚拟机，Dalvik有专属的文件执行格式dex（Dalvik executable）</p>
+<p>Art：Android Runtime，相当于Dalvik的升级版，本质与Dalvik无异</p>
+<h3 id="Smali"><a href="#Smali" class="headerlink" title="Smali"></a>Smali</h3><p>smali是Dalvik的寄存器语言，smali代码是由dex反编译而来的</p>
+<p>关键字</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>.class</td>
+<td>类</td>
+</tr>
+<tr>
+<td>.super</td>
+<td>父类名，继承的上级类名名称</td>
+</tr>
+<tr>
+<td>.source</td>
+<td>源名</td>
+</tr>
+<tr>
+<td>.field</td>
+<td>变量</td>
+</tr>
+<tr>
+<td>.method</td>
+<td>方法名</td>
+</tr>
+<tr>
+<td>.register</td>
+<td>寄存器</td>
+</tr>
+<tr>
+<td>.end methmod</td>
+<td>方法名的结束</td>
+</tr>
+<tr>
+<td>public</td>
+<td>公有</td>
+</tr>
+<tr>
+<td>protected</td>
+<td>保护</td>
+</tr>
+<tr>
+<td>private</td>
+<td>私有</td>
+</tr>
+<tr>
+<td>.parameter</td>
+<td>方法参数</td>
+</tr>
+<tr>
+<td>.prologue</td>
+<td>方法开始</td>
+</tr>
+<tr>
+<td>.line xxx</td>
+<td>位于第xxx行</td>
+</tr>
+</tbody></table>
+<p>数据类型</p>
+<table>
+<thead>
+<tr>
+<th>smali类型</th>
+<th>JAVA类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>V</td>
+<td>void</td>
+<td>无返回值</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+<td>布尔值类型，0或1</td>
+</tr>
+<tr>
+<td>B</td>
+<td>byte</td>
+<td>字节类型</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+<td>短整型</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+<td>字符</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+<td>整型</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long(64位，需要两个寄存器存储)</td>
+<td>长整型</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+<td>单浮点</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double(64位，需要两个寄存器存储)</td>
+<td>双浮点</td>
+</tr>
+<tr>
+<td>string</td>
+<td>String</td>
+<td>文本，返回字符串</td>
+</tr>
+<tr>
+<td>Lxxx&#x2F;xxx&#x2F;xxx</td>
+<td>object</td>
+<td>对象类型，返回对象</td>
+</tr>
+</tbody></table>
+<p>指令</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>const</td>
+<td>重写整数类型</td>
+</tr>
+<tr>
+<td>const-string</td>
+<td>重写字符串</td>
+</tr>
+<tr>
+<td>const-wide</td>
+<td>重写长整数类型，多用于修改时间</td>
+</tr>
+<tr>
+<td>return</td>
+<td>返回</td>
+</tr>
+<tr>
+<td>if-eq</td>
+<td>equal(a&#x3D;b)，比较寄存器a，b内容，相同则跳</td>
+</tr>
+<tr>
+<td>if-ne</td>
+<td>not equal(a!&#x3D;b)，ab内容不相同则跳转</td>
+</tr>
+<tr>
+<td>if-eqz</td>
+<td>qeual zero(a&#x3D;0)，z即是0的标记，a&#x3D;0则跳转</td>
+</tr>
+<tr>
+<td>if-nez</td>
+<td>not equal zero(a!&#x3D;0)，a不等于0则跳转</td>
+</tr>
+<tr>
+<td>if-ge</td>
+<td>greater equal(a&gt;&#x3D;b)，a大于等于b则跳转</td>
+</tr>
+<tr>
+<td>if-le</td>
+<td>little equal(a&lt;&#x3D;b)，a小于等于b则跳转</td>
+</tr>
+<tr>
+<td>goto</td>
+<td>强制跳转</td>
+</tr>
+<tr>
+<td>switch</td>
+<td>分支跳转</td>
+</tr>
+<tr>
+<td>iget</td>
+<td>获取寄存器数据</td>
+</tr>
+</tbody></table>
+<p>寄存器</p>
+<p>在smali中的所有操作都必须经过寄存器来进行；</p>
+<p>本地寄存器使用v开头，v0，v1，v2</p>
+<p>参数寄存器使用p开头，p0，p1，p2；p0不一定是函数中的第一个参数&#x3D;&#x3D;》</p>
+<p>在非static函数中，p0代表this，p1表示函数的第一个参数……</p>
+<p>在static函数中，p0为第一个参数（JAVA的static方法中没有this方法）</p>
+<h4 id="《一键三连》"><a href="#《一键三连》" class="headerlink" title="《一键三连》"></a>《一键三连》</h4><p>目标程序：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109140.png"></p>
+<p>目标：完成一键三连</p>
+<p><strong>定位：</strong>1、通过字符串定位；2、通过抓取按钮定位</p>
+<p><strong>字符串定位：</strong></p>
+<p>使用jadx-gui对其进行反编译，通过搜索字符串定位：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109141.png"></p>
+<p><strong>按钮定位：</strong></p>
+<p>使用开发者助手&#x3D;&#x3D;》界面资源分析&#x3D;&#x3D;》获取控件属性</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109142.png"></p>
+<p>在MT管理器中进行搜索</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109143.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109144.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109145.png" alt="image-20230409192628093"></p>
+<p>上方就是关键代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109146.png"></p>
+<p><strong>分析代码逻辑</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109147.png"></p>
+<p>首先判断是否拥有10硬币，再判断是否是大会员，若是大会员，则实现一键三连；</p>
+<p>但是我们并不是大会员，所以接下来将会修改该代码，实现一键三连的目的</p>
+<p>&#x3D;&#x3D;》</p>
+<p>通过<strong>修改smali代码</strong>来实现</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109148.png"></p>
+<p>通过函数名在smali中定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109149.png"></p>
+<p>为了实现对smali代码的修改，则需要用到MT管理器</p>
+<p>基本步骤与上文汉化apk类似，都是先提取安装包，再搜索字符串定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109150.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109151.png"></p>
+<p><strong>1、修改判断</strong></p>
+<p>程序要求要有10个硬币，并判断，我们可以将判断改成小于10个硬币就跳转</p>
+<p>将if-ge修改为if-le即可实现</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109152.png"></p>
+<p>程序又判断是否是大会员，不是大会员将会跳转，所以，我们可以将该判断跳过，直接执行接下来的是大会员的操作</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109153.png"></p>
+<p>保存，修改签名并安装&#x3D;&#x3D;》成功实现</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109154.png"></p>
+<p><strong>2、强制跳转</strong></p>
+<p>实现此操作也可以直接使用强制跳转goto实现，且goto后面需要跟上标签，而在“已经是大会员……”处并无标签，所以还需要创建一个标签（不与其他标签重复即可）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109155.png"></p>
+<p>接下来再判断前+goto 标签就可以实现跳转</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109157.png"></p>
+<p>保存安装&#x3D;&#x3D;》成功实现</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109158.png"></p>
+<p><strong>3、修改寄存器的值</strong></p>
+<p>当然也可以通过修改寄存器的值来实现</p>
+<p>在判断硬币是否有10个的时候将10改成0即可</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109159.png"></p>
+<p>后续还会判断是否是大会员，由于判断是通过isvip()方法的返回值，所以我们直接在方法中将返回值修改为1即可</p>
+<p>长按isvip&#x3D;&#x3D;》跳转</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109162.png"></p>
+<p>修改返回值为1</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109163.png"></p>
+<p>保存安装&#x3D;&#x3D;》成功实现</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109164.png"></p>
+<h3 id="四大组件"><a href="#四大组件" class="headerlink" title="四大组件"></a>四大组件</h3><p>1、Activity（活动）：在应用中的一个Activity可以用来表示一个界面，意思可以理解为“活动”，即一个活动开始，代表 Activity组件启动，活动结束，代表一个Activity的生命周期结束。一个Android应用必须通过Activity来运行和启动，Activity的生命周期交给系统统一管理；</p>
+<p>2、Service（服务）：Service它可以在后台执行长时间运行操作而没有用户界面的应用组件，不依赖任何用户界面，例如后台播放音乐，后台下载文件等；</p>
+<p>3、Broadcast Receiver（广播接收器）：一个用于接收广播信息，并做出对应处理的组件。比如我们常见的系统广播：通知时区改变、电量低、用户改变了语言选项等；</p>
+<p>4、Content Provider（内容提供者）：作为应用程序之间唯一的共享数据的途径，Content Provider主要的功能就是存储并检索数据以及向其他应用程序提供访问数据的接口。Android内置的许多数据都是使用Content Provider形式，供开发者调用的（如视频，音频，图片，通讯录等）</p>
+<h3 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h3><p>onCreate：创建活动，将页面布局加载进内存，进入初始状态</p>
+<p>onStart：开始活动，将活动页面显示在屏幕上，进入就绪状态</p>
+<p>onResume：恢复活动，活动页面进入活跃状态，能够与用户正常交互，例：响应点击动作</p>
+<p>onpause：暂停活动，页面进入暂停状态，无法与用户正常交互</p>
+<p>onStop：停止活动，页面将不在屏幕上显示</p>
+<p>onDestroy：销毁活动，回收活动占用的系统资源，把页面从内存中清除</p>
+<p>onRestart：重启活动，重新加载内存中的页面数据</p>
+<p>onNewInstent：重用已有的活动实例</p>
+<p><img src="https://img-blog.csdnimg.cn/20191112212436952.png"></p>
+<p>活动的动态变迁：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304140109165.png"></p>
+<p>如果一个Activity已经启动过了，并且存在于当前应用的Activety任务栈中，启动模式为singleTask;</p>
+<p>singleInstance或者singleTop（此时已经在任务栈的顶端），那么在此启动或回到这个Activety的时候，不会创建新的实例，也就是不会执行onCreate方法，而是执行onNewIntent方法。</p>
+<h3 id="广告-x2F-弹窗-x2F-布局"><a href="#广告-x2F-弹窗-x2F-布局" class="headerlink" title="广告 &#x2F; 弹窗 &#x2F; 布局"></a>广告 &#x2F; 弹窗 &#x2F; 布局</h3><h4 id="广告"><a href="#广告" class="headerlink" title="广告"></a>广告</h4><p><strong>启动广告流程：</strong></p>
+<p>启动Activity&#x3D;&#x3D;》广告Activity&#x3D;&#x3D;》主页Activity</p>
+<p><strong>定位方法：</strong>Activity切换定位</p>
+<p>在MT管理器工具栏中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142107406.png" alt="image-20230414205907621"></p>
+<p>启动该功能后即可运行目标程序，并打开该程序的广告界面，成功抓取Activity记录后停止该功能</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142107732.png" alt="image-20230414210238407"></p>
+<p>在MT管理器中的Activity记录中，复制获取该广告的Activity，在NP管理器中进行搜索定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142117297.png" alt="image-20230414211639872"></p>
+<p>将定位的smali代码转为JAVA代码查看</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142118836.png" alt="image-20230414211802806"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142124999.png" alt="image-20230414212412930"></p>
+<p><strong>修改方法：</strong></p>
+<p>1、修改广告Activity加载时间</p>
+<p>由JAVA代码可知，该广告将被加载3秒</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142126745.png" alt="image-20230414212615725"></p>
+<p>由此，将3秒改为0即可，在smali中寻找loadAd，并修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142129565.png"></p>
+<p>修改后的JAVA代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142130026.png" alt="image-20230414213046006"></p>
+<p>保存，签名并安装，成功看不到广告了，但是广告所在的Acvitity依然会被加载</p>
+<p>MT Activity记录验证：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142134538.png" alt="image-20230414213441476"></p>
+<p><strong>2、修改Intent的Activity类名（推荐使用）</strong></p>
+<p>定位与上个方法一样，在MT管理器中进行搜索，长按复制广告类的smali路径</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142201988.png" alt="image-20230414220139954"></p>
+<p>在NP中根据路径搜索，定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142204063.png"></p>
+<p>排除类本身的内容，我们需要查看是在哪个外部方法中对其调用</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142205674.png" alt="image-20230414220523649"></p>
+<p>分析其JAVA代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142207123.png"></p>
+<p>由此，只要我们将该广告Activity修改为第三关的Activity即可</p>
+<p>一样的方式在MT管理器中定位至要修改的smali代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142212306.png"></p>
+<p>按照类似的格式对其修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142213814.png"></p>
+<p>保存，自动签名并安装运行，使用MT Activity记录验证&#x3D;&#x3D;》成功跳过广告</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142215160.png"></p>
+<p><strong>3、实现比广告更快加载（不推荐，容易引起程序异常，崩溃等）</strong></p>
+<p>在MT管理器中，查看AndroidManifest.xml文件，并替换主Activity</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142152474.png" alt="image-20230414215214437"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142154702.png"></p>
+<p>保存，自动签名并安装启动，将直接打开第三关的Activity</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142154358.png" alt="image-20230414215459306"></p>
+<h4 id="弹窗"><a href="#弹窗" class="headerlink" title="弹窗"></a>弹窗</h4><p><strong>修改方法：</strong></p>
+<p><strong>1、修改XML文件中的versiocode（用于更新弹窗，修改版本）</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142219182.png"></p>
+<p>此处改为2即可实现</p>
+<p><strong>2、Hook弹窗</strong></p>
+<p>多出现于劫持了返回键等</p>
+<p>例：目标程序被劫持了返回键</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304142221170.png" alt="image-20230414222105122"></p>
+<p>使用算法助手，选择要HOOK的目标程序</p>
+<p>开启应用总开关</p>
+<p>开启弹窗定位（返回键可取消）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150119142.png" alt="image-20230415011950118"></p>
+<p>使用右上角运行程序&#x3D;&#x3D;》</p>
+<p>返回第一次</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150117184.png" alt="image-20230415011708133"></p>
+<p>返回第二次</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150117540.png" alt="image-20230415011726481"></p>
+<p>成功跳过弹窗</p>
+<p>另一种方式：<strong>通过关键词屏蔽弹窗</strong></p>
+<p>在刚刚的算法助手中选择屏蔽关键词弹窗，加入广告</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150121946.png"></p>
+<p>再次运行程序，发现弹窗成功跳过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150123572.png"></p>
+<p><strong>3、修改dex弹窗代码</strong></p>
+<p>目标</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150126092.png" alt="image-20230415012612067"></p>
+<p>在算法助手中，通过日志查看该弹窗</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150127263.png" alt="image-20230415012705242"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150127441.png"></p>
+<p>通过该方法实现在MT管理器中定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150128320.png" alt="image-20230415012838286"></p>
+<p>成功定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150129619.png"></p>
+<p>弹窗大部分是由show方法显示信息的，为此，我们寻找该弹窗的show方法，并注释即可</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150130942.png"></p>
+<p>在前方添加#注释掉该行</p>
+<p>上方还有一个”2号广告”，使用一样的方法注释掉show方法</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150132860.png" alt="image-20230415013251829"></p>
+<p>保存，安装，成功跳过弹窗</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150134522.png" alt="image-20230415013404974"></p>
+<p><strong>4、抓包修改响应体（也可以使用路由器拦截）</strong></p>
+<h4 id="布局"><a href="#布局" class="headerlink" title="布局"></a>布局</h4><p>布局定位：1、开发者助手；2、MT管理器XML搜索定位</p>
+<p>开发助手</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150135410.png" alt="image-20230415013536382"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150138764.png" alt="image-20230415013825715"></p>
+<p>定位广告图片</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150139333.png" alt="image-20230415013921240"></p>
+<p>复制id</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150140244.png" alt="image-20230415014015198"></p>
+<p>在MT中右上角使用XML搜索</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150141807.png" alt="image-20230415014148759"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150142370.png" alt="image-20230415014201349"></p>
+<p>成功定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150143194.png" alt="image-20230415014314152"></p>
+<p>修改方法：修改XML代码</p>
+<p>它存在宽度和高度，我们将它都改为0即可</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150144487.png" alt="image-20230415014444457"></p>
+<p>保存并安装，成功消除广告图片</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150145529.png"></p>
+<p>还有一种办法是直接隐藏布局，在刚刚的XML文件中广告图片位置插入</p>
+<pre class="language-markup" data-language="markup"><code class="language-markup">android:visibility="gone"</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150148222.png"></p>
+<p>成功隐藏</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304150149111.png"></p>
+<h3 id="动态调试"><a href="#动态调试" class="headerlink" title="动态调试"></a>动态调试</h3><p>为程序添加debug权限</p>
+<p>1、AndroidManifest,xml中添加</p>
+<pre class="language-markup" data-language="markup"><code class="language-markup">android:debuggable="true"</code></pre>
+
+<p>添加至application标签中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161447742.png" alt="image-20230416144741669"></p>
+<p>2、XappDebug模块Hook</p>
+<p>3、Magisk命令</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">adb shell <span class="token comment">#adb进入命令行模式</span>
+
+<span class="token function">su</span> <span class="token comment">#切换至超级用户</span>
+
+magisk resetprop ro.debuggable <span class="token number">1</span>
+
+stop<span class="token punctuation">;</span>start<span class="token punctuation">;</span> <span class="token comment">#一定要通过该方式重启</span></code></pre>
+
+<p>4、MagiskHide Props Config模块（永久有效）</p>
+<p>修改ro.debuggable的值为1</p>
+<p><strong>开启端口转发以及ADB权限</strong></p>
+<p>雷电模拟器自带端口转发；若是其他模拟器（测试机），请打开手机的开发者选项，开启USB调试功能</p>
+<p><strong>下断点</strong></p>
+<p>CTRL + B</p>
+<p><strong>debug模式启动</strong></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">adb shell am start <span class="token parameter variable">-D</span> <span class="token parameter variable">-n</span> com.zj.wuaipojie/.ui.MainActivity
+
+<span class="token comment">#参数解析</span>
+adb shell am start <span class="token parameter variable">-D</span> <span class="token parameter variable">-n</span> 包名/类名
+am start <span class="token parameter variable">-n</span> 表示启动一个activity
+am start <span class="token parameter variable">-D</span> 表示将应用设置为可调试模式</code></pre>
+
+<p>包名和类名获取：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161525081.png"></p>
+<p><strong>Jeb附加调试进程</strong></p>
+<h4 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161508042.png" alt="image-20230416150851015"></p>
+<p>根据关键词在JEB中搜索定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161511983.png" alt="image-20230416151101953"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161511112.png" alt="image-20230416151115072"></p>
+<p>右键解析将Smali转为JAVA代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161514955.png"></p>
+<p>定位关键函数check中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161515081.png" alt="image-20230416151553005"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161520611.png"></p>
+<p>在check函数中最后进行base64后的比较，对此，我们将在此处下断电（ctrl + b）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161522240.png" alt="image-20230416152237189"></p>
+<p>开启debug模式，注意没配置adb环境变量需要前往模拟器所在路径，使用模拟器的adb</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161544329.png" alt="image-20230416154446283"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304161544000.png" alt="image-20230416154457970"></p>
+<p>JEB附加调试</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304301648121.png"></p>
+<p>注意点：若有出现附加调试时找不到模拟器和进程的情况</p>
+<p>找不到模拟器：将该模拟器的ADB路径添加至环境变量中</p>
+<p>找不到进程：可能是因为ADB版本的问题，我雷电模拟器自带的ADB版本是1.0.31，找不到进程（可以找到模拟器），替换为1.0.41即可</p>
+<p>替换ADB需要替换的文件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305072029077.png" alt="image-20230507202929021"></p>
+<p>关注点：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304301655922.png" alt="image-20230430165501878"></p>
+<p>回到模拟器，执行至输入密钥</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304301655679.png" alt="image-20230430165554648"></p>
+<p>点击验证，成功断点</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202304301656354.png" alt="image-20230430165642306"></p>
+<p>由于我们需要看函数在最后返回了什么值与我们输入的密钥进行比较，所以我们直接进入encodeToString函数调试下</p>
+<p><img src="C:/Users/zhang/AppData/Roaming/Typora/typora-user-images/image-20230430170510075.png" alt="image-20230430170510075"></p>
+<p>继续步过至返回处</p>
+<p><img src="C:/Users/zhang/AppData/Roaming/Typora/typora-user-images/image-20230430170622627.png" alt="image-20230430170622627"></p>
+<p>得到将要返回进行比较的值（该值在此程序中由于注册的昵称不同值也不同）</p>
+<p>中断调试，返回模拟器，输入该值，成功</p>
+<p><img src="C:/Users/zhang/AppData/Roaming/Typora/typora-user-images/image-20230430171113976.png" alt="image-20230430171113976"></p>
+<h3 id="Log插桩"><a href="#Log插桩" class="headerlink" title="Log插桩"></a>Log插桩</h3><p>指的是反编译APK文件时，在对应的smali文件中添加相应的smali代码，将程序中的关键信息，以log日志的形式输出</p>
+<pre class="language-smali" data-language="smali"><code class="language-smali">invoke-static <span class="token punctuation">&#123;</span>对应寄存器<span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token class-name"><span class="token builtin">L</span><span class="token namespace">com<span class="token punctuation">/</span>mtools<span class="token punctuation">/</span></span><span class="token class-name">LogUtils</span></span><span class="token punctuation">;</span><span class="token operator">-></span><span class="token function">v</span><span class="token punctuation">(</span><span class="token class-name"><span class="token builtin">L</span><span class="token namespace">java<span class="token punctuation">/</span>lang<span class="token punctuation">/</span></span><span class="token class-name">Object</span></span><span class="token punctuation">;</span><span class="token punctuation">)</span><span class="token builtin">V</span></code></pre>
+
+<p>例：</p>
+<p>在上文的目标程序中，首先就要将能实现插桩的dex文件封装进APK中，并对其重命名（符合规范）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305021933213.png" alt="image-20230502193319100"></p>
+<p>然后在想要输出的地方插入命令，比如我们要获取v0寄存器的值</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305021940049.png" alt="image-20230502194038020"></p>
+<p>在算法助手中勾选对应的目标程序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305021943531.png"></p>
+<p>使用算法助手，开启Log捕获</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305021944384.png"></p>
+<p>算法助手中启动程序，触发相应功能，在算法助手中获得日志</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305021946484.png" alt="image-20230502194607456"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305022002784.png" alt="image-20230502200212747"></p>
+<p>验证成功</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305022002192.png"></p>
+<h3 id="签名与签名校验"><a href="#签名与签名校验" class="headerlink" title="签名与签名校验"></a>签名与签名校验</h3><h4 id="签名"><a href="#签名" class="headerlink" title="签名"></a>签名</h4><p>APK签名：通过对APK进行签名，开发者可以证明对APK的所有权和控制权，可用于安装和更新其应用；在Android设备上安装APK，如果是一个没有签名的APK，则会被拒绝安装；在安装的时候，软件管理器将会验证APK是否已经被正确签名，并且通过签名证书与数据摘要验证是否合法没有被篡改，只有在确认安全，没有被篡改的情况下，才允许被安装在设备上。</p>
+<p>Android目前支持的签名方案：</p>
+<p>V1：基于JAR签名</p>
+<p>V2：APK签名方案V2（Android 7引入）</p>
+<p>V3：APK签名方案V3（Android 9引入）</p>
+<p>V4：APK签名方案V4（Android 11引入）</p>
+<p>V1签名将会在META-INF目录下的三个文件：MANIFEST.MF，ANDROID.RSA，ANDROID.RSA</p>
+<p>MANIFEST.MF：摘要文件，程序遍历APK包中的所有文件（entry），对非文件夹非签名文件的文件，逐个使用SHA1生成摘要信息，再使用Base64进行编码；若改变了APK包的文件，将在APK安装检验时，改变后的文件摘要信息与MANIFEST.MF的检验信息不同，导致程序不能安装</p>
+<p>ANDROID.RSA：对摘要文件的签名文件，对前一步生成的MANIFEST.MF使用SHA1-RSA算法，使用开发者的私钥进行签名；在安装时只能使用公钥才能解密它，解密之后，将它与未加密的摘要信息进行（MANIFEST.MF）对比，若相符则表明内容没有被异常修改</p>
+<p>ANDROID.RSA：保存公钥，所采用的加密算法等信息</p>
+<p>V2将会将整个APK文件视为Blob，并对整个文件进行签名检查；当对APK进行任何修改（包括对ZIP元数据进行的修改），都将使APK签名作废。</p>
+<p>校验：开发者在数据传送时采用的一种校正数据的一种方式</p>
+<p><strong>常见校验</strong>：签名校验，dexcrc校验，apk完整性校验，路径文件校验</p>
+<h4 id="签名校验"><a href="#签名校验" class="headerlink" title="签名校验"></a>签名校验</h4><p>判断特征：</p>
+<pre class="language-java" data-language="java"><code class="language-java">kill<span class="token operator">/</span>killprocess   <span class="token comment">//杀死当前应用活动的进程，清理进程中的所有资源；由于ActivityManager时刻监听进程，所以当进程被非正常kill，它将会试图重启该进程（结束应用后又自动重新启动）</span>
+system<span class="token punctuation">.</span>exit   <span class="token comment">//杀死整个进程，活动占用的资源也会被释放</span>
+finish   <span class="token comment">//仅针对Activity，将活动推向后台，不会立即释放内存，活动的资源不会被清理</span></code></pre>
+
+<ul>
+<li>三角校验：由动态加载的dex检测so（软件运行时解压释放一段dex，检测完成后删除），so检测dex，dex检测动态加载的dex。</li>
+</ul>
+<h5 id="闪退原因"><a href="#闪退原因" class="headerlink" title="闪退原因"></a>闪退原因</h5><p>对目标程序进行APK签名</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061926672.png" alt="image-20230506192555567"></p>
+<p>重新安装，启动，第五关，由于签名校验不通过，导致了闪退现象</p>
+<p>使用算法助手</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061928388.png" alt="image-20230506192829360"></p>
+<p>启动程序，成功拦截</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061931791.png"></p>
+<p>验证</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061932073.png"></p>
+<p>查看拦截日志</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061933827.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061934498.png"></p>
+<p>在MT管理器中定位该闪退的方法</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061937431.png" alt="image-20230506193736393"></p>
+<p>在方法中发现特征</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305061939208.png"></p>
+<p>将该行代码注释掉就不会闪退了</p>
+<h5 id="普通签名校验方法"><a href="#普通签名校验方法" class="headerlink" title="普通签名校验方法"></a>普通签名校验方法</h5><p>安装原程序，在算法助手中开启读取应用签名监听</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062005999.png" alt="image-20230506200546961"></p>
+<p>运行程序，触发签名验证，查看日志</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062011969.png" alt="image-20230506201148932"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062012979.png" alt="image-20230506201223950"></p>
+<p>通过Jadx定位：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062016457.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062018310.png" alt="image-20230506201858246"></p>
+<p>比对的值：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062019805.png"></p>
+<h5 id="普通签名校验代码"><a href="#普通签名校验代码" class="headerlink" title="普通签名校验代码"></a>普通签名校验代码</h5><pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">private</span> <span class="token keyword">boolean</span> <span class="token class-name">SignCheck</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token class-name">String</span> trueSignMD5 <span class="token operator">=</span> <span class="token string">"d0add9987c7c84aeb7198c3ff26ca152"</span><span class="token punctuation">;</span>
+    <span class="token class-name">String</span> nowSignMD5 <span class="token operator">=</span> <span class="token string">""</span><span class="token punctuation">;</span>
+    <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">// 得到签名的MD5</span>
+        <span class="token comment">//系统将应用的签名信息封装在PackageInfo中，调用PackageManager的getPackageInfo即可获取指定包名的签名信息</span>
+        <span class="token class-name">PackageInfo</span> packageInfo <span class="token operator">=</span> <span class="token function">getPackageManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getPackageInfo</span><span class="token punctuation">(</span><span class="token function">getPackageName</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token class-name">PackageManager</span><span class="token punctuation">.</span><span class="token constant">GET_SIGNATURES</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">Signature</span><span class="token punctuation">[</span><span class="token punctuation">]</span> signs <span class="token operator">=</span> packageInfo<span class="token punctuation">.</span>signatures<span class="token punctuation">;</span>
+        <span class="token class-name">String</span> signBase64 <span class="token operator">=</span> <span class="token class-name">Base64Util</span><span class="token punctuation">.</span><span class="token function">encodeToString</span><span class="token punctuation">(</span>signs<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">.</span><span class="token function">toByteArray</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        nowSignMD5 <span class="token operator">=</span> <span class="token class-name">MD5Utils</span><span class="token punctuation">.</span><span class="token function">MD5</span><span class="token punctuation">(</span>signBase64<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">PackageManager<span class="token punctuation">.</span>NameNotFoundException</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        e<span class="token punctuation">.</span><span class="token function">printStackTrace</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> trueSignMD5<span class="token punctuation">.</span><span class="token function">equals</span><span class="token punctuation">(</span>nowSignMD5<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h5 id="普通签名绕过方法"><a href="#普通签名绕过方法" class="headerlink" title="普通签名绕过方法"></a>普通签名绕过方法</h5><p>1、在MT管理器中对比对的<strong>判断</strong>进行修改</p>
+<p>原程序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062028550.png" alt="image-20230506202856525"></p>
+<p>将if-nez（不等于0就跳转）修改为if-eqz（等于0就跳转）即可</p>
+<p>2、将比对的值替换成我们<strong>修改后的签名</strong></p>
+<p>修改后的签名：通过再次安装修改签名后的程序，并查看日志，找到输出日志的sign</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062026395.png" alt="image-20230506202659355"></p>
+<p>修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062032508.png"></p>
+<p>保存验证</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062033340.png"></p>
+<h5 id="PM代理"><a href="#PM代理" class="headerlink" title="PM代理"></a>PM代理</h5><p>PMS：PackageManagerService，Android系统和兴服务之一，处理包管理相关的工作，例：安装，卸载等</p>
+<p><strong>HOOK PMS：</strong></p>
+<p>目的：使用动态代理的方式进行替换属性</p>
+<p>ActivityThread的静态变量 sPackageManager</p>
+<p>ApplicationPackageManager对象里的mPM变量</p>
+<pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;github.com&#x2F;fourbrother&#x2F;HookPmsSignature</code></pre>
+
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">package</span> <span class="token namespace">com<span class="token punctuation">.</span>zj<span class="token punctuation">.</span>hookpms</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>reflect<span class="token punctuation">.</span></span><span class="token class-name">Field</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>reflect<span class="token punctuation">.</span></span><span class="token class-name">Method</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">java<span class="token punctuation">.</span>lang<span class="token punctuation">.</span>reflect<span class="token punctuation">.</span></span><span class="token class-name">Proxy</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">android<span class="token punctuation">.</span>content<span class="token punctuation">.</span></span><span class="token class-name">Context</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">android<span class="token punctuation">.</span>content<span class="token punctuation">.</span>pm<span class="token punctuation">.</span></span><span class="token class-name">PackageManager</span></span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token import"><span class="token namespace">android<span class="token punctuation">.</span>util<span class="token punctuation">.</span></span><span class="token class-name">Log</span></span><span class="token punctuation">;</span>
+
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">ServiceManagerWraper</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">final</span> <span class="token keyword">static</span> <span class="token class-name">String</span> <span class="token constant">ZJ</span> <span class="token operator">=</span> <span class="token string">"ZJ595"</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">hookPMS</span><span class="token punctuation">(</span><span class="token class-name">Context</span> context<span class="token punctuation">,</span> <span class="token class-name">String</span> signed<span class="token punctuation">,</span> <span class="token class-name">String</span> appPkgName<span class="token punctuation">,</span> <span class="token keyword">int</span> hashCode<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+            <span class="token comment">// 获取全局的ActivityThread对象</span>
+            <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> activityThreadClass <span class="token operator">=</span> <span class="token class-name">Class</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token string">"android.app.ActivityThread"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Method</span> currentActivityThreadMethod <span class="token operator">=</span>
+                    activityThreadClass<span class="token punctuation">.</span><span class="token function">getDeclaredMethod</span><span class="token punctuation">(</span><span class="token string">"currentActivityThread"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Object</span> currentActivityThread <span class="token operator">=</span> currentActivityThreadMethod<span class="token punctuation">.</span><span class="token function">invoke</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 获取ActivityThread里面原始的sPackageManager</span>
+            <span class="token class-name">Field</span> sPackageManagerField <span class="token operator">=</span> activityThreadClass<span class="token punctuation">.</span><span class="token function">getDeclaredField</span><span class="token punctuation">(</span><span class="token string">"sPackageManager"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            sPackageManagerField<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Object</span> sPackageManager <span class="token operator">=</span> sPackageManagerField<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>currentActivityThread<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 准备好代&#123;过&#125;&#123;滤&#125;理对象, 用来替换原始的对象</span>
+            <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span> iPackageManagerInterface <span class="token operator">=</span> <span class="token class-name">Class</span><span class="token punctuation">.</span><span class="token function">forName</span><span class="token punctuation">(</span><span class="token string">"android.content.pm.IPackageManager"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Object</span> proxy <span class="token operator">=</span> <span class="token class-name">Proxy</span><span class="token punctuation">.</span><span class="token function">newProxyInstance</span><span class="token punctuation">(</span>
+                    iPackageManagerInterface<span class="token punctuation">.</span><span class="token function">getClassLoader</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                    <span class="token keyword">new</span> <span class="token class-name">Class</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token operator">?</span><span class="token punctuation">></span></span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">&#123;</span>iPackageManagerInterface<span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+                    <span class="token keyword">new</span> <span class="token class-name">PmsHookBinderInvocationHandler</span><span class="token punctuation">(</span>sPackageManager<span class="token punctuation">,</span> signed<span class="token punctuation">,</span> appPkgName<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 1. 替换掉ActivityThread里面的 sPackageManager 字段</span>
+            sPackageManagerField<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>currentActivityThread<span class="token punctuation">,</span> proxy<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">// 2. 替换 ApplicationPackageManager里面的 mPM对象</span>
+            <span class="token class-name">PackageManager</span> pm <span class="token operator">=</span> context<span class="token punctuation">.</span><span class="token function">getPackageManager</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token class-name">Field</span> mPmField <span class="token operator">=</span> pm<span class="token punctuation">.</span><span class="token function">getClass</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getDeclaredField</span><span class="token punctuation">(</span><span class="token string">"mPM"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            mPmField<span class="token punctuation">.</span><span class="token function">setAccessible</span><span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            mPmField<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>pm<span class="token punctuation">,</span> proxy<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span><span class="token class-name">Exception</span> e<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+            <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">d</span><span class="token punctuation">(</span><span class="token constant">ZJ</span><span class="token punctuation">,</span> <span class="token string">"hook pms error:"</span> <span class="token operator">+</span> <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">getStackTraceString</span><span class="token punctuation">(</span>e<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">hookPMS</span><span class="token punctuation">(</span><span class="token class-name">Context</span> context<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">String</span> <span class="token class-name">Sign</span> <span class="token operator">=</span> <span class="token string">"原包的签名信息"</span><span class="token punctuation">;</span>
+        <span class="token function">hookPMS</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span> <span class="token class-name">Sign</span><span class="token punctuation">,</span> <span class="token string">"com.zj.hookpms"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>原包的签名信息：通过MT管理器，点击签名状态</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062127211.png" alt="image-20230506212736179"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062127166.png" alt="image-20230506212721140"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062127943.png"></p>
+<p>全选，复制为Base64，至此，就获得了原包的签名信息（当然我这里是修改了签名后的签名信息）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305062128213.png"></p>
+<p>调用方式：</p>
+<p>在attachBaseContext方法中调用hookPMS&#x3D;&#x3D;》在dex中搜索该方法，添加调用代码：</p>
+<pre class="language-none"><code class="language-none">invoke-static &#123;p1&#125;, Lcom&#x2F;Closure&#x2F;Hook&#x2F;ServiceManagerWraper;-&gt;hookPMS(Landroid&#x2F;content&#x2F;Context;)V</code></pre>
+
+
+
+<h5 id="API签名校验"><a href="#API签名校验" class="headerlink" title="API签名校验"></a>API签名校验</h5><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070056772.png" alt="image-20230507005638704"></p>
+<p>与普通签名差不多，查看日志获取修改后的newsign</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070100718.png"></p>
+<p>修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070102943.png" alt="image-20230507010213914"></p>
+<p>验证</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070103363.png"></p>
+<h5 id="IO重定向（CRC，Hash）"><a href="#IO重定向（CRC，Hash）" class="headerlink" title="IO重定向（CRC，Hash）"></a>IO重定向（CRC，Hash）</h5><p>实现在读取A文件时指向B文件</p>
+<p>目的：</p>
+<p>1、过签名检测（读取原包）</p>
+<p>2、风控对抗（记录App启动次数）</p>
+<p>3、过Root检测，Xposed检测（文件不可取）</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;virjarRatel&#x2F;ratel-core</code></pre>
+
+<p>本质上是对open，openat等几个函数进行hook</p>
+<pre class="language-java" data-language="java"><code class="language-java">using namespace std<span class="token punctuation">;</span>  
+string packname<span class="token punctuation">;</span>  
+string origpath<span class="token punctuation">;</span>  
+string fakepath<span class="token punctuation">;</span>  
+
+<span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_open<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pathname<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_openat<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pathname<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token constant">FILE</span> <span class="token operator">*</span><span class="token punctuation">(</span><span class="token operator">*</span>orig_fopen<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token keyword">static</span> <span class="token keyword">long</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_syscall<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">long</span> number<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token keyword">int</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig__NR_openat<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">,</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pathname<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+<span class="token keyword">void</span><span class="token operator">*</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_dlopen_CI<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">,</span> <span class="token keyword">int</span> flag<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token keyword">void</span><span class="token operator">*</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_dlopen_CIV<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">,</span> <span class="token keyword">int</span> flag<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>extinfo<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token keyword">void</span><span class="token operator">*</span> <span class="token punctuation">(</span><span class="token operator">*</span>orig_dlopen_CIVV<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>name<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">void</span> <span class="token operator">*</span>extinfo<span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span>caller_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+<span class="token keyword">static</span> inline bool <span class="token function">needs_mode</span><span class="token punctuation">(</span><span class="token keyword">int</span> flags<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    <span class="token keyword">return</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> <span class="token constant">O_CREAT</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">O_CREAT</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>flags <span class="token operator">&amp;</span> <span class="token constant">O_TMPFILE</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token constant">O_TMPFILE</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  
+bool <span class="token function">startsWith</span><span class="token punctuation">(</span>string str<span class="token punctuation">,</span> string sub<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+    <span class="token keyword">return</span> str<span class="token punctuation">.</span><span class="token function">find</span><span class="token punctuation">(</span>sub<span class="token punctuation">)</span><span class="token operator">==</span><span class="token number">0</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  
+
+bool <span class="token function">endsWith</span><span class="token punctuation">(</span>string s<span class="token punctuation">,</span>string sub<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+    <span class="token keyword">return</span> s<span class="token punctuation">.</span><span class="token function">rfind</span><span class="token punctuation">(</span>sub<span class="token punctuation">)</span><span class="token operator">==</span><span class="token punctuation">(</span>s<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">-</span>sub<span class="token punctuation">.</span><span class="token function">length</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  
+bool <span class="token function">isOrigAPK</span><span class="token punctuation">(</span>string  path<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+
+    <span class="token keyword">if</span><span class="token punctuation">(</span>path<span class="token operator">==</span>origpath<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token keyword">return</span> <span class="token boolean">false</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  
+<span class="token comment">//该函数的功能是在打开一个文件时进行拦截，并在满足特定条件时将文件路径替换为另一个路径  </span>
+
+<span class="token comment">//fake_open 函数有三个参数：  </span>
+<span class="token comment">//pathname：一个字符串，表示要打开的文件的路径。  </span>
+<span class="token comment">//flags：一个整数，表示打开文件的方式，例如只读、只写、读写等。  </span>
+<span class="token comment">//mode（可选参数）：一个整数，表示打开文件时应用的权限模式。  </span>
+<span class="token keyword">int</span> <span class="token function">fake_open</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pathname<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    mode_t mode <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">needs_mode</span><span class="token punctuation">(</span>flags<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+        va_list args<span class="token punctuation">;</span>  
+        <span class="token function">va_start</span><span class="token punctuation">(</span>args<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        mode <span class="token operator">=</span> static_cast<span class="token generics"><span class="token punctuation">&lt;</span>mode_t<span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token function">va_arg</span><span class="token punctuation">(</span>args<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token function">va_end</span><span class="token punctuation">(</span>args<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token comment">//LOGI("open,  path: %s, flags: %d, mode: %d",pathname, flags ,mode);  </span>
+    string cpp_path<span class="token operator">=</span> pathname<span class="token punctuation">;</span>  
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isOrigAPK</span><span class="token punctuation">(</span>cpp_path<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+        <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"libc_open, redirect: %s, --->: %s"</span><span class="token punctuation">,</span>pathname<span class="token punctuation">,</span> fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token keyword">return</span> <span class="token function">orig_open</span><span class="token punctuation">(</span><span class="token string">"/data/user/0/com.zj.wuaipojie/files/base.apk"</span><span class="token punctuation">,</span> flags<span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//在该目录中存放原包（数据目录）</span>
+    <span class="token punctuation">&#125;</span>  
+    <span class="token keyword">return</span>  <span class="token function">orig_open</span><span class="token punctuation">(</span>pathname<span class="token punctuation">,</span> flags<span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+<span class="token punctuation">&#125;</span>  
+
+<span class="token comment">//该函数的功能是在打开一个文件时进行拦截，并在满足特定条件时将文件路径替换为另一个路径  </span>
+
+<span class="token comment">//fake_openat 函数有四个参数：  </span>
+<span class="token comment">//fd：一个整数，表示要打开的文件的文件描述符。  </span>
+<span class="token comment">//pathname：一个字符串，表示要打开的文件的路径。  </span>
+<span class="token comment">//flags：一个整数，表示打开文件的方式，例如只读、只写、读写等。  </span>
+<span class="token comment">//mode（可选参数）：一个整数，表示打开文件时应用的权限模式。  </span>
+<span class="token comment">//openat 函数的作用类似于 open 函数，但是它使用文件描述符来指定文件路径，而不是使用文件路径本身。这样，就可以在打开文件时使用相对路径，而不必提供完整的文件路径。  </span>
+<span class="token comment">//例如，如果要打开相对于当前目录的文件，可以使用 openat 函数，而不是 open 函数，因为 open 函数只能使用绝对路径。  </span>
+<span class="token comment">//  </span>
+<span class="token keyword">int</span> <span class="token function">fake_openat</span><span class="token punctuation">(</span><span class="token keyword">int</span> fd<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pathname<span class="token punctuation">,</span> <span class="token keyword">int</span> flags<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    mode_t mode <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">needs_mode</span><span class="token punctuation">(</span>flags<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+        va_list args<span class="token punctuation">;</span>  
+        <span class="token function">va_start</span><span class="token punctuation">(</span>args<span class="token punctuation">,</span> flags<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        mode <span class="token operator">=</span> static_cast<span class="token generics"><span class="token punctuation">&lt;</span>mode_t<span class="token punctuation">></span></span><span class="token punctuation">(</span><span class="token function">va_arg</span><span class="token punctuation">(</span>args<span class="token punctuation">,</span> <span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token function">va_end</span><span class="token punctuation">(</span>args<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"openat, fd: %d, path: %s, flags: %d, mode: %d"</span><span class="token punctuation">,</span>fd <span class="token punctuation">,</span>pathname<span class="token punctuation">,</span> flags <span class="token punctuation">,</span>mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    string cpp_path<span class="token operator">=</span> pathname<span class="token punctuation">;</span>  
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isOrigAPK</span><span class="token punctuation">(</span>cpp_path<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+        <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"libc_openat, redirect: %s, --->: %s"</span><span class="token punctuation">,</span>pathname<span class="token punctuation">,</span> fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token keyword">return</span>  <span class="token function">orig_openat</span><span class="token punctuation">(</span>fd<span class="token punctuation">,</span>fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> flags<span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token keyword">return</span> <span class="token function">orig_openat</span><span class="token punctuation">(</span>fd<span class="token punctuation">,</span>pathname<span class="token punctuation">,</span> flags<span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+<span class="token punctuation">&#125;</span>  
+<span class="token constant">FILE</span> <span class="token operator">*</span><span class="token function">fake_fopen</span><span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>filename<span class="token punctuation">,</span> <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>mode<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+
+    string cpp_path<span class="token operator">=</span> filename<span class="token punctuation">;</span>  
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">isOrigAPK</span><span class="token punctuation">(</span>cpp_path<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+        <span class="token keyword">return</span>  <span class="token function">orig_fopen</span><span class="token punctuation">(</span>fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token keyword">return</span> <span class="token function">orig_fopen</span><span class="token punctuation">(</span>filename<span class="token punctuation">,</span> mode<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span>  
+<span class="token comment">//该函数的功能是在执行系统调用时进行拦截，并在满足特定条件时修改系统调用的参数。  </span>
+<span class="token comment">//syscall 函数是一个系统调用，是程序访问内核功能的方法之一。使用 syscall 函数可以调用大量的系统调用，它们用于实现操作系统的各种功能，例如打开文件、创建进程、分配内存等。  </span>
+<span class="token comment">//  </span>
+<span class="token keyword">static</span> <span class="token keyword">long</span> <span class="token function">fake_syscall</span><span class="token punctuation">(</span><span class="token keyword">long</span> number<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    <span class="token keyword">void</span> <span class="token operator">*</span>arg<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span><span class="token punctuation">;</span>  
+    va_list list<span class="token punctuation">;</span>  
+
+    <span class="token function">va_start</span><span class="token punctuation">(</span>list<span class="token punctuation">,</span> number<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">7</span><span class="token punctuation">;</span> <span class="token operator">++</span>i<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+        arg<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">va_arg</span><span class="token punctuation">(</span>list<span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token function">va_end</span><span class="token punctuation">(</span>list<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>number <span class="token operator">==</span> __NR_openat<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+        <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>cpp_path <span class="token operator">=</span> static_cast<span class="token operator">&lt;</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span><span class="token operator">></span><span class="token punctuation">(</span>arg<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"syscall __NR_openat, fd: %d, path: %s, flags: %d, mode: %d"</span><span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isOrigAPK</span><span class="token punctuation">(</span>cpp_path<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>  
+            <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"syscall __NR_openat, redirect: %s, --->: %s"</span><span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+            <span class="token keyword">return</span> <span class="token function">orig_syscall</span><span class="token punctuation">(</span>number<span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> fakepath<span class="token punctuation">.</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>arg<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+        <span class="token punctuation">&#125;</span>  
+    <span class="token punctuation">&#125;</span>  
+    <span class="token keyword">return</span> <span class="token function">orig_syscall</span><span class="token punctuation">(</span>number<span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">,</span> arg<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+<span class="token punctuation">&#125;</span>  
+
+<span class="token comment">//函数的功能是获取当前应用的包名、APK 文件路径以及库文件路径，并将这些信息保存在全局变量中  </span>
+<span class="token comment">//函数调用 GetObjectClass 和 GetMethodID 函数来获取 context 对象的类型以及 getPackageName 方法的 ID。然后，函数调用 CallObjectMethod 函数来调用 getPackageName 方法，获取当前应用的包名。最后，函数使用 GetStringUTFChars 函数将包名转换为 C 字符串，并将包名保存在 packname 全局变量中  </span>
+<span class="token comment">//接着，函数使用 fakepath 全局变量保存了 /data/user/0/&lt;packname>/files/base.apk 这样的路径，其中 &lt;packname> 是当前应用的包名。  </span>
+<span class="token comment">//然后，函数再次调用 GetObjectClass 和 GetMethodID 函数来获取 context 对象的类型以及 getApplicationInfo 方法的 ID。然后，函数调用 CallObjectMethod 函数来调用 getApplicationInfo 方法，获取当前应用的 ApplicationInfo 对象。  </span>
+<span class="token comment">//它先调用 GetObjectClass 函数获取 ApplicationInfo 对象的类型，然后调用 GetFieldID 函数获取 sourceDir 字段的 ID。接着，函数使用 GetObjectField 函数获取 sourceDir 字段的值，并使用 GetStringUTFChars 函数将其转换为 C 字符串。最后，函数将 C 字符串保存在 origpath 全局变量中，表示当前应用的 APK 文件路径。  </span>
+<span class="token comment">//最后，函数使用 GetFieldID 和 GetObjectField 函数获取 nativeLibraryDir 字段的值，并使用 GetStringUTFChars 函数将其转换为 C 字符串。函数最后调用 LOGI 函数打印库文件路径，但是并没有将其保存在全局变量中。  </span>
+
+extern <span class="token string">"C"</span> <span class="token constant">JNIEXPORT</span> <span class="token keyword">void</span> <span class="token constant">JNICALL</span>  
+<span class="token class-name">Java_com_zj_wuaipojie_util_SecurityUtil_hook</span><span class="token punctuation">(</span><span class="token class-name">JNIEnv</span> <span class="token operator">*</span>env<span class="token punctuation">,</span> jclass clazz<span class="token punctuation">,</span> jobject context<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  <span class="token comment">//调用hook</span>
+    jclass conext_class <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetObjectClass</span><span class="token punctuation">(</span>context<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    jmethodID methodId_pack <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetMethodID</span><span class="token punctuation">(</span>conext_class<span class="token punctuation">,</span> <span class="token string">"getPackageName"</span><span class="token punctuation">,</span>  
+                                               <span class="token string">"()Ljava/lang/String;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto packname_js <span class="token operator">=</span> reinterpret_cast<span class="token generics"><span class="token punctuation">&lt;</span>jstring<span class="token punctuation">></span></span><span class="token punctuation">(</span>env<span class="token operator">-></span><span class="token class-name">CallObjectMethod</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span> methodId_pack<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>pn <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetStringUTFChars</span><span class="token punctuation">(</span>packname_js<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    packname <span class="token operator">=</span> <span class="token function">string</span><span class="token punctuation">(</span>pn<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    env<span class="token operator">-></span><span class="token class-name">ReleaseStringUTFChars</span><span class="token punctuation">(</span>packname_js<span class="token punctuation">,</span> pn<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token comment">//LOGI("packname: %s", packname.data());  </span>
+    fakepath<span class="token operator">=</span> <span class="token string">"/data/user/0/"</span><span class="token operator">+</span> packname <span class="token operator">+</span><span class="token string">"/files/base.apk"</span><span class="token punctuation">;</span>  
+
+    jclass conext_class2 <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetObjectClass</span><span class="token punctuation">(</span>context<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    jmethodID methodId_pack2 <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetMethodID</span><span class="token punctuation">(</span>conext_class2<span class="token punctuation">,</span><span class="token string">"getApplicationInfo"</span><span class="token punctuation">,</span><span class="token string">"()Landroid/content/pm/ApplicationInfo;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    jobject application_info <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">CallObjectMethod</span><span class="token punctuation">(</span>context<span class="token punctuation">,</span>methodId_pack2<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    jclass pm_clazz <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetObjectClass</span><span class="token punctuation">(</span>application_info<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    jfieldID package_info_id <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetFieldID</span><span class="token punctuation">(</span>pm_clazz<span class="token punctuation">,</span><span class="token string">"sourceDir"</span><span class="token punctuation">,</span><span class="token string">"Ljava/lang/String;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto sourceDir_js <span class="token operator">=</span> reinterpret_cast<span class="token generics"><span class="token punctuation">&lt;</span>jstring<span class="token punctuation">></span></span><span class="token punctuation">(</span>env<span class="token operator">-></span><span class="token class-name">GetObjectField</span><span class="token punctuation">(</span>application_info<span class="token punctuation">,</span>package_info_id<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>sourceDir <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetStringUTFChars</span><span class="token punctuation">(</span>sourceDir_js<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    origpath <span class="token operator">=</span> <span class="token function">string</span><span class="token punctuation">(</span>sourceDir<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"sourceDir: %s"</span><span class="token punctuation">,</span> sourceDir<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    jfieldID package_info_id2 <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetFieldID</span><span class="token punctuation">(</span>pm_clazz<span class="token punctuation">,</span><span class="token string">"nativeLibraryDir"</span><span class="token punctuation">,</span><span class="token string">"Ljava/lang/String;"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto nativeLibraryDir_js <span class="token operator">=</span> reinterpret_cast<span class="token generics"><span class="token punctuation">&lt;</span>jstring<span class="token punctuation">></span></span><span class="token punctuation">(</span>env<span class="token operator">-></span><span class="token class-name">GetObjectField</span><span class="token punctuation">(</span>application_info<span class="token punctuation">,</span>package_info_id2<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>nativeLibraryDir <span class="token operator">=</span> env<span class="token operator">-></span><span class="token class-name">GetStringUTFChars</span><span class="token punctuation">(</span>nativeLibraryDir_js<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token function">LOGI</span><span class="token punctuation">(</span><span class="token string">"nativeLibraryDir: %s"</span><span class="token punctuation">,</span> nativeLibraryDir<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token comment">//LOGI("%s", "Start Hook");  </span>
+
+    <span class="token comment">//启动hook  </span>
+    <span class="token keyword">void</span> <span class="token operator">*</span>handle <span class="token operator">=</span> <span class="token function">dlopen</span><span class="token punctuation">(</span><span class="token string">"libc.so"</span><span class="token punctuation">,</span><span class="token constant">RTLD_NOW</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto pagesize <span class="token operator">=</span> <span class="token function">sysconf</span><span class="token punctuation">(</span>_SC_PAGE_SIZE<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto addr <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>uintptr_t<span class="token punctuation">)</span><span class="token function">dlsym</span><span class="token punctuation">(</span>handle<span class="token punctuation">,</span><span class="token string">"open"</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">-</span>pagesize<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto addr2 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>uintptr_t<span class="token punctuation">)</span><span class="token function">dlsym</span><span class="token punctuation">(</span>handle<span class="token punctuation">,</span><span class="token string">"openat"</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">-</span>pagesize<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto addr3 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>uintptr_t<span class="token punctuation">)</span>fopen<span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">-</span>pagesize<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    auto addr4 <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>uintptr_t<span class="token punctuation">)</span>syscall<span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">-</span>pagesize<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    <span class="token comment">//解除部分机型open被保护  </span>
+    <span class="token function">mprotect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>addr<span class="token punctuation">,</span> pagesize<span class="token punctuation">,</span> <span class="token constant">PROT_READ</span> <span class="token operator">|</span> <span class="token constant">PROT_WRITE</span> <span class="token operator">|</span> <span class="token constant">PROT_EXEC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token function">mprotect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>addr2<span class="token punctuation">,</span> pagesize<span class="token punctuation">,</span> <span class="token constant">PROT_READ</span> <span class="token operator">|</span> <span class="token constant">PROT_WRITE</span> <span class="token operator">|</span> <span class="token constant">PROT_EXEC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token function">mprotect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>addr3<span class="token punctuation">,</span> pagesize<span class="token punctuation">,</span> <span class="token constant">PROT_READ</span> <span class="token operator">|</span> <span class="token constant">PROT_WRITE</span> <span class="token operator">|</span> <span class="token constant">PROT_EXEC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token function">mprotect</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span>addr4<span class="token punctuation">,</span> pagesize<span class="token punctuation">,</span> <span class="token constant">PROT_READ</span> <span class="token operator">|</span> <span class="token constant">PROT_WRITE</span> <span class="token operator">|</span> <span class="token constant">PROT_EXEC</span><span class="token punctuation">)</span><span class="token punctuation">;</span>  
+
+    <span class="token class-name">DobbyHook</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">dlsym</span><span class="token punctuation">(</span>handle<span class="token punctuation">,</span><span class="token string">"open"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>fake_open<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>orig_open<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token class-name">DobbyHook</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token function">dlsym</span><span class="token punctuation">(</span>handle<span class="token punctuation">,</span><span class="token string">"openat"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>fake_openat<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>orig_openat<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token class-name">DobbyHook</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>fopen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>fake_fopen<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>orig_fopen<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+    <span class="token class-name">DobbyHook</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>syscall<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span>fake_syscall<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>orig_syscall<span class="token punctuation">)</span><span class="token punctuation">;</span>  
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>调用：</p>
+<pre class="language-smali" data-language="smali"><code class="language-smali">sget-object p10<span class="token punctuation">,</span> <span class="token class-name"><span class="token builtin">L</span><span class="token namespace">com<span class="token punctuation">/</span>zj<span class="token punctuation">/</span>wuaipojie<span class="token punctuation">/</span>util<span class="token punctuation">/</span></span><span class="token class-name">ContextUtils</span></span><span class="token punctuation">;</span><span class="token operator">-></span><span class="token field variable">INSTANCE</span><span class="token punctuation">:</span><span class="token class-name"><span class="token builtin">L</span><span class="token namespace">com<span class="token punctuation">/</span>zj<span class="token punctuation">/</span>wuaipojie<span class="token punctuation">/</span>util<span class="token punctuation">/</span></span><span class="token class-name">ContextUtils</span></span><span class="token punctuation">;</span>  
+
+invoke-virtual <span class="token punctuation">&#123;</span>p10<span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token class-name"><span class="token builtin">L</span><span class="token namespace">com<span class="token punctuation">/</span>zj<span class="token punctuation">/</span>wuaipojie<span class="token punctuation">/</span>util<span class="token punctuation">/</span></span><span class="token class-name">ContextUtils</span></span><span class="token punctuation">;</span><span class="token operator">-></span><span class="token function">getContext</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token class-name"><span class="token builtin">L</span><span class="token namespace">android<span class="token punctuation">/</span>content<span class="token punctuation">/</span></span><span class="token class-name">Context</span></span><span class="token punctuation">;</span>  
+
+move-result-object p10  
+
+invoke-static <span class="token punctuation">&#123;</span>p10<span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token class-name"><span class="token builtin">L</span><span class="token namespace">com<span class="token punctuation">/</span>zj<span class="token punctuation">/</span>wuaipojie<span class="token punctuation">/</span>util<span class="token punctuation">/</span></span><span class="token class-name">SecurityUtil</span></span><span class="token punctuation">;</span><span class="token operator">-></span><span class="token function">hook</span><span class="token punctuation">(</span><span class="token class-name"><span class="token builtin">L</span><span class="token namespace">android<span class="token punctuation">/</span>content<span class="token punctuation">/</span></span><span class="token class-name">Context</span></span><span class="token punctuation">;</span><span class="token punctuation">)</span><span class="token builtin">V</span></code></pre>
+
+
+
+<h6 id="CRC"><a href="#CRC" class="headerlink" title="CRC"></a>CRC</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070108114.png"></p>
+<p>寻找比对的值</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070125274.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070126375.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070126784.png"></p>
+<p>是一个地址，不是一个固定的值&#x3D;&#x3D;》</p>
+<p>由于每次修改程序文件都将导致crc不一致&#x3D;&#x3D;》使用IO重定向使得在进行校验时直接使用原包的crc，从而绕过校验（hash读取整个APK，也一样）</p>
+<p>为此，将在调用crc校验之前就使用IO重定向&#x3D;&#x3D;》在MT管理器中找到调用校验crc的代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070129172.png" alt="image-20230507012956132"></p>
+<p>找到后，要在调用之前添加能调用IO重定向的smali代码（直接在开头添加即可）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070132504.png"></p>
+<p>还需要将原包放进修改后的程序的数据目录中，在数据目录中新建files文件夹，放入原包，重命名为base.apk</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070135694.png" alt="image-20230507013530660"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070137397.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070138160.png"></p>
+<p>安装验证：</p>
+<p>hash（读取整个APK）与crc（读取dex）类似，所以都将通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070139118.png" alt="image-20230507013950087"></p>
+<h6 id="hash"><a href="#hash" class="headerlink" title="hash"></a>hash</h6><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070145473.png" alt="image-20230507014524424"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070146233.png" alt="image-20230507014621203"></p>
+<p>由setApkHash设置ApkHash，查找该函数的用例</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070147109.png" alt="image-20230507014744075"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202305070149331.png" alt="image-20230507014919296"></p>
+<h4 id="检测"><a href="#检测" class="headerlink" title="检测"></a>检测</h4><h5 id="Root检测"><a href="#Root检测" class="headerlink" title="Root检测"></a>Root检测</h5><pre class="language-java" data-language="java"><code class="language-java">fun <span class="token function">isDeviceRooted</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token class-name">Boolean</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token function">checkRootMethod1</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">checkRootMethod2</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token function">checkRootMethod3</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//检查设备的build tags是否包含test-key</span>
+fun <span class="token function">checkRootMethod1</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token class-name">Boolean</span> <span class="token punctuation">&#123;</span>
+    val buildTags <span class="token operator">=</span> <span class="token class-name"><span class="token namespace">android<span class="token punctuation">.</span>os<span class="token punctuation">.</span></span>Build</span><span class="token punctuation">.</span><span class="token constant">TAGS</span>
+    <span class="token keyword">return</span> buildTags <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span> buildTags<span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"test-keys"</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//检查设备是否存在一些特定文件（指纹）</span>
+<span class="token comment">//这些文件常用于执行root操作</span>
+fun <span class="token function">checkRootMethod2</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token class-name">Boolean</span> <span class="token punctuation">&#123;</span>
+    val paths <span class="token operator">=</span> <span class="token function">arrayOf</span><span class="token punctuation">(</span><span class="token string">"/system/app/Superuser.apk"</span><span class="token punctuation">,</span> <span class="token string">"/sbin/su"</span><span class="token punctuation">,</span> <span class="token string">"/system/bin/su"</span><span class="token punctuation">,</span> <span class="token string">"/system/xbin/su"</span><span class="token punctuation">,</span> <span class="token string">"/data/local/xbin/su"</span><span class="token punctuation">,</span> <span class="token string">"/data/local/bin/su"</span><span class="token punctuation">,</span> <span class="token string">"/system/sd/xbin/su"</span><span class="token punctuation">,</span>
+            <span class="token string">"/system/bin/failsafe/su"</span><span class="token punctuation">,</span> <span class="token string">"/data/local/su"</span><span class="token punctuation">,</span> <span class="token string">"/su/bin/su"</span><span class="token punctuation">)</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span>path in paths<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">File</span><span class="token punctuation">(</span>path<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exists</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">return</span> <span class="token boolean">true</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> <span class="token boolean">false</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//使用Runtime.exec()执行which su命令，检查命令的输出是否不为空；若输出不为空，则认为设备已被root</span>
+fun <span class="token function">checkRootMethod3</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token class-name">Boolean</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">var</span> process<span class="token operator">:</span> <span class="token class-name">Process</span><span class="token operator">?</span> <span class="token operator">=</span> <span class="token keyword">null</span>
+    <span class="token keyword">return</span> <span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+        process <span class="token operator">=</span> <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">exec</span><span class="token punctuation">(</span><span class="token function">arrayOf</span><span class="token punctuation">(</span><span class="token string">"/system/xbin/which"</span><span class="token punctuation">,</span> <span class="token string">"su"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        val bufferedReader <span class="token operator">=</span> <span class="token class-name">BufferedReader</span><span class="token punctuation">(</span><span class="token class-name">InputStreamReader</span><span class="token punctuation">(</span>process<span class="token punctuation">.</span>inputStream<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        bufferedReader<span class="token punctuation">.</span><span class="token function">readLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">null</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span>t<span class="token operator">:</span> <span class="token class-name">Throwable</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token boolean">false</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+        process<span class="token operator">?</span><span class="token punctuation">.</span><span class="token function">destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h5 id="模拟器检测"><a href="#模拟器检测" class="headerlink" title="模拟器检测"></a>模拟器检测</h5><pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">//通过检测系统的Build对象来判断当前设备是否为模拟器</span>
+<span class="token comment">//检测Build.FINGERPRINT属性是否包含字符串"generic"</span>
+fun <span class="token function">isEmulator</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token class-name">Boolean</span> <span class="token punctuation">&#123;</span> 
+        <span class="token keyword">return</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">FINGERPRINT</span><span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"generic"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">FINGERPRINT</span><span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"unknown"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">MODEL</span><span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"google_sdk"</span><span class="token punctuation">)</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">MODEL</span><span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"Emulator"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">MODEL</span><span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"Android SDK built for x86"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">MANUFACTURER</span><span class="token punctuation">.</span><span class="token function">contains</span><span class="token punctuation">(</span><span class="token string">"Genymotion"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">HOST</span><span class="token punctuation">.</span><span class="token function">startsWith</span><span class="token punctuation">(</span><span class="token string">"Build"</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token class-name">Build</span><span class="token punctuation">.</span><span class="token constant">PRODUCT</span> <span class="token operator">==</span> <span class="token string">"google_sdk"</span> 
+        <span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h5 id="反调试检测"><a href="#反调试检测" class="headerlink" title="反调试检测"></a>反调试检测</h5><pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">//安装系统自带调试检测函数</span>
+fun <span class="token function">checkForDebugger</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token class-name">Debug</span><span class="token punctuation">.</span><span class="token function">isDebuggerConnected</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>  
+        <span class="token comment">// 如果调试器已连接，则终止应用程序  </span>
+        <span class="token class-name">System</span><span class="token punctuation">.</span><span class="token function">exit</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>  
+    <span class="token punctuation">&#125;</span>  
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">//debuggable属性检查</span>
+<span class="token keyword">public</span> <span class="token keyword">boolean</span> <span class="token function">getAppCanDebug</span><span class="token punctuation">(</span><span class="token class-name">Context</span> context<span class="token punctuation">)</span><span class="token comment">//上下文对象为xxActivity.this</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">boolean</span> isDebug <span class="token operator">=</span> context<span class="token punctuation">.</span><span class="token function">getApplicationInfo</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token keyword">null</span> <span class="token operator">&amp;&amp;</span>
+            <span class="token punctuation">(</span>context<span class="token punctuation">.</span><span class="token function">getApplicationInfo</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>flags <span class="token operator">&amp;</span> <span class="token class-name">ApplicationInfo</span><span class="token punctuation">.</span><span class="token constant">FLAG_DEBUGGABLE</span><span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> isDebug<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">//ptrace检测</span>
+<span class="token keyword">int</span> <span class="token function">ptrace_protect</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token comment">//ptrace附加自身线程（追踪进程） 会导致此进程TracerPid（追踪进程ID） 变为父进程的TracerPid 即zygote</span>
+    <span class="token comment">//Zygote是Android中的一个重要进程，和init进程，SystemServer进程是Android中最重要的三大进程</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token function">ptrace</span><span class="token punctuation">(</span><span class="token constant">PTRACE_TRACEME</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token punctuation">;</span><span class="token comment">//返回-1即为已经被调试</span>
+<span class="token punctuation">&#125;</span>
+<span class="token comment">//因为每个进程之恶能被一个调试进程ptrace，自己主动ptrace进程可以使其他调试器无法调试</span>
+
+
+<span class="token comment">//调试进程名检测</span>
+<span class="token keyword">int</span> <span class="token class-name">SearchObjProcess</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token constant">FILE</span><span class="token operator">*</span> pfile<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> buf<span class="token punctuation">[</span><span class="token number">0x1000</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+    pfile<span class="token operator">=</span><span class="token function">popen</span><span class="token punctuation">(</span><span class="token string">"ps"</span><span class="token punctuation">,</span><span class="token string">"r"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token constant">NULL</span><span class="token operator">==</span>pfile<span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+        <span class="token comment">//LOGA("SearchObjProcess popen打开命令失败!\n");</span>
+        <span class="token keyword">return</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">// 获取结果</span>
+    <span class="token comment">//LOGA("popen方案:\n");</span>
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token function">fgets</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token function">sizeof</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">,</span>pfile<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">char</span><span class="token operator">*</span> strA<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span><span class="token operator">*</span> strB<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span><span class="token operator">*</span> strC<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+        <span class="token keyword">char</span><span class="token operator">*</span> strD<span class="token operator">=</span><span class="token constant">NULL</span><span class="token punctuation">;</span>
+        strA<span class="token operator">=</span><span class="token function">strstr</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token string">"android_server"</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//通过查找匹配子串判断</span>
+        strB<span class="token operator">=</span><span class="token function">strstr</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token string">"gdbserver"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        strC<span class="token operator">=</span><span class="token function">strstr</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token string">"gdb"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        strD<span class="token operator">=</span><span class="token function">strstr</span><span class="token punctuation">(</span>buf<span class="token punctuation">,</span><span class="token string">"fuwu"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>strA <span class="token operator">||</span> strB <span class="token operator">||</span>strC <span class="token operator">||</span> strD<span class="token punctuation">)</span>
+        <span class="token punctuation">&#123;</span>
+            <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+            <span class="token comment">// 执行到这里，判定为调试状态</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token function">pclose</span><span class="token punctuation">(</span>pfile<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+
+<span class="token comment">//Fride检测</span>
+<span class="token comment">//https://github.com/xxr0ss/AntiFrida</span></code></pre>
+
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/04/03/C-%E5%9F%BA%E7%A1%80%E5%AD%A6%E4%B9%A0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-05-07 20:39:37
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Android%E9%80%86%E5%90%91/" title="Android逆向">
+                        #Android逆向
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Android-RE"><span class="toc-text">Android RE</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-text">环境搭建</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">模拟器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android%E5%B7%A5%E5%85%B7%E6%B8%85%E5%8D%95"><span class="toc-text">Android工具清单</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#APK"><span class="toc-text">APK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8C%E5%BC%80%E5%8F%8A%E5%85%B6%E5%8E%9F%E7%90%86"><span class="toc-text">双开及其原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%89%E5%8C%96APK"><span class="toc-text">汉化APK</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%89%E5%8C%96%E5%AE%9E%E6%93%8D"><span class="toc-text">汉化实操</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AndroidManifest-xml"><span class="toc-text">AndroidManifest.xml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Smali"><span class="toc-text">Smali</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E3%80%8A%E4%B8%80%E9%94%AE%E4%B8%89%E8%BF%9E%E3%80%8B"><span class="toc-text">《一键三连》</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6"><span class="toc-text">四大组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">生命周期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%BF%E5%91%8A-x2F-%E5%BC%B9%E7%AA%97-x2F-%E5%B8%83%E5%B1%80"><span class="toc-text">广告 &#x2F; 弹窗 &#x2F; 布局</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B9%BF%E5%91%8A"><span class="toc-text">广告</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%B9%E7%AA%97"><span class="toc-text">弹窗</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%83%E5%B1%80"><span class="toc-text">布局</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E8%B0%83%E8%AF%95"><span class="toc-text">动态调试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-text">目标</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Log%E6%8F%92%E6%A1%A9"><span class="toc-text">Log插桩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D%E4%B8%8E%E7%AD%BE%E5%90%8D%E6%A0%A1%E9%AA%8C"><span class="toc-text">签名与签名校验</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D"><span class="toc-text">签名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D%E6%A0%A1%E9%AA%8C"><span class="toc-text">签名校验</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%97%AA%E9%80%80%E5%8E%9F%E5%9B%A0"><span class="toc-text">闪退原因</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E7%AD%BE%E5%90%8D%E6%A0%A1%E9%AA%8C%E6%96%B9%E6%B3%95"><span class="toc-text">普通签名校验方法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E7%AD%BE%E5%90%8D%E6%A0%A1%E9%AA%8C%E4%BB%A3%E7%A0%81"><span class="toc-text">普通签名校验代码</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E7%AD%BE%E5%90%8D%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="toc-text">普通签名绕过方法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#PM%E4%BB%A3%E7%90%86"><span class="toc-text">PM代理</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#API%E7%AD%BE%E5%90%8D%E6%A0%A1%E9%AA%8C"><span class="toc-text">API签名校验</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#IO%E9%87%8D%E5%AE%9A%E5%90%91%EF%BC%88CRC%EF%BC%8CHash%EF%BC%89"><span class="toc-text">IO重定向（CRC，Hash）</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#CRC"><span class="toc-text">CRC</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#hash"><span class="toc-text">hash</span></a></li></ol></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%B5%8B"><span class="toc-text">检测</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Root%E6%A3%80%E6%B5%8B"><span class="toc-text">Root检测</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E5%99%A8%E6%A3%80%E6%B5%8B"><span class="toc-text">模拟器检测</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8F%8D%E8%B0%83%E8%AF%95%E6%A3%80%E6%B5%8B"><span class="toc-text">反调试检测</span></a></li></ol></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Android%E9%80%86%E5%90%91(%E4%B8%80) + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F05%2F07%2FAndroid%25E9%2580%2586%25E5%2590%2591-%25E4%25B8%2580%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/05/07/Android%E9%80%86%E5%90%91-%E4%B8%80/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
