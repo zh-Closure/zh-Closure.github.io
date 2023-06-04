@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Qiling入门与QilingLab 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Qiling入门与QilingLab</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-06-04 19:44:05
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BB%BF%E7%9C%9F/" title="二进制仿真">
+                    #二进制仿真
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Qiling入门与QilingLab"><a href="#Qiling入门与QilingLab" class="headerlink" title="Qiling入门与QilingLab"></a>Qiling入门与QilingLab</h1><h2 id="Qiling"><a href="#Qiling" class="headerlink" title="Qiling"></a>Qiling</h2><p>二进制仿真框架，支持多种文件格式（PE，MachO，ELF，COM）</p>
+<p>项目地址：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;qilingframework&#x2F;qiling</code></pre>
+
+<p>官方文档：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;</code></pre>
+
+<p>安装使用（官方文档中也有）：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#此处采用Ubuntu20.04</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> update
+<span class="token function">sudo</span> <span class="token function">apt-get</span> upgrade
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> python3-pip <span class="token function">git</span> cmake
+
+<span class="token function">git</span> clone https://github.com/qilingframework/qiling
+<span class="token builtin class-name">cd</span> qiling
+<span class="token function">sudo</span> pip3 <span class="token function">install</span> <span class="token builtin class-name">.</span> 
+
+<span class="token function">git</span> submodule update <span class="token parameter variable">--init</span> <span class="token parameter variable">--recursive</span></code></pre>
+
+
+
+<h2 id="QilingLab"><a href="#QilingLab" class="headerlink" title="QilingLab"></a>QilingLab</h2><p>一个关于Qiling使用的挑战学习，旨在学习Qiling的使用，所以对于挑战将<strong>采用预期解</strong></p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.shielder.com&#x2F;blog&#x2F;2021&#x2F;07&#x2F;qilinglab-release&#x2F;</code></pre>
+
+<p>挑战分为两个架构：x86_64与aarch64，下文中是对于x86_64的挑战writeup：</p>
+<p>下载文件  –&gt;  64位IDA pro打开进行静态分析：</p>
+<p>一共是11个挑战，且没有去除符号表</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041642662.png"></p>
+<p>尝试执行程序：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041644759.png"></p>
+<p>使用Qiling模拟启动程序：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> qiling <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>const <span class="token keyword">import</span> QL_INTERCEPT
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>os<span class="token punctuation">.</span>mapper <span class="token keyword">import</span> QlFsMappedObject
+<span class="token keyword">import</span> os
+<span class="token keyword">import</span> struct
+
+<span class="token keyword">if</span> __name__  <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'qilinglab-x86_64'</span><span class="token punctuation">]</span> <span class="token comment">#目标文件</span>
+    rootfs <span class="token operator">=</span> <span class="token string">"/home/iotserver/tools/qiling/examples/rootfs/x8664_linux"</span> <span class="token comment"># 文件系统 在clone下来的仓库里</span>
+    ql <span class="token operator">=</span> Qiling<span class="token punctuation">(</span>path<span class="token punctuation">,</span> rootfs<span class="token punctuation">)</span>
+    
+    ql<span class="token punctuation">.</span>verbose <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#查看输出内容 从1~n</span>
+    ql<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>依旧是报错（放心食用）</p>
+<pre class="language-python" data-language="python"><code class="language-python">ql<span class="token punctuation">.</span>verbose <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#从下图中可以看到由此输出了寄存器等信息</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041649783.png"></p>
+<h3 id="challenge1"><a href="#challenge1" class="headerlink" title="challenge1"></a>challenge1</h3><p>我们挑战成果的条件是挑战关卡函数传入的指针指向的位置能被赋值为1，如下图</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041654821.png"></p>
+<p>此处的逻辑为判断内存中的0x1337中的值是否为1337，是的话挑战成功，为此，使用Qiling直接修改内存即可；</p>
+<p>但是由于我们不能确定程序的加载基地址，所以需要映射一块内存使用，并且由于Qiling底层使用Unicorn Engine，所以在进行内存映射时要采用4k对齐</p>
+<p>文档相关位置：</p>
+<p>内存操作相关：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;memory&#x2F;#mapping-memory-pages</code></pre>
+
+<p>打包与解包：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;struct&#x2F;</code></pre>
+
+<p>使用到的内容</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#映射内存页</span>
+ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span><span class="token builtin">map</span><span class="token punctuation">(</span>addr<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> size<span class="token punctuation">:</span> <span class="token builtin">int</span><span class="token punctuation">,</span> perms<span class="token punctuation">:</span> <span class="token builtin">int</span> <span class="token operator">=</span> UC_PROT_ALL<span class="token punctuation">,</span> info<span class="token punctuation">:</span> Optional<span class="token punctuation">[</span><span class="token builtin">str</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token boolean">None</span><span class="token punctuation">)</span> <span class="token operator">-</span><span class="token operator">></span> <span class="token boolean">None</span>
+<span class="token comment">#addr：映射基地址</span>
+<span class="token comment">#size：以字节为单位的映射大小</span>
+<span class="token comment">#info：为映射范围设置字符串标签，以便于识别</span>
+<span class="token comment">#例：</span>
+ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> info<span class="token operator">=</span><span class="token string">'[challenge1]'</span><span class="token punctuation">)</span>
+
+<span class="token comment">#写入内存</span>
+ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>address<span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+
+<span class="token comment">#打包16位数据，无符号整型，2字节</span>
+ql<span class="token punctuation">.</span>pack16<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> qiling <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>const <span class="token keyword">import</span> QL_INTERCEPT
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>os<span class="token punctuation">.</span>mapper <span class="token keyword">import</span> QlFsMappedObject
+<span class="token keyword">import</span> os
+<span class="token keyword">import</span> struct
+
+<span class="token keyword">def</span> <span class="token function">challenge1</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> info<span class="token operator">=</span><span class="token string">'[challenge1]'</span><span class="token punctuation">)</span>   <span class="token comment">#映射内存</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token number">0x1337</span><span class="token punctuation">,</span> ql<span class="token punctuation">.</span>pack16<span class="token punctuation">(</span><span class="token number">1337</span><span class="token punctuation">)</span><span class="token punctuation">)</span>   <span class="token comment">#修改内存的值</span>
+
+<span class="token keyword">if</span> __name__  <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'qilinglab-x86_64'</span><span class="token punctuation">]</span> <span class="token comment">#目标文件</span>
+    rootfs <span class="token operator">=</span> <span class="token string">"/home/iotserver/tools/qiling/examples/rootfs/x8664_linux"</span> <span class="token comment"># 文件系统 在clone下来的仓库里</span>
+    ql <span class="token operator">=</span> Qiling<span class="token punctuation">(</span>path<span class="token punctuation">,</span> rootfs<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 在ql.run()之前，做好我们的hook工作</span>
+    challenge1<span class="token punctuation">(</span>ql<span class="token punctuation">)</span> 
+    
+    ql<span class="token punctuation">.</span>verbose <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#查看输出内容 从1~n</span>
+    ql<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>第一关通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041712095.png"></p>
+<h3 id="challenge2"><a href="#challenge2" class="headerlink" title="challenge2"></a>challenge2</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041721909.png"></p>
+<p>函数通过系统调用uname获取系统信息，并对比，校验成功则通过</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//&lt;sys/utsname.h></span>
+<span class="token keyword">struct</span> <span class="token class-name">utsname</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> sysname<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> nodename<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> release<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> version<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> machine<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> domainname<span class="token punctuation">[</span><span class="token number">65</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span></code></pre>
+
+<p>为此，我们将在系统调用<strong>返回</strong>时对其进行Hook，达到我们想要的功能</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041725612.png" alt="image-20230604172520573"></p>
+<p>文档相关位置：</p>
+<p>劫持：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;hijack&#x2F;</code></pre>
+
+<p>Hook:</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;hook&#x2F;</code></pre>
+
+<p>寄存器操作：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;register&#x2F;</code></pre>
+
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> qiling <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>const <span class="token keyword">import</span> QL_INTERCEPT
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>os<span class="token punctuation">.</span>mapper <span class="token keyword">import</span> QlFsMappedObject
+<span class="token keyword">import</span> os
+<span class="token keyword">import</span> struct
+
+<span class="token keyword">def</span> <span class="token function">challenge1</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> info<span class="token operator">=</span><span class="token string">'[challenge1]'</span><span class="token punctuation">)</span>   <span class="token comment">#映射内存</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token number">0x1337</span><span class="token punctuation">,</span> ql<span class="token punctuation">.</span>pack16<span class="token punctuation">(</span><span class="token number">1337</span><span class="token punctuation">)</span><span class="token punctuation">)</span>   <span class="token comment">#修改内存的值</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_uname_exit</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#hook uname系统调用返回的内容</span>
+    rdi <span class="token operator">=</span> ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rdi   <span class="token comment">#获取寄存器</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>rdi<span class="token punctuation">,</span> <span class="token string">b'QilingOS\x00'</span><span class="token punctuation">)</span>  <span class="token comment">#写入</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>rdi <span class="token operator">+</span> <span class="token number">65</span> <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">b'ChallengeStart\x00'</span><span class="token punctuation">)</span>  <span class="token comment">#根据utsname结构体获取要写入的位置，长度不对的话会报错</span>
+    
+<span class="token keyword">def</span> <span class="token function">challenge2</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#hook系统调用返回</span>
+    <span class="token comment">#QL_INTERCEPT.EXIT  在退出系统调用后</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">'uname'</span><span class="token punctuation">,</span> hook_uname_exit<span class="token punctuation">,</span> QL_INTERCEPT<span class="token punctuation">.</span>EXIT<span class="token punctuation">)</span>   
+    
+<span class="token keyword">if</span> __name__  <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'qilinglab-x86_64'</span><span class="token punctuation">]</span> <span class="token comment">#目标文件</span>
+    rootfs <span class="token operator">=</span> <span class="token string">"/home/iotserver/tools/qiling/examples/rootfs/x8664_linux"</span> <span class="token comment"># 文件系统 在clone下来的仓库里</span>
+    ql <span class="token operator">=</span> Qiling<span class="token punctuation">(</span>path<span class="token punctuation">,</span> rootfs<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 在ql.run()之前，做好我们的hook工作</span>
+    challenge1<span class="token punctuation">(</span>ql<span class="token punctuation">)</span> 
+    challenge2<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    
+    ql<span class="token punctuation">.</span>verbose <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#查看输出内容 从1~n</span>
+    ql<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>成功通关</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041739006.png" alt="image-20230604173953952"></p>
+<h3 id="challenge3"><a href="#challenge3" class="headerlink" title="challenge3"></a>challenge3</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041744145.png" alt="image-20230604174423099"></p>
+<p>函数将先读取&#x2F;dev&#x2F;urandom获取随机数，再通过getrandom()获取随机数，后续需要比对这两个随机数；程序还读取了一个一字节的随机数，并且要求与第一个读取的随机数不一样</p>
+<p>文档相关位置：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;hijack&#x2F;</code></pre>
+
+<p>Qiling提供了QlFsMappedObject去自定义文件系统，例：read，write等</p>
+<p>由于全粘贴在一起代码太长了，所以后面都直接粘贴实现的函数了</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Fake_urandom</span><span class="token punctuation">(</span>QlFsMappedObject<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> size <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>   <span class="token comment">#读取1字节，随便自定义个数字</span>
+            <span class="token keyword">return</span> <span class="token string">b"\x01"</span>
+        <span class="token keyword">return</span> <span class="token string">b"\x00"</span><span class="token operator">*</span>size  <span class="token comment">#该处读取要与getrandom()获取的随机数进行比对</span>
+    <span class="token keyword">def</span> <span class="token function">close</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+<span class="token comment">#对getrandom()进行hook</span>
+<span class="token keyword">def</span> <span class="token function">getrandom_hook</span><span class="token punctuation">(</span>ql<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> buflen<span class="token punctuation">,</span> flags<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kw<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">b"\x00"</span><span class="token operator">*</span>buflen<span class="token punctuation">)</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall_return<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>  <span class="token comment">#设置返回  可设置可不设？</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge3</span><span class="token punctuation">(</span>ql<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">"getrandom"</span><span class="token punctuation">,</span> getrandom_hook<span class="token punctuation">)</span>
+    ql<span class="token punctuation">.</span>add_fs_mapper<span class="token punctuation">(</span><span class="token string">"/dev/urandom"</span><span class="token punctuation">,</span> Fake_urandom<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+<p>成功通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041808787.png"></p>
+<h3 id="challenge4"><a href="#challenge4" class="headerlink" title="challenge4"></a>challenge4</h3><p>IDA pro：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041812514.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041813954.png" alt="image-20230604181354933"></p>
+<p>其实就是一个循环，这里我用Ghidra反编译试了一下：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041814676.png" alt="image-20230604181432643"></p>
+<p>所以思路页变得非常简单，进入一次循环即可，也就是将条件设置为1即可，就变成</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">1</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span> <span class="token operator">*</span>a1 <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span> <span class="token punctuation">&#125;</span></code></pre>
+
+<p>这里我们将直接采用hook地址的方式&#x3D;&#x3D;》</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_eax</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>eax <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge4</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">'''
+    0000000000000E40 8B 45 F8            mov     eax, [rbp+var_8]
+	0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
+	0000000000000E46 7C ED               jl      short loc_E35
+	'''</span>
+    libc_base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span><span class="token comment">#获取基地址</span>
+    hook_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xE43</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_eax<span class="token punctuation">,</span>hook_addr<span class="token punctuation">)</span></code></pre>
+
+<p>成功通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041822684.png"></p>
+<h3 id="challenge5"><a href="#challenge5" class="headerlink" title="challenge5"></a>challenge5</h3><p>由于此题就算你感觉你做出来了，但是由于后续题目的影响，是不会有回显的，可能会让你不放心，这边建议可以做完challenge6在来看就有回显了</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041824354.png" alt="image-20230604182402305"></p>
+<p>这个就比较简单了，程序从rand()获取随机数，与0对比，只要让rand()每次返回都是0就可以了</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_rand</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#设置寄存器</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge5</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_api<span class="token punctuation">(</span><span class="token string">'rand'</span><span class="token punctuation">,</span> hook_rand<span class="token punctuation">)</span> <span class="token comment">#hook外部函数</span></code></pre>
+
+<p>通过但无回显，正常现象</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041829525.png" alt="image-20230604182920488"></p>
+<h3 id="challenge6"><a href="#challenge6" class="headerlink" title="challenge6"></a>challenge6</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041829421.png" alt="image-20230604182958390"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041831595.png" alt="image-20230604183115550"></p>
+<p>是一个死循环，直接在进行比较之前修改al寄存器的值即可</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_while_true</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#设置寄存器</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge6</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>  <span class="token comment">#获取基地址</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_while_true<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0xF16</span><span class="token punctuation">)</span>  <span class="token comment">#hook</span></code></pre>
+
+<p>通过但无回显，但是回显了第五关</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041833356.png" alt="image-20230604183331314"></p>
+<h3 id="challenge7"><a href="#challenge7" class="headerlink" title="challenge7"></a>challenge7</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041834565.png" alt="image-20230604183425532"></p>
+<p>直接就是一个睡，这位更是重量级</p>
+<p>可以通过修改sleep()的参数；自己实现sleep() api；修改sleep()的底层系统调用nanosleep()。</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">set_sleep_edi</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edi <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment">#修改参数</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_sleep_api</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span>  <span class="token comment">#直接就是一个返回</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_nanosleep</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 注意参数列表</span>
+    <span class="token keyword">return</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge7</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#QL_INTERCEPT.ENTER  在进入系统调用之前</span>
+    <span class="token comment"># ql.set_api('sleep', set_sleep_edi , QL_INTERCEPT.ENTER)</span>
+    <span class="token comment"># ql.set_api('sleep', hook_sleep_api)</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">'nanosleep'</span><span class="token punctuation">,</span> hook_nanosleep<span class="token punctuation">)</span></code></pre>
+
+<p>成功通过，至此，已经可以全部回显了</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041841420.png"></p>
+<h3 id="challenge8"><a href="#challenge8" class="headerlink" title="challenge8"></a>challenge8</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041845883.png"></p>
+<p>这东西是个结构体</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">struct</span> <span class="token class-name">xxx</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>v2<span class="token punctuation">;</span>
+    __int64 magic<span class="token punctuation">;</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span>check<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>文档相关位置：</p>
+<p>结构体解包：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.qiling.io&#x2F;en&#x2F;latest&#x2F;struct&#x2F;</code></pre>
+
+<p>字节顺序，大小和对齐方式：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;docs.python.org&#x2F;3&#x2F;library&#x2F;struct.html#module-struct
+https:&#x2F;&#x2F;docs.python.org&#x2F;3&#x2F;library&#x2F;struct.html#format-characters
+https:&#x2F;&#x2F;docs.python.org&#x2F;3&#x2F;library&#x2F;struct.html#byte-order-size-and-alignment</code></pre>
+
+
+
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">search_mem_to_find_struct</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    MAGIC <span class="token operator">=</span> ql<span class="token punctuation">.</span>pack64<span class="token punctuation">(</span><span class="token number">0x3DFCD6EA00000539</span><span class="token punctuation">)</span>
+    candidate_addrs <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>search<span class="token punctuation">(</span>MAGIC<span class="token punctuation">)</span>  <span class="token comment">#内存中检索</span>
+
+    <span class="token keyword">for</span> addr <span class="token keyword">in</span> candidate_addrs<span class="token punctuation">:</span>
+        <span class="token comment"># 有可能有多个地址，所以通过其他特征进一步确认</span>
+        heap_addr <span class="token operator">=</span> addr <span class="token operator">-</span> <span class="token number">8</span>
+        heap <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>read<span class="token punctuation">(</span>heap_addr<span class="token punctuation">,</span> <span class="token number">24</span><span class="token punctuation">)</span>  <span class="token comment">#读取结构体内容</span>
+        string_addr<span class="token punctuation">,</span> _<span class="token punctuation">,</span> check_addr <span class="token operator">=</span> struct<span class="token punctuation">.</span>unpack<span class="token punctuation">(</span><span class="token string">'QQQ'</span><span class="token punctuation">,</span> heap<span class="token punctuation">)</span>  <span class="token comment">#解包数据。解成三个8字节的无符号长整型的数据</span>
+        <span class="token keyword">if</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>string<span class="token punctuation">(</span>string_addr<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'Random data'</span><span class="token punctuation">:</span>  <span class="token comment">#程序中还有一个字符串标志用以辨别</span>
+            ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>check_addr<span class="token punctuation">,</span> <span class="token string">b'\x01'</span><span class="token punctuation">)</span>
+            <span class="token keyword">break</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge8</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>  <span class="token comment">#获取基地址</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>search_mem_to_find_struct<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0xFB5</span><span class="token punctuation">)</span></code></pre>
+
+<p>成功通过：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041908525.png"></p>
+<h3 id="challenge9"><a href="#challenge9" class="headerlink" title="challenge9"></a>challenge9</h3><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041910929.png" alt="image-20230604191019889"></p>
+<p>这个也比较简单了，一个字符串，经过tolower()处理在与原字符串对比，直接改tolower()就可以了</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">fake_tolower</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge9</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_api<span class="token punctuation">(</span><span class="token string">'tolower'</span><span class="token punctuation">,</span> fake_tolower<span class="token punctuation">)</span></code></pre>
+
+<p>成功通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041912328.png"></p>
+<h3 id="challenge10"><a href="#challenge10" class="headerlink" title="challenge10"></a>challenge10</h3><p>这一关我并没有按照预期解解出来，不知道哪里的问题，若是有师傅知道，请务必浇浇Orz</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041914899.png" alt="image-20230604191438864"></p>
+<p>逻辑上就是读取文件内容，然后判断，按照题目描述，这题的预期解应该是劫持文件系统</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">Fake_cmdline</span><span class="token punctuation">(</span>QlFsMappedObject<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> expected_len<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">b"qilinglab"</span>
+    
+    <span class="token keyword">def</span> <span class="token function">close</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge10</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>add_fs_mapper<span class="token punctuation">(</span><span class="token string">'/proc/self/cmdline'</span><span class="token punctuation">,</span> Fake_cmdline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+<p>但是我并没有成功，百思不得其解，就直接先把strcmp()进行了hook，期待成功劫持文件系统的师傅浇浇</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041919283.png" alt="image-20230604191958252"></p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_strcmprax</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span>Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge10</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span>Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_strcmprax<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0x1132</span><span class="token punctuation">)</span></code></pre>
+
+<p>暂且通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041921576.png"></p>
+<h3 id="challenge11"><a href="#challenge11" class="headerlink" title="challenge11"></a>challenge11</h3><p>最后一题</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041922926.png"></p>
+<p>可以看出来重点在cpuid这个指令</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041923204.png" alt="image-20230604192353145"></p>
+<p>可以看到程序对esi，ecx，eax寄存器进行填充并对比，为此，我们直接设置这几个寄存器，对cpuid这个指令进行hook</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_cpuid</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> address<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    000000000000118F 0F A2     cpuid
+    """</span>
+    <span class="token keyword">if</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>read<span class="token punctuation">(</span>address<span class="token punctuation">,</span> size<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">b'\x0F\xA2'</span><span class="token punctuation">:</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ebx <span class="token operator">=</span> <span class="token number">0x696C6951</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ecx <span class="token operator">=</span> <span class="token number">0x614C676E</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edx <span class="token operator">=</span> <span class="token number">0x20202062</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rip <span class="token operator">+=</span> <span class="token number">2</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge11</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>hook_code<span class="token punctuation">(</span>hook_cpuid<span class="token punctuation">)</span></code></pre>
+
+<p>成功通过</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306041933309.png"></p>
+<p>我还看到一个可以提高性能与准确性的写法</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">def</span> <span class="token function">hook_cpuid</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> address<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    0000564846E0118F 0F A2      cpuid
+    """</span>
+    <span class="token keyword">if</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>read<span class="token punctuation">(</span>address<span class="token punctuation">,</span> size<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">b'\x0F\xA2'</span><span class="token punctuation">:</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ebx <span class="token operator">=</span> <span class="token number">0x696C6951</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ecx <span class="token operator">=</span> <span class="token number">0x614C676E</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edx <span class="token operator">=</span> <span class="token number">0x20202062</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rip <span class="token operator">+=</span> <span class="token number">2</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge11</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    begin<span class="token punctuation">,</span> end <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span>
+    <span class="token keyword">for</span> info <span class="token keyword">in</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>map_info<span class="token punctuation">:</span>
+        <span class="token comment">#5表示r-x属性</span>
+        <span class="token comment">#该判断缩小hook范围</span>
+        <span class="token keyword">if</span> info<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token number">5</span> <span class="token keyword">and</span> info<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">'qilinglab-x86_64'</span><span class="token punctuation">:</span>
+            begin<span class="token punctuation">,</span> end <span class="token operator">=</span> info<span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">2</span><span class="token punctuation">]</span>
+
+    ql<span class="token punctuation">.</span>hook_code<span class="token punctuation">(</span>hook_cpuid<span class="token punctuation">,</span> begin<span class="token operator">=</span>begin<span class="token punctuation">,</span> end<span class="token operator">=</span>end<span class="token punctuation">)</span></code></pre>
+
+<p>至此，已经全部通过（除了第10关呜呜呜）</p>
+<h3 id="Writeup"><a href="#Writeup" class="headerlink" title="Writeup"></a>Writeup</h3><pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> qiling <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>const <span class="token keyword">import</span> QL_INTERCEPT
+<span class="token keyword">from</span> qiling<span class="token punctuation">.</span>os<span class="token punctuation">.</span>mapper <span class="token keyword">import</span> QlFsMappedObject
+<span class="token keyword">import</span> os
+<span class="token keyword">import</span> struct
+
+<span class="token keyword">def</span> <span class="token function">challenge1</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span><span class="token builtin">map</span><span class="token punctuation">(</span><span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> info<span class="token operator">=</span><span class="token string">'[challenge1]'</span><span class="token punctuation">)</span>   <span class="token comment">#映射内存</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token number">0x1337</span><span class="token punctuation">,</span> ql<span class="token punctuation">.</span>pack16<span class="token punctuation">(</span><span class="token number">1337</span><span class="token punctuation">)</span><span class="token punctuation">)</span>   <span class="token comment">#修改内存的值</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_uname_exit</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#hook uname系统调用返回的内容</span>
+    rdi <span class="token operator">=</span> ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rdi   <span class="token comment">#获取寄存器</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>rdi<span class="token punctuation">,</span> <span class="token string">b'QilingOS\x00'</span><span class="token punctuation">)</span>  <span class="token comment">#写入</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>rdi <span class="token operator">+</span> <span class="token number">65</span> <span class="token operator">*</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token string">b'ChallengeStart\x00'</span><span class="token punctuation">)</span>  <span class="token comment">#根据utsname结构体获取要写入的位置，长度不对的话会报错</span>
+    
+<span class="token keyword">def</span> <span class="token function">challenge2</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#hook系统调用返回</span>
+    <span class="token comment">#QL_INTERCEPT.EXIT  劫持OS API</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">'uname'</span><span class="token punctuation">,</span> hook_uname_exit<span class="token punctuation">,</span> QL_INTERCEPT<span class="token punctuation">.</span>EXIT<span class="token punctuation">)</span>   
+
+<span class="token keyword">class</span> <span class="token class-name">Fake_urandom</span><span class="token punctuation">(</span>QlFsMappedObject<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> size <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">:</span>   <span class="token comment">#读取1字节，随便自定义个数字</span>
+            <span class="token keyword">return</span> <span class="token string">b"\x01"</span>
+        <span class="token keyword">return</span> <span class="token string">b"\x00"</span><span class="token operator">*</span>size  <span class="token comment">#该处读取要与getrandom()获取的随机数进行比对</span>
+    <span class="token keyword">def</span> <span class="token function">close</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+<span class="token comment">#对getrandom()进行hook</span>
+<span class="token keyword">def</span> <span class="token function">getrandom_hook</span><span class="token punctuation">(</span>ql<span class="token punctuation">,</span> buf<span class="token punctuation">,</span> buflen<span class="token punctuation">,</span> flags<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kw<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>buf<span class="token punctuation">,</span> <span class="token string">b"\x00"</span><span class="token operator">*</span>buflen<span class="token punctuation">)</span>
+    <span class="token comment">#ql.os.set_syscall_return(0)</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge3</span><span class="token punctuation">(</span>ql<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">"getrandom"</span><span class="token punctuation">,</span> getrandom_hook<span class="token punctuation">)</span>
+    ql<span class="token punctuation">.</span>add_fs_mapper<span class="token punctuation">(</span><span class="token string">"/dev/urandom"</span><span class="token punctuation">,</span> Fake_urandom<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+
+<span class="token keyword">def</span> <span class="token function">hook_eax</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>eax <span class="token operator">=</span> <span class="token number">1</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge4</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">'''
+    0000000000000E40 8B 45 F8            mov     eax, [rbp+var_8]
+	0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
+	0000000000000E46 7C ED               jl      short loc_E35
+	'''</span>
+    libc_base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span><span class="token comment">#获取基地址</span>
+    hook_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xE43</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_eax<span class="token punctuation">,</span>hook_addr<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_rand</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#设置寄存器</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge5</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_api<span class="token punctuation">(</span><span class="token string">'rand'</span><span class="token punctuation">,</span> hook_rand<span class="token punctuation">)</span> <span class="token comment">#hook外部函数</span>
+    
+
+<span class="token keyword">def</span> <span class="token function">hook_while_true</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#设置寄存器</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge6</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>  <span class="token comment">#获取基地址</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_while_true<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0xF16</span><span class="token punctuation">)</span>  <span class="token comment">#hook</span>
+
+<span class="token keyword">def</span> <span class="token function">set_sleep_edi</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edi <span class="token operator">=</span> <span class="token number">0</span> <span class="token comment">#修改参数</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_sleep_api</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span>  <span class="token comment">#直接就是一个返回</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_nanosleep</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> <span class="token operator">*</span>args<span class="token punctuation">,</span> <span class="token operator">**</span>kwargs<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># 注意参数列表</span>
+    <span class="token keyword">return</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge7</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment">#QL_INTERCEPT.ENTER  在进入系统调用之前</span>
+    <span class="token comment"># ql.set_api('sleep', set_sleep_edi , QL_INTERCEPT.ENTER)</span>
+    <span class="token comment"># ql.set_api('sleep', hook_sleep_api)</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_syscall<span class="token punctuation">(</span><span class="token string">'nanosleep'</span><span class="token punctuation">,</span> hook_nanosleep<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">search_mem_to_find_struct</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    MAGIC <span class="token operator">=</span> ql<span class="token punctuation">.</span>pack64<span class="token punctuation">(</span><span class="token number">0x3DFCD6EA00000539</span><span class="token punctuation">)</span>
+    candidate_addrs <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>search<span class="token punctuation">(</span>MAGIC<span class="token punctuation">)</span>  <span class="token comment">#内存中检索</span>
+
+    <span class="token keyword">for</span> addr <span class="token keyword">in</span> candidate_addrs<span class="token punctuation">:</span>
+        <span class="token comment"># 有可能有多个地址，所以通过其他特征进一步确认</span>
+        heap_addr <span class="token operator">=</span> addr <span class="token operator">-</span> <span class="token number">8</span>
+        heap <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>read<span class="token punctuation">(</span>heap_addr<span class="token punctuation">,</span> <span class="token number">24</span><span class="token punctuation">)</span>  <span class="token comment">#读取结构体内容</span>
+        string_addr<span class="token punctuation">,</span> _<span class="token punctuation">,</span> check_addr <span class="token operator">=</span> struct<span class="token punctuation">.</span>unpack<span class="token punctuation">(</span><span class="token string">'QQQ'</span><span class="token punctuation">,</span> heap<span class="token punctuation">)</span>  <span class="token comment">#解包数据。解成三个8字节的无符号长整型的数据</span>
+        <span class="token keyword">if</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>string<span class="token punctuation">(</span>string_addr<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">'Random data'</span><span class="token punctuation">:</span>  <span class="token comment">#程序中还有一个字符串标志用以辨别</span>
+            ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>write<span class="token punctuation">(</span>check_addr<span class="token punctuation">,</span> <span class="token string">b'\x01'</span><span class="token punctuation">)</span>
+            <span class="token keyword">break</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge8</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>  <span class="token comment">#获取基地址</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>search_mem_to_find_struct<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0xFB5</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">fake_tolower</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">return</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge9</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>os<span class="token punctuation">.</span>set_api<span class="token punctuation">(</span><span class="token string">'tolower'</span><span class="token punctuation">,</span> fake_tolower<span class="token punctuation">)</span>
+
+<span class="token keyword">class</span> <span class="token class-name">Fake_cmdline</span><span class="token punctuation">(</span>QlFsMappedObject<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">read</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> expected_len<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token string">b"qilinglab"</span>
+    
+    <span class="token keyword">def</span> <span class="token function">close</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token number">0</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge10</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>add_fs_mapper<span class="token punctuation">(</span><span class="token string">'/proc/self/cmdline'</span><span class="token punctuation">,</span> Fake_cmdline<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_strcmprax</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span>Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rax <span class="token operator">=</span> <span class="token number">0</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge10</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span>Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span>
+    ql<span class="token punctuation">.</span>hook_address<span class="token punctuation">(</span>hook_strcmprax<span class="token punctuation">,</span> base <span class="token operator">+</span> <span class="token number">0x1132</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">hook_cpuid</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">,</span> address<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token triple-quoted-string string">"""
+    000000000000118F 0F A2     cpuid
+    """</span>
+    <span class="token keyword">if</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>read<span class="token punctuation">(</span>address<span class="token punctuation">,</span> size<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token string">b'\x0F\xA2'</span><span class="token punctuation">:</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ebx <span class="token operator">=</span> <span class="token number">0x696C6951</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>ecx <span class="token operator">=</span> <span class="token number">0x614C676E</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>edx <span class="token operator">=</span> <span class="token number">0x20202062</span>
+        ql<span class="token punctuation">.</span>arch<span class="token punctuation">.</span>regs<span class="token punctuation">.</span>rip <span class="token operator">+=</span> <span class="token number">2</span>
+
+<span class="token keyword">def</span> <span class="token function">challenge11</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    ql<span class="token punctuation">.</span>hook_code<span class="token punctuation">(</span>hook_cpuid<span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> __name__  <span class="token operator">==</span> <span class="token string">'__main__'</span><span class="token punctuation">:</span>
+    path <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'qilinglab-x86_64'</span><span class="token punctuation">]</span> <span class="token comment">#目标文件</span>
+    rootfs <span class="token operator">=</span> <span class="token string">"/home/iotserver/tools/qiling/examples/rootfs/x8664_linux"</span> <span class="token comment"># 文件系统 在clone下来的仓库里</span>
+    ql <span class="token operator">=</span> Qiling<span class="token punctuation">(</span>path<span class="token punctuation">,</span> rootfs<span class="token punctuation">)</span>
+    
+    <span class="token comment"># 在ql.run()之前，做好我们的hook工作</span>
+    challenge1<span class="token punctuation">(</span>ql<span class="token punctuation">)</span> 
+    challenge2<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge3<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge4<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge5<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge6<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge7<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge8<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge9<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge10<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    challenge11<span class="token punctuation">(</span>ql<span class="token punctuation">)</span>
+    
+    ql<span class="token punctuation">.</span>verbose <span class="token operator">=</span> <span class="token number">0</span>  <span class="token comment">#查看输出内容 从1~n</span>
+    ql<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/05/07/Android%E9%80%86%E5%90%91-%E4%B8%80/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-06-04 19:44:05
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E4%BA%8C%E8%BF%9B%E5%88%B6%E4%BB%BF%E7%9C%9F/" title="二进制仿真">
+                        #二进制仿真
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Qiling%E5%85%A5%E9%97%A8%E4%B8%8EQilingLab"><span class="toc-text">Qiling入门与QilingLab</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Qiling"><span class="toc-text">Qiling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QilingLab"><span class="toc-text">QilingLab</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge1"><span class="toc-text">challenge1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge2"><span class="toc-text">challenge2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge3"><span class="toc-text">challenge3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge4"><span class="toc-text">challenge4</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge5"><span class="toc-text">challenge5</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge6"><span class="toc-text">challenge6</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge7"><span class="toc-text">challenge7</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge8"><span class="toc-text">challenge8</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge9"><span class="toc-text">challenge9</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge10"><span class="toc-text">challenge10</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#challenge11"><span class="toc-text">challenge11</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Writeup"><span class="toc-text">Writeup</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Qiling%E5%85%A5%E9%97%A8%E4%B8%8EQilingLab + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F06%2F04%2FQiling%25E5%2585%25A5%25E9%2597%25A8%25E4%25B8%258EQilingLab%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/06/04/Qiling%E5%85%A5%E9%97%A8%E4%B8%8EQilingLab/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
