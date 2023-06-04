@@ -373,8 +373,8 @@ ql<span class="token punctuation">.</span>pack16<span class="token punctuation">
 <span class="token keyword">def</span> <span class="token function">challenge4</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
     <span class="token triple-quoted-string string">'''
     0000000000000E40 8B 45 F8            mov     eax, [rbp+var_8]
-	0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
-	0000000000000E46 7C ED               jl      short loc_E35
+    0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
+    0000000000000E46 7C ED               jl      short loc_E35
 	'''</span>
     libc_base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span><span class="token comment">#获取基地址</span>
     hook_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xE43</span>
@@ -584,8 +584,8 @@ https:&#x2F;&#x2F;docs.python.org&#x2F;3&#x2F;library&#x2F;struct.html#byte-orde
 <span class="token keyword">def</span> <span class="token function">challenge4</span><span class="token punctuation">(</span>ql<span class="token punctuation">:</span> Qiling<span class="token punctuation">)</span><span class="token punctuation">:</span>
     <span class="token triple-quoted-string string">'''
     0000000000000E40 8B 45 F8            mov     eax, [rbp+var_8]
-	0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
-	0000000000000E46 7C ED               jl      short loc_E35
+    0000000000000E43 39 45 FC            cmp     [rbp+var_4], eax
+    0000000000000E46 7C ED               jl      short loc_E35
 	'''</span>
     libc_base <span class="token operator">=</span> ql<span class="token punctuation">.</span>mem<span class="token punctuation">.</span>get_lib_base<span class="token punctuation">(</span>ql<span class="token punctuation">.</span>path<span class="token punctuation">)</span><span class="token comment">#获取基地址</span>
     hook_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xE43</span>
