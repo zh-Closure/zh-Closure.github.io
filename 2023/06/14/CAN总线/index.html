@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      CAN总线 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">CAN总线</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-06-14 18:45:12
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E8%BD%A6%E8%81%94%E7%BD%91/" title="车联网">
+                    #车联网
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="CAN总线"><a href="#CAN总线" class="headerlink" title="CAN总线"></a>CAN总线</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>​	CAN（Controller Area Network）总线是一种用于在车辆和工业领域中进行通信的串行通信协议。它最初是由德国Bosch公司于1986年开发的，旨在实现高速、可靠和实时的数据传输。CAN总线在汽车电子系统、工业自动化、航空航天、医疗设备等领域得到广泛应用。</p>
+<p>特点：</p>
+<p>1、可靠性：采用差分信号传输和冲突检测和恢复机制，有效抵抗噪声干扰与信号损耗</p>
+<p>2、实时性：支持多主机并行通信，具有优先级机制，确保重要数据的及时传输和处理</p>
+<p>3、灵活性：采用分布式通信结构，可以支持多个节点的连接和通信，节点之间可以灵活添加或删除</p>
+<p>4、高宽带：支持较高的数据传输速率，几百Kbps到几Mbps不等</p>
+<p>5、线缆简单：使用两根双绞线进行数据传输</p>
+<p>图例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141355287.png" alt="image-20230614135506728"></p>
+<p>当使用CAN总线进行通信时，数据将通过数据帧（Data Frame）的形式进行传输；</p>
+<p>CAN数据帧：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141147658.png" alt="image-20230614114757650"></p>
+<p>Start of Frame（SOF）：起始帧标识，表示数据帧开始；</p>
+<p>Identifier：标识符，用于唯一标识数据帧的发送者和接收者；</p>
+<p>Control Field：控制字段，包含数据帧的控制信息，如数据长度，帧类型等；</p>
+<p>Data Field：数据字段，用于传输实际的数据；数据字段的长度可以根据应用的需求进行配置，最多8字节；</p>
+<p>CRC Field：循环冗余校验字段，用于检测数据传输过程中是否发生错误。</p>
+<p>CAN协议数据包识别原理：</p>
+<p>1、接收CAN数据包：CAN总线上的每个节点都可以接收其他节点发送的数据包，节点通过CAN控制器接收数据包，并将其存储在CAN接收缓冲区中；</p>
+<p>2、解析报文ID：接收节点首先解析报文ID，判断数据包是否为其所需要的数据包，解析报文ID时，需判断扩展帧标志位和远程帧标志位，以确定报文ID的长度和数据包类型；</p>
+<p>3、判断数据包类型：根据扩展帧标志位和远程帧标志位的值，确定数据包的类型：如果是远程帧，则节点需要向发送方发送数据请求；如果是远程帧，则节点需要读取数据域中的数据；</p>
+<p>4、读取数据：若数据包为数据帧，则接收节点需要读取数据域中的数据。</p>
+<p>CAN总线通信是广播的方式，所以数据是可以被监听和获取的；CAN总线协议中ID代表报文的<strong>优先级</strong>，协议中没有原始地址信息&#x3D;&#x3D;》任何人都可以伪造和发送虚假或恶意的报文；</p>
+<p>例：</p>
+<p>1、在攻击者使用<strong>高优先级</strong>的指令抢占正常指令，将导致ECU无法接受相对低优先级的正常指令，造成CAN总线协议的<strong>拒绝服务攻击</strong>；</p>
+<p>2、当攻击者截获从合法节点发送的CAN数据帧，在将这些数据帧保存于自己的设备上，从自己的设备上发送到CAN总线上，欺骗接收方这些数据是从合法节点发送，从而达到重放的目的。</p>
+<h2 id="通信（模拟）"><a href="#通信（模拟）" class="headerlink" title="通信（模拟）"></a>通信（模拟）</h2><p>通过ICSim实现，ICSim是一个汽车上的仪表盘模拟器；</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 安装依赖</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> libsdl2-dev libsdl2-image-dev can-utils maven autoconf <span class="token parameter variable">-y</span>
+<span class="token comment"># 下载ICSim</span>
+<span class="token function">git</span> clone https://github.com/zombieCraig/ICSim.git
+<span class="token comment"># 编译安装</span>
+<span class="token builtin class-name">cd</span> ICSim
+<span class="token function">sudo</span> <span class="token function">make</span></code></pre>
+
+
+
+<p>有了模拟器，还需要能与之通信的CAN总线，这里需要用到Socketcand：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载socketcand</span>
+<span class="token function">git</span> clone https://github.com/linux-can/socketcand.git
+<span class="token builtin class-name">cd</span> socketcand<span class="token comment"># 获取缺少的文件</span>
+<span class="token function">wget</span> https://raw.githubusercontent.com/dschanoeh/socketcand/master/config.h.in<span class="token comment"># 编译安装</span>
+autoconf
+./configure
+<span class="token function">make</span> clean
+<span class="token function">make</span>
+<span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+
+
+<p>CAN总线环境也准备好了，那为了能对CAN发送的数据进行分析，还需要一个CAN总线分析工具Kayak：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 下载</span>
+<span class="token function">git</span> clone https://github.com/dschanoeh/Kayak.git
+<span class="token comment"># 安装jdk</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> openjdk-8-jdk
+
+<span class="token builtin class-name">echo</span> <span class="token variable">$JAVA_HOME</span>  <span class="token comment">#查看安装的JDK对不对</span>
+
+<span class="token comment">#不符合预期则进行设置</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">JAVA_HOME</span><span class="token operator">=</span>/usr/lib/jvm/java-8-openjdk-amd64
+<span class="token builtin class-name">export</span> <span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token variable">$JAVA_HOME</span>/bin:<span class="token environment constant">$PATH</span>
+
+<span class="token comment"># 安装</span>
+<span class="token builtin class-name">cd</span> Kayak
+mvn clean package</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141804866.png"></p>
+<p>前置工作已经完成，接下来就是设置虚拟的CAN接口，启动模拟器，实现通信了</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 设置vcan（虚拟CAN）接口</span>
+<span class="token function">sudo</span> modprobe can  <span class="token comment">#加载CAN内核模块，启用CAN支持</span>
+<span class="token function">sudo</span> modprobe vcan  <span class="token comment">#加载vcan内核模块，启用虚拟CAN支持</span>
+<span class="token comment"># ip link 命令启动 can 接口</span>
+<span class="token function">sudo</span> <span class="token function">ip</span> <span class="token function">link</span> <span class="token function">add</span> dev vcan0 <span class="token builtin class-name">type</span> vcan  <span class="token comment">#创建名为vcan0的虚拟CAN接口</span>
+<span class="token function">sudo</span> <span class="token function">ip</span> <span class="token function">link</span> <span class="token builtin class-name">set</span> up vcan0   <span class="token comment">#启用vcan0接口，使其处于活动状态</span></code></pre>
+
+<p>VCAN工作原理：</p>
+<p>1、创建虚拟CAN接口，作为模拟器和其他应用程序之间的通信接口；</p>
+<p>2、模拟CAN帧，VCAN模拟器会接收其他应用程序的CAN帧，然后模拟一个类似于真实CAN总线的环境，将CAN帧转发至总线上；</p>
+<p>3、监听CAN总线，可以监听到真实的CAN总线，以便将CAN帧发送到真实总线上，并在接收到真实总线上传来的CAN帧时，将其转发至虚拟CAN接口上，以便于其他应用程序接收这些数据；</p>
+<p>4、支持多种CAN协议：ISO 11898，SAE J1939等。</p>
+<p>至此，你就获得了一个虚拟的CAN接口vcan0，接下来，将启动模拟器：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> Icsim/
+<span class="token comment"># 打开仪表盘模拟器</span>
+./icsim vcan0
+<span class="token comment"># 打开仪表盘控制器</span>
+./controls vcan0</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141804993.png" alt="image-20230614153734043"></p>
+<p>通过Wireshark监听vcan0：注意使用root权限启动wireshark（sudo）；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141804964.png" alt="image-20230614154248159"></p>
+<p>成功可以监听CAN总线的通信：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141804864.png" alt="image-20230614154345334"></p>
+<h2 id="重放（模拟）"><a href="#重放（模拟）" class="headerlink" title="重放（模拟）"></a>重放（模拟）</h2><p>通过对仪表盘进行操作（开车门，加速等），利用candump监听模拟器数据包，wireshark也行，再使用canplayer进行重放；</p>
+<p>candump开启监听：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> candump vcan0 <span class="token parameter variable">-l</span></code></pre>
+
+<p>对仪表进行操作，开门，加速；操作完后停止candump，此时生成了一个数据包：candump-xxx.log；</p>
+<p>注意此时需要使用（点击一下）那个手柄才能操作：</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>控制按钮</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>转向</td>
+<td>键盘左右</td>
+</tr>
+<tr>
+<td>速度</td>
+<td>键盘上下</td>
+</tr>
+<tr>
+<td>开&#x2F;关左前车门</td>
+<td>右shift&#x2F;左shift+A</td>
+</tr>
+<tr>
+<td>开&#x2F;关右前车门</td>
+<td>右shift&#x2F;左shift+B</td>
+</tr>
+<tr>
+<td>开&#x2F;关左后车门</td>
+<td>右shift&#x2F;左shift+X</td>
+</tr>
+<tr>
+<td>开&#x2F;关右后车门</td>
+<td>右shift&#x2F;左shift+Y</td>
+</tr>
+<tr>
+<td>开启全部车门</td>
+<td>左shift + 右shift</td>
+</tr>
+<tr>
+<td>关闭全部车门</td>
+<td>右shift + 左shift</td>
+</tr>
+</tbody></table>
+<p>例：开启左前车门：右shift + A</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141804776.png"></p>
+<p>成功获取了CAN总线通信的数据包；</p>
+<p>在等仪表复原后（关闭车门或直接将仪表重启等），使用canplayer重新发送数据包：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> canplayer <span class="token parameter variable">-I</span> candump.log  <span class="token comment">#我改了文件名</span></code></pre>
+
+<p>成功复刻刚刚对仪表的操作：</p>
+<p>加速操作：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805832.png" alt="image-20230614160249044"></p>
+<p>开车门操作：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805951.png" alt="image-20230614160342214"></p>
+<p>但并满足于此，因为CAN是不断在进行通信的，所以有很多数据是我们不需要的，我们可以剔除这些对我们实现操作（开车门）无用的数据，获取能进行操作（开车门）的数据指令；</p>
+<p>可以通过二分法将数据包分成两份，再次进行重放，再对能进行操作的数据包进行相同的操作……</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">import</span> sys
+
+filename <span class="token operator">=</span> sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+
+<span class="token comment">#读取log文件</span>
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span>filename<span class="token punctuation">,</span> <span class="token string">'r'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f<span class="token punctuation">:</span>
+    lines <span class="token operator">=</span> f<span class="token punctuation">.</span>readlines<span class="token punctuation">(</span><span class="token punctuation">)</span>
+num_lines <span class="token operator">=</span> <span class="token builtin">len</span><span class="token punctuation">(</span>lines<span class="token punctuation">)</span>
+<span class="token comment">#使用二分法将内容分别输出到两个新文件</span>
+midpoint <span class="token operator">=</span> num_lines <span class="token operator">//</span> <span class="token number">2</span>
+<span class="token keyword">with</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'candump1.log'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f1<span class="token punctuation">,</span> <span class="token builtin">open</span><span class="token punctuation">(</span><span class="token string">'candump2.log'</span><span class="token punctuation">,</span> <span class="token string">'w'</span><span class="token punctuation">)</span> <span class="token keyword">as</span> f2<span class="token punctuation">:</span>
+    <span class="token keyword">for</span> i<span class="token punctuation">,</span> line <span class="token keyword">in</span> <span class="token builtin">enumerate</span><span class="token punctuation">(</span>lines<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> i <span class="token operator">&lt;</span> midpoint<span class="token punctuation">:</span>
+            f1<span class="token punctuation">.</span>write<span class="token punctuation">(</span>line<span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            f2<span class="token punctuation">.</span>write<span class="token punctuation">(</span>line<span class="token punctuation">)</span></code></pre>
+
+<p>使用例：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">python3 xxx.py candump1.log</code></pre>
+
+<p>在一段时间的重放后Loding……    最终确定操作开门的数据包为：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805434.png"></p>
+<h2 id="通信（物理）"><a href="#通信（物理）" class="headerlink" title="通信（物理）"></a>通信（物理）</h2><p>首先需要了解一下OBD接口：<br>      OBD全称 On-Board Diagnostics ，意为“车载诊断系统”。随着汽车电气化程度越来越高，各种电子传感器被大量使用，OBD承担了更多的行车记录功能。与行车记录仪不同， OBD显示的是以汽车为中心的数据，并且很多原车仪表盘不能显示的信息可以通过OBD读出来。如下图所示汽车的OBD接口一般位于方向盘左下方:</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805895.png" alt="640fd71091a3e"></p>
+<p>OBD接口使用的通信协议由汽车制造商定义，其中最常用的就是基于CAN总线的协议；OBD接口可以提供各种诊断信息，包括但不限于故障码，冻结帧数据，实时数据，监视状态等；</p>
+<p>下图就是OBD引脚的定义：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141745536.png"></p>
+<p>我们主要关注一下CAN_L和CAN_H两个引脚即可：</p>
+<p>CAN_L和CAN_H是CAN总线的两个物理信号线，用于传输CAN数据帧。这两个信号线分别代表了CAN总线的差分信号&#x3D;&#x3D;》</p>
+<p>CAN_L（低电平线）：用于传输差分信号的低电平部分。在CAN总线上，CAN_L线通常处于电压较低的状态。</p>
+<p>CAN_H（高电平线）：用于传输差分信号的高电平部分。在CAN总线上，CAN_H线通常处于电压较高的状态。</p>
+<p>差分信号传输：CAN总线使用差分信号传输方式，即通过CAN_L和CAN_H两个信号线之间的电压差来表示数据。CAN_L线的电压较低，CAN_H线的电压较高，两者之间的电压差表示传输的数据。</p>
+<p>极性：CAN总线的差分信号具有极性，即CAN_L和CAN_H的电压关系可以反转。CAN总线通信中，数据帧的传输是通过CAN_L和CAN_H的电压变化来表示逻辑位的翻转。</p>
+<p>终端电阻：CAN总线上通常需要安装终端电阻，用于消除信号反射和保证信号的质量。终端电阻分别连接在CAN_L和CAN_H线的两端。</p>
+<p>通过CAN_L和CAN_H两个物理信号线的差分传输，CAN总线能够实现高速、可靠的数据通信；</p>
+<p>一般情况下，可以使用OBD接口接线直接接入OBD接口，再将接线连接PCAN，PCAN连接电脑即可完成通信：</p>
+<p>OBD接口接线：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805468.png"></p>
+<p>接线连接PCAN上的引脚：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805721.png"></p>
+<p>我这里直接将仪表总线的CAN_L与CAN_H接出来，直接用杜邦线连接PCAN，PCAN的usb接口接PC；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806686.png"></p>
+<p>通过PCAN-View连接获取数据：</p>
+<p>首先设置波特率，我这里是500，成功连接后PCAN的<strong>RX和TX灯</strong>将亮起来，并能在PCAN-View上接收到数据，例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306131651672.png" alt="image-20230613165108678"></p>
+<p>在下方可以添加要发送的数据，例：可以打开仪表盘背景灯的指令</p>
+<p>按空格即可放松CAN指令，也可以设置timeout，让它自己发</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806267.png" alt="image-20230613165458509"></p>
+<p>成功打开：</p>
+<p>当然也可以通过复制粘贴上方接收的数据重新发送达成重放的目的，但我这里推荐另外一个工具去实现重放</p>
+<h2 id="重放（物理）"><a href="#重放（物理）" class="headerlink" title="重放（物理）"></a>重放（物理）</h2><p>使用工具</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;TOSUN-Shanghai&#x2F;TSMaster</code></pre>
+
+<p>方法与PCAN-View类似，首先设置一些基本信息：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806183.png" alt="image-20230613170051273"></p>
+<p>然后点击启动就开始接收CAN数据了</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806893.png" alt="image-20230613170154672"></p>
+<p>数据例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806313.png" alt="image-20230613171642511"></p>
+<p>在该栏靠右边，有能实现记录数据包地功能：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805799.png" alt="image-20230613170314307"></p>
+<p>点击启动记录，然后通过一些物理操作使仪表盘发生变化，例：左右转向灯，加速等；等记录完所需的数据后就领域停止记录了，至此，你就获得了一份记录这些操作的数据包：默认为TSMaster.blf；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805727.png" alt="image-20230613170749607"></p>
+<p>通过总线回放也可以查看到，在总线回放中：它会打开默认的文件夹，里面就存放着记录的CAN数据；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141805896.png" alt="image-20230613171152136"></p>
+<p>点击启动回放，就可以在仪表盘上看到刚刚执行的各个操作：左右转向灯等；这里我验证了转向灯，速度功能，但是由于一些保密原因就不作展示了；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806176.png"></p>
+<p>之后就可以通过与上文中模拟CAN重放中定位该功能的指令一样，使用二分法找就好了；</p>
+<p>当然，这个记录CAN指令的.blf文件也可以使用Wireshark打开，例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806967.png"></p>
+<p>至此，关于CAN协议解析与通信就先告一段落。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/06/08/Busybox-CVE-2022-30065/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-06-14 18:45:12
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E8%BD%A6%E8%81%94%E7%BD%91/" title="车联网">
+                        #车联网
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#CAN%E6%80%BB%E7%BA%BF"><span class="toc-text">CAN总线</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E4%BF%A1%EF%BC%88%E6%A8%A1%E6%8B%9F%EF%BC%89"><span class="toc-text">通信（模拟）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E6%94%BE%EF%BC%88%E6%A8%A1%E6%8B%9F%EF%BC%89"><span class="toc-text">重放（模拟）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E4%BF%A1%EF%BC%88%E7%89%A9%E7%90%86%EF%BC%89"><span class="toc-text">通信（物理）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E6%94%BE%EF%BC%88%E7%89%A9%E7%90%86%EF%BC%89"><span class="toc-text">重放（物理）</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + CAN%E6%80%BB%E7%BA%BF + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F06%2F14%2FCAN%25E6%2580%25BB%25E7%25BA%25BF%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/06/14/CAN%E6%80%BB%E7%BA%BF/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
