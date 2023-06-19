@@ -181,15 +181,23 @@
 <p>4、高宽带：支持较高的数据传输速率，几百Kbps到几Mbps不等</p>
 <p>5、线缆简单：使用两根双绞线进行数据传输</p>
 <p>图例：</p>
-<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141355287.png" alt="image-20230614135506728"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151656674.png"></p>
+<p>CAN总线就像神经系统，通过连接”节点“或”电子控制单元（ECU）“，使其信息能够实现共享；</p>
+<p>ECU：在汽车CAN总线中，ECU可以是发动机控制单元，安全气囊，音频系统等；现代汽车拥有70个ECU；</p>
+<p>图例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151649143.png"></p>
+<p>&#x3D;&#x3D;》ECU将通过CAN总线（CAN_L与CAN_H）进行连接</p>
 <p>当使用CAN总线进行通信时，数据将通过数据帧（Data Frame）的形式进行传输；</p>
-<p>CAN数据帧：</p>
-<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141147658.png" alt="image-20230614114757650"></p>
+<p>CAN帧（CAN 2.0A）：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151706818.png" alt="image-20230615170604108"></p>
 <p>Start of Frame（SOF）：起始帧标识，表示数据帧开始；</p>
-<p>Identifier：标识符，用于唯一标识数据帧的发送者和接收者；</p>
-<p>Control Field：控制字段，包含数据帧的控制信息，如数据长度，帧类型等；</p>
-<p>Data Field：数据字段，用于传输实际的数据；数据字段的长度可以根据应用的需求进行配置，最多8字节；</p>
-<p>CRC Field：循环冗余校验字段，用于检测数据传输过程中是否发生错误。</p>
+<p>Identifier（ID）：标识符，用于唯一标识数据帧的发送者和接收者（具有优先级）；</p>
+<p>Remote Transmission Request（RTR）：表示发送还是请求</p>
+<p>Control Field（Control）：控制字段，包含数据帧的控制信息，如数据长度（DLC），帧类型等；</p>
+<p>Data Field（Data）：数据字段（有效载荷），用于传输实际的数据；数据字段的长度可以根据应用的需求进行配置，最多8字节；</p>
+<p>CRC Field（CRC）：循环冗余校验字段，用于检测数据传输过程中是否发生错误；</p>
+<p>ACK：表示节点是否已经确认正确地接收到数据；</p>
+<p>EOF：CAN帧的结束。</p>
 <p>CAN协议数据包识别原理：</p>
 <p>1、接收CAN数据包：CAN总线上的每个节点都可以接收其他节点发送的数据包，节点通过CAN控制器接收数据包，并将其存储在CAN接收缓冲区中；</p>
 <p>2、解析报文ID：接收节点首先解析报文ID，判断数据包是否为其所需要的数据包，解析报文ID时，需判断扩展帧标志位和远程帧标志位，以确定报文ID的长度和数据包类型；</p>
@@ -367,6 +375,10 @@ midpoint <span class="token operator">=</span> num_lines <span class="token oper
 <p>我这里直接将仪表总线的CAN_L与CAN_H接出来，直接用杜邦线连接PCAN，PCAN的usb接口接PC；</p>
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306141806686.png"></p>
 <p>通过PCAN-View连接获取数据：</p>
+<p>常见波特率：</p>
+<pre class="language-none"><code class="language-none">经典CAN：1 Mbit&#x2F;s
+CAN FD：5 Mbit&#x2F;s</code></pre>
+
 <p>首先设置波特率，我这里是500，成功连接后PCAN的<strong>RX和TX灯</strong>将亮起来，并能在PCAN-View上接收到数据，例：</p>
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306131651672.png" alt="image-20230613165108678"></p>
 <p>在下方可以添加要发送的数据，例：可以打开仪表盘背景灯的指令</p>
@@ -426,6 +438,11 @@ midpoint <span class="token operator">=</span> num_lines <span class="token oper
               
           </div>
           <div class="post-foot-prev">
+            
+              <a href="/2023/06/19/Lin%E6%80%BB%E7%BA%BF/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
             
           </div>
         </div>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Lin总线 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Lin总线</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-06-19 20:43:24
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E8%BD%A6%E8%81%94%E7%BD%91/" title="车联网">
+                    #车联网
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Lin总线"><a href="#Lin总线" class="headerlink" title="Lin总线"></a>Lin总线</h1><p>Lin总线是CAN总线网络的低成本补充（具有更少的线束和更便宜的节点）；</p>
+<p>Lin总线通常由充当网关的Lin主机（主节点）和最多16个从节点构成；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151714822.png"></p>
+<p><strong>Lin用例：</strong>舒适总线，动力总线，发动机（小型电机，冷却风扇电机等）等。</p>
+<p>Lin节点通常捆绑在集群中，每个节点都有一个与CAN总线连接的主节点：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151721457.png"></p>
+<p>Lin总线工作原理：主节点循环通过每个从节点，发送信息请求，每个从节点在轮询时响应数据；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151727261.png" alt="image-20230615172745257"></p>
+<p>Lin总线消息帧：通常由一个报头和一个响应组成；</p>
+<p>报头：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306160917364.png" alt="image-20230615174629696"></p>
+<p>Sync Break Field (SBF) aka Break（Break）：最小长度为13+1（通常为18+2），Break字段充当总线上所有Lin从节点的”帧开始“通知；</p>
+<p>Sync：具有预定义值0x55（0101 0101），该结构允许Lin节点确定上升&#x2F;下降之间的时间，从而确定主节点使用的波特率，让每个节点保持同步；</p>
+<p>ID：标识符，用作发送每条Lin消息要与哪些节点对报文做出反应的标识符；</p>
+<p>Parity：奇偶校验位（2个），用于确定从设备ID字段的有效性&#x3D;&#x3D;》并进行：</p>
+<p>1、忽略后续数据传输；2、监听从另一个节点传来的数据；3、响应头部发布数据。</p>
+<p>响应：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306151755529.png" alt="image-20230615175529320"></p>
+<p>Data：当一个Lin从节点被主节点轮询时，它通过发送2，4或8个字节的数据来响应；数据长度可以自定义，但通常与ID范围有关：</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>字节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0~31</td>
+<td>2</td>
+</tr>
+<tr>
+<td>32~47</td>
+<td>4</td>
+</tr>
+<tr>
+<td>48~63</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<p>CheckSum：校验和字段，和CAN类似，确保Lin帧有效性；经典的8位校验和仅基于对数据字节求和（Lin 1.3），增强的校验和还包括标识符字段（Lin 2.0）；</p>
+<p>特殊：由于Lin从节点一般性能不佳，所以会出现延迟，为了缓解情况&#x3D;&#x3D;》可以选择添加字节间空间；此外，在报头和响应之间，还有一个响应空间，允许从节点有足够的时间对主节点的报头做出反应：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306160917174.png"></p>
+<p><strong>帧类型：</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0~59</td>
+<td>无条件帧</td>
+<td>周期性广播特定信息，不需要请求</td>
+</tr>
+<tr>
+<td>0~59</td>
+<td>事件触发帧</td>
+<td>发生特定事件时触发，例：传感器等</td>
+</tr>
+<tr>
+<td>0~59</td>
+<td>间歇帧（零星帧）</td>
+<td>没有按照固定时间间隔进行发送，没有特定的触发条件</td>
+</tr>
+<tr>
+<td>60~61</td>
+<td>诊断帧</td>
+<td>主机从从机读取诊断信息；60：主机请求；61：从机响应</td>
+</tr>
+<tr>
+<td>62</td>
+<td>用户自定义帧</td>
+<td>可以包含任何类型的帧</td>
+</tr>
+<tr>
+<td>63</td>
+<td>保留帧</td>
+<td></td>
+</tr>
+</tbody></table>
+<p>大部分的通信都是通过<strong>无条件帧</strong>完成的。</p>
+<p>配置文件（NCF）与描述文件（LDF）：为了实现快速设置Lin总线网络，Lin节点都带有节点配置文件NCF，详细描述Lin节点功能；</p>
+<p>OEM会将这些节点的NCF文件组合成一个集群文件&#x3D;&#x3D;》Lin描述文件LDF&#x3D;&#x3D;》主节点根据LDF设置和管理Lin集群；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202306160943832.png" alt="image-20230616094301434"></p>
+<p><strong>Lin描述文件LDF解码：</strong></p>
+<p>类似于CAN总线解码：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ID</td>
+<td>标识符</td>
+</tr>
+<tr>
+<td>Name</td>
+<td>名称</td>
+</tr>
+<tr>
+<td>Start bit</td>
+<td>起始位</td>
+</tr>
+<tr>
+<td>Length</td>
+<td>长度</td>
+</tr>
+<tr>
+<td>Endianness</td>
+<td>字节序，大端序&#x2F;小端序</td>
+</tr>
+<tr>
+<td>Scale</td>
+<td>比例因子，比例缩放</td>
+</tr>
+<tr>
+<td>Offset</td>
+<td>偏移</td>
+</tr>
+<tr>
+<td>Unix&#x2F;Min&#x2F;Max</td>
+<td>数值型信号，可能需要知道最小值，最大值以及在Unix时间戳中的解释方式</td>
+</tr>
+</tbody></table>
+<p>LDF文件例：</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token constant">LIN</span> <span class="token punctuation">&#123;</span>
+  Name <span class="token operator">=</span> <span class="token string">"MyLINNetwork"</span><span class="token punctuation">;</span>
+  Version <span class="token operator">=</span> <span class="token string">"1.0"</span><span class="token punctuation">;</span>
+
+  Nodes <span class="token punctuation">&#123;</span>
+    Node1 <span class="token punctuation">&#123;</span>
+      <span class="token constant">NAD</span> <span class="token operator">=</span> <span class="token number">0x01</span><span class="token punctuation">;</span>
+      Supplier <span class="token operator">=</span> <span class="token string">"CompanyA"</span><span class="token punctuation">;</span>
+      Function <span class="token operator">=</span> <span class="token string">"ECU1"</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    Node2 <span class="token punctuation">&#123;</span>
+      <span class="token constant">NAD</span> <span class="token operator">=</span> <span class="token number">0x02</span><span class="token punctuation">;</span>
+      Supplier <span class="token operator">=</span> <span class="token string">"CompanyB"</span><span class="token punctuation">;</span>
+      Function <span class="token operator">=</span> <span class="token string">"ECU2"</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+
+  Frames <span class="token punctuation">&#123;</span>
+    Frame1 <span class="token punctuation">&#123;</span>
+      Name <span class="token operator">=</span> <span class="token string">"Frame1"</span><span class="token punctuation">;</span>
+      <span class="token constant">ID</span> <span class="token operator">=</span> <span class="token number">0x100</span><span class="token punctuation">;</span>
+      Length <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span>
+      Publisher <span class="token operator">=</span> Node1<span class="token punctuation">;</span>
+      Subscribers <span class="token operator">=</span> Node2<span class="token punctuation">;</span>
+      CycleTime <span class="token operator">=</span> 10ms<span class="token punctuation">;</span>
+      Signals <span class="token punctuation">&#123;</span>
+        Signal1 <span class="token punctuation">&#123;</span>
+          Name <span class="token operator">=</span> <span class="token string">"Signal1"</span><span class="token punctuation">;</span>
+          StartBit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          Length <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">;</span>
+          Endianness <span class="token operator">=</span> LittleEndian<span class="token punctuation">;</span>
+          Scale <span class="token operator">=</span> <span class="token number">0.1</span><span class="token punctuation">;</span>
+          Offset <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">100</span><span class="token punctuation">;</span>
+          Min <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1000</span><span class="token punctuation">;</span>
+          Max <span class="token operator">=</span> <span class="token number">1000</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+
+    Frame2 <span class="token punctuation">&#123;</span>
+      Name <span class="token operator">=</span> <span class="token string">"Frame2"</span><span class="token punctuation">;</span>
+      <span class="token constant">ID</span> <span class="token operator">=</span> <span class="token number">0x200</span><span class="token punctuation">;</span>
+      Length <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+      Publisher <span class="token operator">=</span> Node2<span class="token punctuation">;</span>
+      Subscribers <span class="token operator">=</span> Node1<span class="token punctuation">;</span>
+      CycleTime <span class="token operator">=</span> 20ms<span class="token punctuation">;</span>
+      Signals <span class="token punctuation">&#123;</span>
+        Signal2 <span class="token punctuation">&#123;</span>
+          Name <span class="token operator">=</span> <span class="token string">"Signal2"</span><span class="token punctuation">;</span>
+          StartBit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          Length <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">;</span>
+          Endianness <span class="token operator">=</span> BigEndian<span class="token punctuation">;</span>
+          Scale <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+          Offset <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          Min <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+          Max <span class="token operator">=</span> <span class="token number">255</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>描述了一个名为MyLINNetwork的Lin网络，包含两个节点Node1和Node2和两个帧Frame1和Frame2，每个节点都有唯一的Node Address（NAD）和供应商&#x2F;功能信息；每个帧也有其详细信息。</p>
+<p>当你获得了一个LDF文件或NCF文件时，可以采用以下解析器对其进行解析：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#Ldfparser</span>
+https://github.com/c4deszes/ldfparser
+
+<span class="token comment">#Ldf-parser</span>
+https://github.com/TrippW/LDF-Parser
+
+<span class="token comment">#NCF-parser</span>
+https://github.com/TrippW/NCF-Parser</code></pre>
+
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/06/14/CAN%E6%80%BB%E7%BA%BF/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-06-19 20:43:24
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E8%BD%A6%E8%81%94%E7%BD%91/" title="车联网">
+                        #车联网
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Lin%E6%80%BB%E7%BA%BF"><span class="toc-text">Lin总线</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Lin%E6%80%BB%E7%BA%BF + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F06%2F19%2FLin%25E6%2580%25BB%25E7%25BA%25BF%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/06/19/Lin%E6%80%BB%E7%BA%BF/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
