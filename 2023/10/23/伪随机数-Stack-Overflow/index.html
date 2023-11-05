@@ -304,6 +304,10 @@ log<span class="token punctuation">.</span>success<span class="token punctuation
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310231416751.png" alt="image-20231023141611730"></p>
 <p>可见是一个赤裸裸的栈溢出；</p>
 <p>由于这个程序是静态编译的，所以也就没什么libc了，并且在该程序中也没有找到system函数，所以考虑直接打syscall，静态编译程序的ROPgadget和syscall还是很多的；</p>
+<p><strong>系统调用号查询：</strong></p>
+<pre class="language-path" data-language="path"><code class="language-path">&#x2F;usr&#x2F;include&#x2F;x86_64-linux-gnu&#x2F;asm&#x2F;unistd_32.h
+&#x2F;usr&#x2F;include&#x2F;x86_64-linux-gnu&#x2F;asm&#x2F;unistd_64.h</code></pre>
+
 <p>32位ret2syscall：</p>
 <pre class="language-python" data-language="python"><code class="language-python">eax<span class="token punctuation">:</span><span class="token number">0xb</span>
 ebx<span class="token punctuation">:</span>bin_sh_addr
@@ -429,6 +433,11 @@ io<span class="token punctuation">.</span>interactive<span class="token punctuat
               
           </div>
           <div class="post-foot-prev">
+            
+              <a href="/2023/11/05/Bypass-Canary/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
             
           </div>
         </div>

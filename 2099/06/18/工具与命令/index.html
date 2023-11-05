@@ -157,7 +157,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-          2022-03-17 13:01:27
+          2099-06-18 00:00:00
         </span>
         
               <span class="post-tags">
@@ -173,7 +173,64 @@
           
       </div>
       <div class="markdown-body">
-        <h1 id="工具使用-长期更新-："><a href="#工具使用-长期更新-：" class="headerlink" title="工具使用(长期更新)："></a>工具使用(长期更新)：</h1><h2 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools:"></a>pwntools:</h2><p>常用模块：</p>
+        <h1 id="工具使用-长期更新-："><a href="#工具使用-长期更新-：" class="headerlink" title="工具使用(长期更新)："></a>工具使用(长期更新)：</h1><h2 id="IDA"><a href="#IDA" class="headerlink" title="IDA"></a>IDA</h2><p>快捷键：</p>
+<table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>F5</td>
+<td>反编译</td>
+</tr>
+<tr>
+<td>ctrl + x</td>
+<td>查看交叉引用</td>
+</tr>
+<tr>
+<td>n</td>
+<td>重命名函数</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>远程调试：</p>
+<p>在path &#x3D; IDA&#x2F;dbgsrv&#x2F; 中存放这各个系统架构的IDA server，将这些server传入待调试程序所在的系统，赋予执行权限，即可进行远程调试；在IDA中选择Debugger中选择remote，并填写远程调试的IP:PORT即可</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310232330004.png" alt="image-20231023232824191"></p>
+<p>提取数据：</p>
+<h2 id="python"><a href="#python" class="headerlink" title="python"></a>python</h2><p>多版本安装切换：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">update-alternatives <span class="token parameter variable">--install</span> /usr/bin/python python /usr/bin/python2.7 <span class="token number">1</span>
+update-alternatives <span class="token parameter variable">--install</span> /usr/bin/python python /usr/bin/python3.10 <span class="token number">2</span>
+
+update-alternatives <span class="token parameter variable">--config</span> python</code></pre>
+
+
+
+<h2 id="pwntools"><a href="#pwntools" class="headerlink" title="pwntools"></a>pwntools</h2><p>常用模块：</p>
 <p>asm：汇编与反汇编</p>
 <p>dynelf：远程符号泄漏</p>
 <p>elf：elf文件泄漏</p>
@@ -183,7 +240,16 @@
 <p>process&#x2F;remote：读写接口</p>
 <p>常用：</p>
 <p>获取字符串：接口.search(‘字符串’).next()</p>
-<h2 id="GDB-x2F-pwndbg-x2F-peda"><a href="#GDB-x2F-pwndbg-x2F-peda" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda:"></a>GDB&#x2F;pwndbg&#x2F;peda:</h2><p>*为可选</p>
+<h2 id="pwncli"><a href="#pwncli" class="headerlink" title="pwncli"></a>pwncli</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone https://github.com/RoderickChan/pwncli.git
+<span class="token builtin class-name">cd</span> ./pwncli
+python3 <span class="token parameter variable">-m</span> pip <span class="token function">install</span> <span class="token parameter variable">--editable</span></code></pre>
+
+
+
+<h2 id="GDB-x2F-pwndbg-x2F-peda"><a href="#GDB-x2F-pwndbg-x2F-peda" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda"></a>GDB&#x2F;pwndbg&#x2F;peda</h2><p>安装：</p>
+<pre class="language-none"><code class="language-none"></code></pre>
+
+<p>*为可选</p>
 <table>
 <thead>
 <tr>
@@ -462,16 +528,28 @@
 
 
 
-<h2 id="checksec："><a href="#checksec：" class="headerlink" title="checksec："></a>checksec：</h2><p>检查文件保护</p>
+<h2 id="GDB-amp-pwntools"><a href="#GDB-amp-pwntools" class="headerlink" title="GDB&amp;pwntools"></a>GDB&amp;pwntools</h2><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#断点</span>
+gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>io<span class="token punctuation">,</span><span class="token string">'b *'</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>rax_addr<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+
+
+<h2 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h2><p>检查文件保护</p>
 <p>checksec &lt;file&gt; 或者</p>
 <p>checksec –file&#x3D;filename</p>
-<h2 id="ROPgadget："><a href="#ROPgadget：" class="headerlink" title="ROPgadget："></a>ROPgadget：</h2><p>查找寄存器：</p>
-<p>ROPgadget –binary ELF –only ‘寄存器’</p>
+<h2 id="ROPgadget"><a href="#ROPgadget" class="headerlink" title="ROPgadget"></a>ROPgadget</h2><p>查找寄存器：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">ROPgadget <span class="token parameter variable">--binary</span> ELF <span class="token parameter variable">--only</span> <span class="token string">'寄存器'</span></code></pre>
+
 <p>查找字符串：</p>
-<p>ROPgadget –binary 文件 –string ‘\要找的字符串’</p>
-<h2 id="one-gadget："><a href="#one-gadget：" class="headerlink" title="one_gadget："></a>one_gadget：</h2><p>满足条件获得shell</p>
-<p>one_gadget filename</p>
-<h2 id="LibcSearcher："><a href="#LibcSearcher：" class="headerlink" title="LibcSearcher："></a>LibcSearcher：</h2><p>匹配libc</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">ROPgadget <span class="token parameter variable">--binary</span> 文件 <span class="token parameter variable">--string</span> <span class="token string">'\要找的字符串'</span></code></pre>
+
+
+
+<h2 id="one-gadget"><a href="#one-gadget" class="headerlink" title="one_gadget"></a>one_gadget</h2><p>满足条件获得shell</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">one_gadget filename</code></pre>
+
+
+
+<h2 id="LibcSearcher"><a href="#LibcSearcher" class="headerlink" title="LibcSearcher"></a>LibcSearcher</h2><p>匹配libc</p>
 <pre class="language-python" data-language="python"><code class="language-python">puts_addr<span class="token operator">=</span>xxxxx
 libc<span class="token operator">=</span>LibcSearcher<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">,</span>puts_addr<span class="token punctuation">)</span>
 libcbase<span class="token operator">=</span>puts_addr<span class="token operator">-</span>libc<span class="token punctuation">.</span>dump<span class="token punctuation">(</span><span class="token string">'puts'</span><span class="token punctuation">)</span>
@@ -481,7 +559,7 @@ binsh<span class="token operator">=</span>libcbase<span class="token operator">+
 
 
 
-<h2 id="main-arena-offset："><a href="#main-arena-offset：" class="headerlink" title="main_arena_offset："></a>main_arena_offset：</h2><h2 id="glibc-all-in-one-master"><a href="#glibc-all-in-one-master" class="headerlink" title="glibc-all-in-one-master:"></a>glibc-all-in-one-master:</h2><p><a target="_blank" rel="noopener" href="https://github.com/matrix1001/glibc-all-in-one">https://github.com/matrix1001/glibc-all-in-one</a></p>
+<h2 id="glibc-all-in-one"><a href="#glibc-all-in-one" class="headerlink" title="glibc-all-in-one"></a>glibc-all-in-one</h2><p><a target="_blank" rel="noopener" href="https://github.com/matrix1001/glibc-all-in-one">https://github.com/matrix1001/glibc-all-in-one</a></p>
 <p>获取glibc：</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">./update_list <span class="token comment">#获取可以下载的glibc</span>
 <span class="token function">cat</span> list <span class="token comment">#list中存放着从./update_list获得的glibc名</span>
@@ -489,9 +567,7 @@ binsh<span class="token operator">=</span>libcbase<span class="token operator">+
 
 
 
-
-
-<h2 id="patchelf"><a href="#patchelf" class="headerlink" title="patchelf:"></a>patchelf:</h2><p><a target="_blank" rel="noopener" href="https://github.com/NixOS/patchelf">https://github.com/NixOS/patchelf</a></p>
+<h2 id="patchelf"><a href="#patchelf" class="headerlink" title="patchelf"></a>patchelf</h2><p><a target="_blank" rel="noopener" href="https://github.com/NixOS/patchelf">https://github.com/NixOS/patchelf</a></p>
 <p>更换文件的glibc</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">例1：<span class="token comment">#改变链接器+改变搜索路径      #推荐使用1</span>
 patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/ld-2.31.so --set-rpath ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64 target_file
@@ -501,7 +577,33 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
 
 
 
-<h2 id="qemu："><a href="#qemu：" class="headerlink" title="qemu："></a>qemu：</h2><h2 id="gcc："><a href="#gcc：" class="headerlink" title="gcc："></a>gcc：</h2><p>将lib.c编译成一个共享对象文件;</p>
+<h2 id="xclibc"><a href="#xclibc" class="headerlink" title="xclibc"></a>xclibc</h2><p><a target="_blank" rel="noopener" href="https://github.com/ef4tless/xclibc">https://github.com/ef4tless/xclibc</a></p>
+<p>tips：需要将glibc-all-in-one放到&#x2F;home&#x2F;user&#x2F;下</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#安装</span>
+<span class="token function">git</span> clone https://github.com/ef4tless/xclibc.git
+<span class="token builtin class-name">cd</span> xclibc
+<span class="token function">sudo</span> <span class="token function">mv</span> ./xclibc /usr/local/bin
+<span class="token function">sudo</span> <span class="token function">chmod</span> +x /usr/local/bin/xclibc
+<span class="token comment">#使用</span>
+xclibc <span class="token punctuation">[</span>选项<span class="token punctuation">]</span> <span class="token punctuation">[</span>参数<span class="token punctuation">]</span>
+<span class="token parameter variable">-s</span> 查看libc文件的版本
+<span class="token parameter variable">-x</span> 和 <span class="token parameter variable">-c</span> 是配置版本的主要功能
+
+xclibc <span class="token parameter variable">-x</span> ./main ./libc.so.6  <span class="token comment">#读取版本自动配置</span>
+
+xclibc <span class="token parameter variable">-c</span> ./main <span class="token number">2.35</span> <span class="token comment">#根据版本配置，若版本libc > 1则可以选择其中一个进行连接</span>
+/home/ef4tless/glibc-all-in-one/libs/2.35-0ubuntu3_amd64
+/home/ef4tless/glibc-all-in-one/libs/2.35-0ubuntu3.3_i386
+Please specify the directory
+xclibc <span class="token parameter variable">-c</span> ./main <span class="token number">2.35</span> /home/ef4tless/glibc-all-in-one/libs/2.35-0ubuntu3.1_i386
+
+<span class="token parameter variable">-r</span> 可以恢复原本的题目状态
+xclibc <span class="token parameter variable">-r</span> ./main
+<span class="token punctuation">[</span>+<span class="token punctuation">]</span>restore<span class="token operator">!</span></code></pre>
+
+
+
+<h2 id="qemu"><a href="#qemu" class="headerlink" title="qemu"></a>qemu</h2><h2 id="gcc"><a href="#gcc" class="headerlink" title="gcc"></a>gcc</h2><p>将lib.c编译成一个共享对象文件;</p>
 <pre class="language-none"><code class="language-none">gcc -fPIC -shared -o lib.so lib.c
 得到lib.so</code></pre>
 
@@ -510,7 +612,8 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
 
 
 
-<h2 id="Qemu-img"><a href="#Qemu-img" class="headerlink" title="Qemu-img:"></a>Qemu-img:</h2><pre class="language-bash" data-language="bash"><code class="language-bash">qemu-img convert <span class="token parameter variable">-p</span> <span class="token parameter variable">-f</span> raw xxxx.raw <span class="token parameter variable">-O</span> vmdk xxxx.vmdk</code></pre>
+<h2 id="Qemu-img"><a href="#Qemu-img" class="headerlink" title="Qemu-img"></a>Qemu-img</h2><p>镜像格式转换</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">qemu-img convert <span class="token parameter variable">-p</span> <span class="token parameter variable">-f</span> raw xxxx.raw <span class="token parameter variable">-O</span> vmdk xxxx.vmdk</code></pre>
 
 <pre class="language-none"><code class="language-none">-p 显示转换进度
 -f 原有镜像格式
@@ -518,7 +621,7 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
 
 
 
-<h2 id="BinDiff："><a href="#BinDiff：" class="headerlink" title="BinDiff："></a>BinDiff：</h2><p>二进制对比工具</p>
+<h2 id="BinDiff"><a href="#BinDiff" class="headerlink" title="BinDiff"></a>BinDiff</h2><p>二进制对比工具</p>
 <pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.zynamics.com&#x2F;software.html</code></pre>
 
 <p>安装时尽量选择安装在IDA目录中&#x3D;&#x3D;》将会给IDA添加一个插件</p>
@@ -547,6 +650,137 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
 
 
 
+<h2 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h2><p>Image：镜像，里面包含所要部署的应用程序以及它相关联的所有库；</p>
+<p>Container：容器，通过镜像，可以创建多个不同的容器，每一个容器都是独立的；</p>
+<p>Dockerfile：自动化脚本，用来创建所需要的镜像。</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#获取镜像</span>
+<span class="token function">docker</span> pull ubuntu<span class="token punctuation">(</span>镜像名<span class="token punctuation">)</span>
+
+<span class="token comment">#查看所有镜像</span>
+<span class="token function">docker</span> images
+<span class="token comment"># 选项说明</span>
+<span class="token comment"># REPOSITORY：镜像的仓库源</span>
+<span class="token comment"># TAG：镜像的标签（版本）</span>
+<span class="token comment"># 同一个仓库源可以有多个TAG，代表这个仓库源的不同版本</span>
+<span class="token comment"># IMAGE ID:镜像ID</span>
+<span class="token comment"># CREATED:镜像创建时间</span>
+<span class="token comment"># SIZE：镜像大小</span>
+
+<span class="token comment">#删除镜像</span>
+<span class="token function">docker</span> rmi ID
+
+<span class="token comment">#查看所有容器</span>
+<span class="token function">docker</span> <span class="token function">ps</span> <span class="token parameter variable">-a</span>
+
+<span class="token comment">#删除容器</span>
+<span class="token function">docker</span> <span class="token function">rm</span> <span class="token parameter variable">-f</span> ID
+
+<span class="token comment">#启动一个已经停止的容器</span>
+<span class="token function">docker</span> start ID
+
+<span class="token comment">#停止一个容器</span>
+<span class="token function">docker</span> stop ID
+
+<span class="token comment">#重启容器</span>
+<span class="token function">docker</span> restart ID
+
+<span class="token comment">#指定容器的运行模式</span>
+<span class="token comment">#后台运行 -d参数默认不进入容器</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-itd</span> <span class="token parameter variable">--name</span> ubuntu-test ubuntu /bin/bash
+
+<span class="token comment">#进入容器</span>
+<span class="token function">docker</span> attach ID<span class="token comment">#如果从这个容器中退出，容器停止</span>
+<span class="token function">docker</span> <span class="token builtin class-name">exec</span> <span class="token parameter variable">-it</span> ID /bin/bash<span class="token comment">#如果从这容器退出，容器不会停止（推荐使用）</span>
+
+<span class="token comment">#使用镜像启动容器，以命令行模式进入该容器</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-it</span> ubuntu /bin/bash
+<span class="token comment">#参数解析</span>
+-i：交互式操作
+-t：终端
+<span class="token comment"># ubuntu：ubuntu镜像</span>
+<span class="token comment"># /bin/bash：命令（此处为实现一个交互式shell）</span>
+
+<span class="token comment">#使用Dockerfile指令创建一个新的镜像</span>
+<span class="token comment">#需要一个Dockerfile文件，其中包含一组指令告诉Docker怎么构建镜像</span>
+<span class="token function">docker</span> build <span class="token parameter variable">-t</span> 镜像名 <span class="token builtin class-name">.</span>
+-t:指定要创建的镜像名
+.:Dockerfile文件所在目录
+
+<span class="token comment">#文件传输至容器</span>
+<span class="token function">docker</span> <span class="token function">cp</span> /本地文件路径 容器ID或容器名称:/容器内目标路径
+
+<span class="token comment">#文件传输至镜像</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-v</span> /宿主机文件的绝对路径:/容器内目标路径 <span class="token parameter variable">-it</span> 镜像名称
+
+<span class="token comment">#导出本地容器</span>
+<span class="token function">docker</span> <span class="token builtin class-name">export</span> ID <span class="token operator">></span> ubuntu.tar<span class="token comment">#导出容器快照，生成为本地文件ubuntu.rar</span>
+<span class="token comment">#导入容器</span>
+<span class="token function">cat</span> ubuntu.tar <span class="token operator">|</span> <span class="token function">docker</span> <span class="token function">import</span> - test/ubuntu:v1<span class="token comment">#导入到镜像 test/ubuntu:v1:</span>
+<span class="token function">docker</span> <span class="token function">import</span> URL<span class="token comment">#通过URL或者某个目录来导入</span>
+
+<span class="token comment">#指定映射端口运行WBE容器</span>
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">-p</span> 宿主机端口:容器端口 镜像 python web.py</code></pre>
+
+
+
+<h2 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#拉取仓库</span>
+<span class="token function">git</span> clone <span class="token operator">&lt;</span>仓库URL<span class="token operator">></span>
+
+<span class="token comment">#初始化Git仓库</span>
+<span class="token function">git</span> init
+
+<span class="token comment">#将要上传的文件添加至上传暂存区</span>
+<span class="token function">git</span> <span class="token function">add</span> <span class="token operator">&lt;</span>filename<span class="token operator">></span>
+
+<span class="token comment">#创建一个提交，编辑提交消息</span>
+<span class="token function">git</span> commit <span class="token parameter variable">-m</span> <span class="token string">"提交消息"</span>
+
+<span class="token comment">#查看提交日志</span>
+<span class="token function">git</span> log
+
+<span class="token comment">#连接到指定远程仓库</span>
+<span class="token function">git</span> remote <span class="token function">add</span> <span class="token operator">&lt;</span>origin<span class="token operator">></span> <span class="token operator">&lt;</span>远程仓库URL<span class="token operator">></span>
+
+<span class="token comment">#查看当前远程仓库配置</span>
+<span class="token function">git</span> remote <span class="token parameter variable">-v</span>
+
+<span class="token comment">#删除远程仓库配置</span>
+<span class="token function">git</span> remote remove <span class="token operator">&lt;</span>origin<span class="token operator">></span>
+
+<span class="token comment">#检查本地分支</span>
+<span class="token function">git</span> branch
+
+<span class="token comment">#创建并切换到该分支</span>
+<span class="token function">git</span> checkout <span class="token parameter variable">-b</span> <span class="token operator">&lt;</span>分支名<span class="token operator">></span>
+
+<span class="token comment">#上传至指定仓库的指定分支</span>
+<span class="token function">git</span> push <span class="token operator">&lt;</span>origin<span class="token operator">></span> <span class="token operator">&lt;</span>分支<span class="token operator">></span>
+
+<span class="token comment">#更新本地分支</span>
+<span class="token function">git</span> pull <span class="token operator">&lt;</span>origin<span class="token operator">></span> <span class="token operator">&lt;</span>分支<span class="token operator">></span>
+
+<span class="token comment">#添加缓冲区大小</span>
+<span class="token function">git</span> config <span class="token parameter variable">--global</span> http.postBuffer <span class="token number">524288000</span>
+
+<span class="token comment">#SSL证书问题</span>
+<span class="token function">git</span> config <span class="token parameter variable">--global</span> http.sslVerify <span class="token string">"false"</span></code></pre>
+
+
+
+<h3 id="Hexo"><a href="#Hexo" class="headerlink" title="Hexo"></a>Hexo</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#清除缓存文件</span>
+hexo clean
+<span class="token comment">#创建新文件</span>
+hexo new <span class="token string">"filename"</span>
+<span class="token comment">#创建静态文件</span>
+hexo g
+<span class="token comment">#上传至Github</span>
+hexo d
+<span class="token comment">#在线运行</span>
+hexo s</code></pre>
+
+
+
+<h2 id="IOT"><a href="#IOT" class="headerlink" title="IOT"></a>IOT</h2><p>腾讯安全嵌入式系统安全审计平台sysAuditor</p>
 <h2 id="APP相关"><a href="#APP相关" class="headerlink" title="APP相关"></a>APP相关</h2><h3 id="Charles"><a href="#Charles" class="headerlink" title="Charles"></a>Charles</h3><pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.charlesproxy.com&#x2F;</code></pre>
 
 
@@ -557,7 +791,7 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2022/03/17/Tcache-attack/" target="_self">
+              <a href="/2023/11/05/Bypass-Canary/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -566,7 +800,7 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
-              2022-03-17 13:01:27
+              2099-06-18 00:00:00
             </span>
             
                   <span class="post-tags">
@@ -583,11 +817,6 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
           </div>
           <div class="post-foot-prev">
             
-              <a href="/2022/03/18/House-Of-Einherjar/" target="_self">
-                <span>下一页</span>
-                <i class="iconfont icon-chevronright"></i>
-              </a>
-            
           </div>
         </div>
       
@@ -600,7 +829,7 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec%EF%BC%9A"><span class="toc-text">checksec：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget%EF%BC%9A"><span class="toc-text">ROPgadget：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget%EF%BC%9A"><span class="toc-text">one_gadget：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher%EF%BC%9A"><span class="toc-text">LibcSearcher：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#main-arena-offset%EF%BC%9A"><span class="toc-text">main_arena_offset：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one-master"><span class="toc-text">glibc-all-in-one-master:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu%EF%BC%9A"><span class="toc-text">qemu：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc%EF%BC%9A"><span class="toc-text">gcc：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff%EF%BC%9A"><span class="toc-text">BinDiff：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu"><span class="toc-text">qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
@@ -897,12 +1126,12 @@ patchelf --set-interpreter ~/glibc-all-in-one-master/libs/2.31-0ubuntu9.2_amd64/
       </a>
       <div class="share-content hidden">
         
-          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4 + '&url=' + http%3A%2F%2Fexample.com%2F2022%2F03%2F17%2F%25E5%25B7%25A5%25E5%2585%25B7%25E4%25B8%258E%25E5%2591%25BD%25E4%25BB%25A4%2F + '" target="_blank" title="Twitter">
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4 + '&url=' + http%3A%2F%2Fexample.com%2F2099%2F06%2F18%2F%25E5%25B7%25A5%25E5%2585%25B7%25E4%25B8%258E%25E5%2591%25BD%25E4%25BB%25A4%2F + '" target="_blank" title="Twitter">
             <i class="iconfont icon-twitter"></i>
           </a>
         
         
-          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2022/03/17/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_blank" title="Facebook">
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_blank" title="Facebook">
             <i class="iconfont icon-facebooksquare"></i>
           </a>
         
