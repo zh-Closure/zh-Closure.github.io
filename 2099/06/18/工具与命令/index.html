@@ -249,6 +249,13 @@ python3 <span class="token parameter variable">-m</span> pip <span class="token 
 <h2 id="GDB-x2F-pwndbg-x2F-peda"><a href="#GDB-x2F-pwndbg-x2F-peda" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda"></a>GDB&#x2F;pwndbg&#x2F;peda</h2><p>安装：</p>
 <pre class="language-none"><code class="language-none"></code></pre>
 
+
+
+<p>调试其他架构：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gdb-multiarch</code></pre>
+
+
+
 <p>*为可选</p>
 <table>
 <thead>
@@ -603,7 +610,21 @@ xclibc <span class="token parameter variable">-r</span> ./main
 
 
 
-<h2 id="qemu"><a href="#qemu" class="headerlink" title="qemu"></a>qemu</h2><h2 id="gcc"><a href="#gcc" class="headerlink" title="gcc"></a>gcc</h2><p>将lib.c编译成一个共享对象文件;</p>
+<h2 id="Qemu"><a href="#Qemu" class="headerlink" title="Qemu"></a>Qemu</h2><p>安装：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> qemu
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> qemu-user-static
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> qemu-system
+
+<span class="token comment">#Install all the dependencies</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> libglib2.0 libglib2.0-dev
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> autoconf automake libtool
+
+<span class="token comment">#Install the dependencies required by the network bridge</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> uml-utilities bridge-utils</code></pre>
+
+
+
+<h2 id="gcc"><a href="#gcc" class="headerlink" title="gcc"></a>gcc</h2><p>将lib.c编译成一个共享对象文件;</p>
 <pre class="language-none"><code class="language-none">gcc -fPIC -shared -o lib.so lib.c
 得到lib.so</code></pre>
 
@@ -618,6 +639,13 @@ xclibc <span class="token parameter variable">-r</span> ./main
 <pre class="language-none"><code class="language-none">-p 显示转换进度
 -f 原有镜像格式
 -O 输出镜像格式</code></pre>
+
+
+
+<h2 id="MIPS"><a href="#MIPS" class="headerlink" title="MIPS"></a>MIPS</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gcc-mips-linux-gnu
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gcc-mipsel-linux-gnu
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gcc-mips64-linux-gnuabi64
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gcc-mips64el-linux-gnuabi64</code></pre>
 
 
 
@@ -791,7 +819,7 @@ hexo s</code></pre>
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2023/11/05/Bypass-Canary/" target="_self">
+              <a href="/2024/03/03/BLE-CTF/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -829,7 +857,7 @@ hexo s</code></pre>
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#qemu"><span class="toc-text">qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu"><span class="toc-text">Qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MIPS"><span class="toc-text">MIPS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
@@ -872,7 +900,7 @@ hexo s</code></pre>
     
     <div class="footer-more">
       
-        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2023 Closure</a>
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2024 Closure</a>
         
     </div>
   
