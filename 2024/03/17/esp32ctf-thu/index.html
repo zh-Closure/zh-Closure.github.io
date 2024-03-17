@@ -164,8 +164,20 @@
                 <i class="iconfont icon-tags mr-10" title="标签"></i>
                 
                 <span class="span--tag mr-8">
-                  <a href="/tags/IOT-BLE-MQTT/" title="IOT BLE MQTT">
-                    #IOT BLE MQTT
+                  <a href="/tags/BLE/" title="BLE">
+                    #BLE
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/MQTT/" title="MQTT">
+                    #MQTT
                   </a>
                 </span>
                 
@@ -802,7 +814,153 @@ netsh interface portproxy delete v4tov4 <span class="token assign-left variable"
 
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171529617.png" alt="image-20240317152901594"></p>
 <p>&#x3D;&#x3D;》程序将flag发布到主题&#x2F;topic&#x2F;flag1上，订阅主题就可以接收到flag</p>
-<p>&#x3D;&#x3D;》我这里使用#订阅所有主题，就可以接收到flag：THUCTF</p>
+<p>&#x3D;&#x3D;》我这里使用#订阅所有主题，就可以接收到flag：</p>
+<p>（这里我在使用hexo g生成静态网页的时候发现文章后续消失了，只剩下到THUCTF为止，但是在我使用代码块框住时又没有问题了）</p>
+<pre class="language-c" data-language="c"><code class="language-c">THUCTF<span class="token punctuation">&#123;</span>#_1s_God_in_MQTT<span class="token punctuation">&#125;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171532622.png" alt="image-20240317153204573"></p>
+<h4 id="task2-3"><a href="#task2-3" class="headerlink" title="task2"></a>task2</h4><p>你能欺骗订阅者么</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">mqtt_app_start</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span> broker<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> r<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token function">get_random</span><span class="token punctuation">(</span>r<span class="token punctuation">,</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//凭借随机字符串获得主题</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>topic_2<span class="token punctuation">,</span><span class="token string">"%s%s"</span><span class="token punctuation">,</span><span class="token string">"/topic/flag2/"</span><span class="token punctuation">,</span>r<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token class-name">esp_mqtt_client_config_t</span> mqtt_cfg <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+        <span class="token punctuation">.</span>uri <span class="token operator">=</span> broker<span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//初始化MQTT客户端</span>
+    client <span class="token operator">=</span> <span class="token function">esp_mqtt_client_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>mqtt_cfg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//注册事件处理函数</span>
+    <span class="token function">esp_mqtt_client_register_event</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> ESP_EVENT_ANY_ID<span class="token punctuation">,</span> mqtt_event_handler<span class="token punctuation">,</span> client<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//启动MQTT客户端，连接MQTT代理</span>
+    <span class="token function">esp_mqtt_client_start</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] MQTT task II: I send second flag to baidu\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//向topic_2主题发布消息</span>
+        <span class="token function">esp_mqtt_client_publish</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> topic_2<span class="token punctuation">,</span> <span class="token string">"www.baidu.com?46"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">10000</span> <span class="token operator">/</span> portTICK_RATE_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">mqtt_event_handler</span><span class="token punctuation">(</span><span class="token keyword">void</span> <span class="token operator">*</span>handler_args<span class="token punctuation">,</span> <span class="token class-name">esp_event_base_t</span> base<span class="token punctuation">,</span> <span class="token class-name">int32_t</span> event_id<span class="token punctuation">,</span> <span class="token keyword">void</span> <span class="token operator">*</span>event_data<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">ESP_LOGD</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"Event dispatched from event loop base=%s, event_id=%d"</span><span class="token punctuation">,</span> base<span class="token punctuation">,</span> event_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">mqtt_event_handler_cb</span><span class="token punctuation">(</span>event_data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//执行HTTP GET请求</span>
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">http_get_task</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span> webserver<span class="token punctuation">,</span><span class="token keyword">char</span> <span class="token operator">*</span> httpdata<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> hints <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+        <span class="token punctuation">.</span>ai_family <span class="token operator">=</span> AF_INET<span class="token punctuation">,</span>
+        <span class="token punctuation">.</span>ai_socktype <span class="token operator">=</span> SOCK_STREAM<span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>res<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">in_addr</span> <span class="token operator">*</span>addr<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> s<span class="token punctuation">;</span>
+
+    <span class="token comment">//使用DNS查找指定webserver的IP地址，结果存储于res</span>
+    <span class="token function">getaddrinfo</span><span class="token punctuation">(</span>webserver<span class="token punctuation">,</span> <span class="token string">"80"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token operator">&amp;</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//从res中获取IP地址</span>
+    addr <span class="token operator">=</span> <span class="token operator">&amp;</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token operator">*</span><span class="token punctuation">)</span>res<span class="token operator">-></span>ai_addr<span class="token punctuation">)</span><span class="token operator">-></span>sin_addr<span class="token punctuation">;</span>
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"network"</span><span class="token punctuation">,</span> <span class="token string">"DNS lookup succeeded. IP=%s"</span><span class="token punctuation">,</span> <span class="token function">inet_ntoa</span><span class="token punctuation">(</span><span class="token operator">*</span>addr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//创建套接字</span>
+    s <span class="token operator">=</span> <span class="token function">socket</span><span class="token punctuation">(</span>res<span class="token operator">-></span>ai_family<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_socktype<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"network"</span><span class="token punctuation">,</span> <span class="token string">"... allocated socket"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//连接指定主机</span>
+    <span class="token function">connect</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_addr<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_addrlen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"network"</span><span class="token punctuation">,</span> <span class="token string">"... connected"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//释放res</span>
+    <span class="token function">freeaddrinfo</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//向套接字写入hhtp请求</span>
+    <span class="token function">write</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> httpdata<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>httpdata<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//关闭套接字</span>
+    <span class="token function">close</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">char</span> tag3<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">" [+] MQTT task III: "</span><span class="token punctuation">;</span>
+
+<span class="token keyword">void</span> <span class="token function">mqtt_data_hander</span><span class="token punctuation">(</span><span class="token keyword">int</span> length<span class="token punctuation">,</span><span class="token keyword">char</span> <span class="token operator">*</span> data<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    
+    <span class="token keyword">char</span> l<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> url<span class="token punctuation">[</span><span class="token number">500</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> out<span class="token punctuation">[</span><span class="token number">500</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> httpdata<span class="token punctuation">[</span><span class="token number">500</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> flagdata<span class="token punctuation">[</span><span class="token number">500</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> tag3<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">" [+] MQTT task III: "</span><span class="token punctuation">;</span>
+    <span class="token comment">//字符串拼接，注意其中有flag2和flag3</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>flagdata<span class="token punctuation">,</span><span class="token string">"%s%s%s"</span><span class="token punctuation">,</span>mqtt_flag_2<span class="token punctuation">,</span>tag3<span class="token punctuation">,</span>mqtt_flag_3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> a <span class="token operator">=</span> <span class="token number">46</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//在收到的数据中查找"?"的位置</span>
+    <span class="token keyword">char</span> <span class="token operator">*</span> p <span class="token operator">=</span> <span class="token function">strnstr</span><span class="token punctuation">(</span>data<span class="token punctuation">,</span><span class="token string">"?"</span><span class="token punctuation">,</span>length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span>p<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token keyword">int</span> data_length <span class="token operator">=</span> p <span class="token operator">-</span> data<span class="token punctuation">;</span>
+        <span class="token comment">//提取查询参数</span>
+        <span class="token function">snprintf</span><span class="token punctuation">(</span>l<span class="token punctuation">,</span>length <span class="token operator">-</span> data_length<span class="token punctuation">,</span><span class="token string">"%s"</span><span class="token punctuation">,</span>p<span class="token operator">+</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//转整数</span>
+        a <span class="token operator">=</span> <span class="token function">atoi</span><span class="token punctuation">(</span>l<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        length <span class="token operator">=</span> data_length<span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+
+    <span class="token comment">//收到的数据（不包含查询参数）复制到url</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span><span class="token string">"%.*s"</span><span class="token punctuation">,</span>length<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">char</span> fmt<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">"GET / HTTP/1.0\r\n"</span>
+                 <span class="token string">"User-Agent: esp-idf/1.0 esp32\r\n"</span>
+                 <span class="token string">"flag: %s\r\n"</span>
+                 <span class="token string">"\r\n"</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//收到的数据长度小于 flag和tag3的总长度</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span> a <span class="token operator">&lt;</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>mqtt_flag_2<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>tag3<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span> <span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token comment">//将flag附加到out</span>
+        <span class="token function">memcpy</span><span class="token punctuation">(</span>out<span class="token punctuation">,</span>flagdata<span class="token punctuation">,</span>a <span class="token operator">&amp;</span> <span class="token number">0xff</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//将http请求头填充到httpdata</span>
+        <span class="token function">sprintf</span><span class="token punctuation">(</span>httpdata<span class="token punctuation">,</span>fmt<span class="token punctuation">,</span>out<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//发送http请求</span>
+        <span class="token function">http_get_task</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span>httpdata<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>          
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》程序会向topic_2主题发布消息”<a target="_blank" rel="noopener" href="http://www.baidu.com/?46">www.baidu.com?46</a>“</p>
+<p>&#x3D;&#x3D;》程序会根据发布的消息向目标地址（<a target="_blank" rel="noopener" href="http://www.baidu.com)发送请求/">www.baidu.com）发送请求</a></p>
+<p>&#x3D;&#x3D;》但是当我们给topic_2主题发布自己VPS的地址时，程序也会向VPS的80端口发送请求，请求中包含了flag</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172016325.png" alt="image-20240317154652873"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171546264.png" alt="image-20240317154639207"></p>
+<p>&#x3D;&#x3D;》我们只需要在VPS上监听80端口，等待程序自动发送请求，就可以获得flag：THUCTF{attAck_t0_th3_dev1ce_tcp_r3cV_ch4nnel}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171546364.png" alt="image-20240317154619300"></p>
+<h4 id="task3-3"><a href="#task3-3" class="headerlink" title="task3"></a>task3</h4><p>这是个内存破坏的前戏</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//字符串拼接，注意其中有flag2和flag3</span>
+<span class="token function">sprintf</span><span class="token punctuation">(</span>flagdata<span class="token punctuation">,</span><span class="token string">"%s%s%s"</span><span class="token punctuation">,</span>mqtt_flag_2<span class="token punctuation">,</span>tag3<span class="token punctuation">,</span>mqtt_flag_3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//收到的数据长度小于 flag和tag3的总长度</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span> a <span class="token operator">&lt;</span> <span class="token punctuation">(</span><span class="token keyword">int</span><span class="token punctuation">)</span><span class="token punctuation">(</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>mqtt_flag_2<span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>tag3<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span> <span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token comment">//将flag附加到out</span>
+        <span class="token comment">//长度a &amp; 0xff</span>
+        <span class="token function">memcpy</span><span class="token punctuation">(</span>out<span class="token punctuation">,</span>flagdata<span class="token punctuation">,</span>a <span class="token operator">&amp;</span> <span class="token number">0xff</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//将http请求头填充到httpdata</span>
+        <span class="token function">sprintf</span><span class="token punctuation">(</span>httpdata<span class="token punctuation">,</span>fmt<span class="token punctuation">,</span>out<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">//发送http请求</span>
+        <span class="token function">http_get_task</span><span class="token punctuation">(</span>url<span class="token punctuation">,</span>httpdata<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>          </code></pre>
+
+<p>&#x3D;&#x3D;》注意此处在进行判断时使用的是有符号数，但是在后续memcpy中长度参数使用a &amp; 0xff就将变为无符号数</p>
+<p>&#x3D;&#x3D;》当传入-1即可绕过限制，将flagdata中的flag3也复制进去</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171548757.png" alt="image-20240317154810727"></p>
+<p>&#x3D;&#x3D;》监听80端口，获得flag：THUCTF{0ver_the_Air_y0u_c4n_a77ack_t0_1ntranet_d3v1ce}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171547937.png" alt="image-20240317154745804"></p>
+<h3 id="固件"><a href="#固件" class="headerlink" title="固件"></a>固件</h3><p>查看提供的源码可以看到其实还有一个flag：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172027846.png" alt="image-20240317202703776"></p>
+<p>&#x3D;&#x3D;》创建了一个以flag为名称的任务&#x3D;&#x3D;》直接通过esptools提取固件</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">esptool.py.exe <span class="token parameter variable">--baud</span> <span class="token number">115200</span>  read_flash 0x10000 0x310000 dump.bin</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172100490.png"></p>
+<p>直接在固件文件中找HUCTF字符串就可以获得flag：HUCTF{DuMp_the_b1n_by_espt00l.py_Ju5t_1n_0ne_Lin3}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172059993.png" alt="image-20240317205947968"></p>
 
       </div>
       
@@ -825,8 +983,20 @@ netsh interface portproxy delete v4tov4 <span class="token assign-left variable"
                     <i class="iconfont icon-tags mr-10" title="标签"></i>
                     
                     <span class="span--tag mr-8">
-                      <a href="/tags/IOT-BLE-MQTT/" title="IOT BLE MQTT">
-                        #IOT BLE MQTT
+                      <a href="/tags/BLE/" title="BLE">
+                        #BLE
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/MQTT/" title="MQTT">
+                        #MQTT
                       </a>
                     </span>
                     
@@ -852,7 +1022,7 @@ netsh interface portproxy delete v4tov4 <span class="token assign-left variable"
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#esp32ctf-thu"><span class="toc-text">esp32ctf_thu</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E6%8C%91%E6%88%98"><span class="toc-text">开始挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E8%AF%B4%E6%98%8E"><span class="toc-text">题目说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-text">硬件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C"><span class="toc-text">网络</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-1"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-1"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%93%9D%E7%89%99"><span class="toc-text">蓝牙</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-2"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-2"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MQTT"><span class="toc-text">MQTT</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-3"><span class="toc-text">task1</span></a></li></ol></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#esp32ctf-thu"><span class="toc-text">esp32ctf_thu</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E6%8C%91%E6%88%98"><span class="toc-text">开始挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E8%AF%B4%E6%98%8E"><span class="toc-text">题目说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-text">硬件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C"><span class="toc-text">网络</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-1"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-1"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%93%9D%E7%89%99"><span class="toc-text">蓝牙</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-2"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-2"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MQTT"><span class="toc-text">MQTT</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-3"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-3"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-3"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6"><span class="toc-text">固件</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
