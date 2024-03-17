@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      esp32ctf_thu 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">esp32ctf_thu</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2024-03-17 21:04:17
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT-BLE-MQTT/" title="IOT BLE MQTT">
+                    #IOT BLE MQTT
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="esp32ctf-thu"><a href="#esp32ctf-thu" class="headerlink" title="esp32ctf_thu"></a>esp32ctf_thu</h1><p>项目地址：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;xuanxuanblingbling&#x2F;esp32ctf_thu</code></pre>
+
+
+
+<p>环境：ubuntu18.04</p>
+<p>安装esp-idf：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#依赖</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token function">git</span> <span class="token function">wget</span> flex bison gperf python3.7 python3.7-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+
+<span class="token comment">#获取esp-idf</span>
+<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> ~/esp
+<span class="token builtin class-name">cd</span> ~/esp
+<span class="token function">git</span> clone <span class="token parameter variable">-b</span> v4.3 <span class="token parameter variable">--recursive</span> https://github.com/espressif/esp-idf.git
+
+<span class="token comment">#安装工具链</span>
+<span class="token builtin class-name">cd</span> ~/esp/esp-idf
+./install.sh all</code></pre>
+
+
+
+<p>使用esp-idf：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#在当前终端启用esp-idf</span>
+<span class="token builtin class-name">.</span> <span class="token environment constant">$HOME</span>/esp/esp-idf/export.sh
+
+<span class="token comment">#打开esp-idf配置菜单</span>
+idf.py menuconfig </code></pre>
+
+<pre class="language-none"><code class="language-none">Serial flasher config  ---&gt;  Flash size (4 MB) 
+Partition Table        ---&gt;  Partition Table (Custom partition table CSV)</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172105936.png" alt="image-20240316005705114"></p>
+<p>&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403160056152.png" alt="image-20240316005631117"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403160056899.png" alt="image-20240316005647865"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#根据配置和源码 编译esp-idf项目</span>
+idf.py build 
+
+<span class="token comment">#将编译好的固件烧录到esp32</span>
+idf.py flash </code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403172105818.png" alt="image-20240316172134087"></p>
+<h2 id="开始挑战"><a href="#开始挑战" class="headerlink" title="开始挑战"></a>开始挑战</h2><h3 id="题目说明"><a href="#题目说明" class="headerlink" title="题目说明"></a>题目说明</h3><p>有以下四个方向的题目，方向间题目并行，方向内题目采取闯关模式串行。但由于配置冲突，采用跳帽来切换题目方向：</p>
+<ul>
+<li>跳帽连接GND与23号引脚：硬件、网络、蓝牙</li>
+<li>拔掉GND与23号引脚跳帽：MQTT</li>
+</ul>
+<p>由于我的esp32的GND和23号引脚相距过远，用不了跳帽，所以直接用杜邦线连上了（一样的）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403161908523.png" alt="image-20240316190805048"></p>
+<h3 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h3><pre class="language-none"><code class="language-none">task1 -&gt; task2 -&gt; task3 </code></pre>
+
+<h4 id="task1"><a href="#task1" class="headerlink" title="task1"></a>task1</h4><p>将GPIO18抬高，持续3s即可获得flag</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">GPIO_INPUT_IO_0</span>     <span class="token expression"><span class="token number">18</span></span></span>
+
+<span class="token keyword">void</span> <span class="token function">hardware_task1</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">int</span> hit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] hardware task I : hit %d\n"</span><span class="token punctuation">,</span>hit<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">gpio_get_level</span><span class="token punctuation">(</span>GPIO_INPUT_IO_0<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span> <span class="token comment">//获取引脚电平状态</span>
+            hit <span class="token operator">++</span> <span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token keyword">else</span><span class="token punctuation">&#123;</span>
+            hit <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>hit<span class="token operator">></span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] hardware task I : %s\n"</span><span class="token punctuation">,</span>hardware_flag_1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">1000</span> <span class="token operator">/</span> portTICK_RATE_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》使用杜邦线将18号引脚和3.3V引脚连起来，18号引脚就将处于高电平状态</p>
+<p>&#x3D;&#x3D;》通过CRT建立与esp32的通信</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403161750705.png" alt="image-20240316174937663"></p>
+<p>&#x3D;&#x3D;》THUCTF{Ev3ryth1ng_st4rt_fr0m_GPIO_!!!}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403161803538.png" alt="image-20240316180353504"></p>
+<h4 id="task2"><a href="#task2" class="headerlink" title="task2"></a>task2</h4><p>在GPIO18处构造出1w个上升沿&#x3D;&#x3D;》信号从低电平（逻辑 0）变为高电平（逻辑 1）的过程</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">int</span> trigger <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> IRAM_ATTR <span class="token function">gpio_isr_handler</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span> arg<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    trigger<span class="token operator">++</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">hardware_gpio_setup</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    ……
+    <span class="token function">gpio_isr_handler_add</span><span class="token punctuation">(</span>GPIO_INPUT_IO_0<span class="token punctuation">,</span> gpio_isr_handler<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">void</span><span class="token operator">*</span><span class="token punctuation">)</span> GPIO_INPUT_IO_0<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">hardware_task2</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    trigger <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] hardware task II : trigger %d\n"</span><span class="token punctuation">,</span>trigger<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>trigger <span class="token operator">></span> <span class="token number">10000</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] hardware task II : %s\n"</span><span class="token punctuation">,</span>hardware_flag_2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">1000</span> <span class="token operator">/</span> portTICK_RATE_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》只需要将18号引脚与TX相接，利用串口一直有数据输出，就可以自动构造上升沿</p>
+<p>&#x3D;&#x3D;》THUCTF{AuT0++_is_th3_r1ght_w4y_hhhhhh}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403161936042.png" alt="image-20240316193619010"></p>
+<h4 id="task3"><a href="#task3" class="headerlink" title="task3"></a>task3</h4><p>在另一个串口处寻找第三个flag</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">ECHO_TEST_TXD</span>  <span class="token expression"><span class="token punctuation">(</span>GPIO_NUM_4<span class="token punctuation">)</span></span></span>
+<span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">ECHO_TEST_RXD</span>  <span class="token expression"><span class="token punctuation">(</span>GPIO_NUM_5<span class="token punctuation">)</span></span></span>
+
+<span class="token keyword">void</span> <span class="token function">hardware_uart_setup</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    ……
+    <span class="token comment">//定义UART1 TXD为4号引脚 RXD为5号引脚</span>
+    <span class="token function">uart_set_pin</span><span class="token punctuation">(</span>UART_NUM_1<span class="token punctuation">,</span> ECHO_TEST_TXD<span class="token punctuation">,</span> ECHO_TEST_RXD<span class="token punctuation">,</span> ECHO_TEST_RTS<span class="token punctuation">,</span> ECHO_TEST_CTS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">hardware_task3</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] hardware task III : find the third flag in another UART\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">//向第一个 UART 控制器（UART1）发送flag</span>
+        <span class="token function">uart_write_bytes</span><span class="token punctuation">(</span>UART_NUM_1<span class="token punctuation">,</span> hardware_flag_3<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>hardware_flag_3<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">1000</span> <span class="token operator">/</span> portTICK_RATE_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》使用USB转TTL</p>
+<p>&#x3D;&#x3D;》TX对RX（5号引脚），RX对TX（4号引脚），GND对GND</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162240319.png"></p>
+<h3 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h3><pre class="language-none"><code class="language-none">       -&gt; task2 
+task1 
+       -&gt; task3</code></pre>
+
+<h4 id="task1-1"><a href="#task1-1" class="headerlink" title="task1"></a>task1</h4><p>连接板子目标端口，尝试获得flag</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//打印一个随机SSID和password的WIFI</span>
+<span class="token keyword">void</span> <span class="token function">network_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> ssid<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">char</span> pass<span class="token punctuation">[</span><span class="token number">0x10</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token function">get_random</span><span class="token punctuation">(</span>ssid<span class="token punctuation">,</span><span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">get_random</span><span class="token punctuation">(</span>pass<span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] network task I: I will connect a wifi -> ssid: %s , password %s \n"</span><span class="token punctuation">,</span>ssid<span class="token punctuation">,</span>pass<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">connect_wifi</span><span class="token punctuation">(</span>ssid<span class="token punctuation">,</span>pass<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token comment">//根据SSID和password连接WIFI</span>
+<span class="token keyword">void</span> <span class="token function">connect_wifi</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span> ssid<span class="token punctuation">,</span> <span class="token keyword">char</span> <span class="token operator">*</span> pass<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token function">nvs_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">wifi_init_sta</span><span class="token punctuation">(</span>ssid<span class="token punctuation">,</span>pass<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">network_tcp</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    
+    <span class="token keyword">char</span> addr_str<span class="token punctuation">[</span><span class="token number">128</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> dest_addr<span class="token punctuation">;</span>
+
+    dest_addr<span class="token punctuation">.</span>sin_addr<span class="token punctuation">.</span>s_addr <span class="token operator">=</span> <span class="token function">htonl</span><span class="token punctuation">(</span>INADDR_ANY<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    dest_addr<span class="token punctuation">.</span>sin_family <span class="token operator">=</span> AF_INET<span class="token punctuation">;</span>
+    dest_addr<span class="token punctuation">.</span>sin_port <span class="token operator">=</span> <span class="token function">htons</span><span class="token punctuation">(</span><span class="token number">3333</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">int</span> listen_sock <span class="token operator">=</span> <span class="token function">socket</span><span class="token punctuation">(</span>AF_INET<span class="token punctuation">,</span> SOCK_STREAM<span class="token punctuation">,</span> IPPROTO_IP<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>TAG<span class="token punctuation">,</span> <span class="token string">"Socket created"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">bind</span><span class="token punctuation">(</span>listen_sock<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>dest_addr<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>dest_addr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>TAG<span class="token punctuation">,</span> <span class="token string">"Socket bound, port %d"</span><span class="token punctuation">,</span> <span class="token number">3333</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">listen</span><span class="token punctuation">(</span>listen_sock<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">while</span> <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>TAG<span class="token punctuation">,</span> <span class="token string">"Socket listening"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">struct</span> <span class="token class-name">sockaddr_storage</span> source_addr<span class="token punctuation">;</span>
+        <span class="token class-name">socklen_t</span> addr_len <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>source_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">int</span> sock <span class="token operator">=</span> <span class="token function">accept</span><span class="token punctuation">(</span>listen_sock<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>source_addr<span class="token punctuation">,</span> <span class="token operator">&amp;</span>addr_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">inet_ntoa_r</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token operator">*</span><span class="token punctuation">)</span><span class="token operator">&amp;</span>source_addr<span class="token punctuation">)</span><span class="token operator">-></span>sin_addr<span class="token punctuation">,</span> addr_str<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>addr_str<span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>TAG<span class="token punctuation">,</span> <span class="token string">"Socket accepted ip address: %s"</span><span class="token punctuation">,</span> addr_str<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//打印IP</span>
+        <span class="token keyword">char</span> buffer<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token function">recv</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span>buffer<span class="token punctuation">,</span><span class="token number">0x10</span><span class="token punctuation">,</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span><span class="token comment">//接收</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token function">strstr</span><span class="token punctuation">(</span>buffer<span class="token punctuation">,</span><span class="token string">"getflag"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span><span class="token comment">//接收判断</span>
+                <span class="token function">send</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> network_flag_1<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>network_flag_1<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                <span class="token keyword">break</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span><span class="token keyword">else</span><span class="token punctuation">&#123;</span>
+                <span class="token function">send</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token string">"error\n"</span><span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span><span class="token string">"error\n"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">&#125;</span>
+            <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">1000</span> <span class="token operator">/</span> portTICK_RATE_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        open_next_tasks <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span>
+        <span class="token function">shutdown</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">close</span><span class="token punctuation">(</span>sock<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》需要我们构造一个程序提供的随机SSID和password的WIFI热点</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162133568.png"></p>
+<p>&#x3D;&#x3D;》下图是我又重新运行后产出的随机WIFI<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162250895.png" alt="image-20240316225012854"></p>
+<p>&#x3D;&#x3D;》提供给板子连接，将会返回IP地址和3333监听端口</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162134158.png" alt="image-20240316213430117"></p>
+<p>&#x3D;&#x3D;》监听3333端口，并发送”getflag“即可通过验证获得flag：THUCTF{M4k3_A_w1rele55_h0t5p0ts}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162137091.png" alt="image-20240316213753059"></p>
+<h4 id="task2-1"><a href="#task2-1" class="headerlink" title="task2"></a>task2</h4><p>你知道他发给百度的flag么</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">void</span> <span class="token function">network_http</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span>  fmt<span class="token punctuation">[</span><span class="token punctuation">]</span>  <span class="token operator">=</span> <span class="token string">"GET / HTTP/1.0\r\n"</span>
+                        <span class="token string">"Host: www.baidu.com:80\r\n"</span>
+                        <span class="token string">"User-Agent: esp-idf/1.0 esp32\r\n"</span>
+                        <span class="token string">"flag: %s\r\n"</span>
+                        <span class="token string">"\r\n"</span><span class="token punctuation">;</span>
+    
+    <span class="token keyword">char</span> request<span class="token punctuation">[</span><span class="token number">200</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">sprintf</span><span class="token punctuation">(</span>request<span class="token punctuation">,</span>fmt<span class="token punctuation">,</span>network_flag_2<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">const</span> <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> hints <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+        <span class="token punctuation">.</span>ai_family <span class="token operator">=</span> AF_INET<span class="token punctuation">,</span>
+        <span class="token punctuation">.</span>ai_socktype <span class="token operator">=</span> SOCK_STREAM<span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">addrinfo</span> <span class="token operator">*</span>res<span class="token punctuation">;</span>
+    <span class="token keyword">struct</span> <span class="token class-name">in_addr</span> <span class="token operator">*</span>addr<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> s<span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>open_next_tasks<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] network task II : send the second flag to baidu\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">getaddrinfo</span><span class="token punctuation">(</span><span class="token string">"www.baidu.com"</span><span class="token punctuation">,</span> <span class="token string">"80"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>hints<span class="token punctuation">,</span> <span class="token operator">&amp;</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            addr <span class="token operator">=</span> <span class="token operator">&amp;</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token keyword">struct</span> <span class="token class-name">sockaddr_in</span> <span class="token operator">*</span><span class="token punctuation">)</span>res<span class="token operator">-></span>ai_addr<span class="token punctuation">)</span><span class="token operator">-></span>sin_addr<span class="token punctuation">;</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"network"</span><span class="token punctuation">,</span> <span class="token string">"DNS lookup succeeded. IP=%s"</span><span class="token punctuation">,</span> <span class="token function">inet_ntoa</span><span class="token punctuation">(</span><span class="token operator">*</span>addr<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            s <span class="token operator">=</span> <span class="token function">socket</span><span class="token punctuation">(</span>res<span class="token operator">-></span>ai_family<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_socktype<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">connect</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_addr<span class="token punctuation">,</span> res<span class="token operator">-></span>ai_addrlen<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">freeaddrinfo</span><span class="token punctuation">(</span>res<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">write</span><span class="token punctuation">(</span>s<span class="token punctuation">,</span> request<span class="token punctuation">,</span> <span class="token function">strlen</span><span class="token punctuation">(</span>request<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">close</span><span class="token punctuation">(</span>s<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">10000</span> <span class="token operator">/</span> portTICK_PERIOD_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》就是我们在通过（获取flag）第一关的基础上，程序会向baidu发送带有flag的数据包</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162157967.png" alt="image-20240316215734944"></p>
+<p>&#x3D;&#x3D;》通过wireshark捕获给esp32提供热点的wifi</p>
+<p>&#x3D;&#x3D;》得到flag：THUCTF{Sn1ffer_N3tw0rk_TrAffic_In_7h4_Main_r0aD}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162158341.png" alt="image-20240316215814268"></p>
+<h4 id="task3-1"><a href="#task3-1" class="headerlink" title="task3"></a>task3</h4><p>flag在空中</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">network_wifi</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">static</span> <span class="token keyword">const</span> <span class="token keyword">char</span> ds2ds_pdu<span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+    <span class="token number">0x48</span><span class="token punctuation">,</span> <span class="token number">0x03</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span>
+    <span class="token number">0xE8</span><span class="token punctuation">,</span> <span class="token number">0x65</span><span class="token punctuation">,</span> <span class="token number">0xD4</span><span class="token punctuation">,</span> <span class="token number">0xCB</span><span class="token punctuation">,</span> <span class="token number">0x74</span><span class="token punctuation">,</span> <span class="token number">0x19</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span> <span class="token number">0xFF</span><span class="token punctuation">,</span>
+    <span class="token number">0x60</span><span class="token punctuation">,</span> <span class="token number">0x94</span><span class="token punctuation">,</span> <span class="token number">0xE8</span><span class="token punctuation">,</span> <span class="token number">0x65</span><span class="token punctuation">,</span> <span class="token number">0xD4</span><span class="token punctuation">,</span> <span class="token number">0xCB</span><span class="token punctuation">,</span> <span class="token number">0x74</span><span class="token punctuation">,</span> <span class="token number">0x1C</span><span class="token punctuation">,</span> <span class="token number">0x26</span><span class="token punctuation">,</span> <span class="token number">0xB9</span><span class="token punctuation">,</span>
+    <span class="token number">0x0D</span><span class="token punctuation">,</span> <span class="token number">0x02</span><span class="token punctuation">,</span> <span class="token number">0x7D</span><span class="token punctuation">,</span> <span class="token number">0x13</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x01</span><span class="token punctuation">,</span> <span class="token number">0xE8</span><span class="token punctuation">,</span> <span class="token number">0x65</span><span class="token punctuation">,</span> <span class="token number">0xD4</span><span class="token punctuation">,</span> <span class="token number">0xCB</span><span class="token punctuation">,</span> <span class="token number">0x74</span><span class="token punctuation">,</span>
+    <span class="token number">0x1C</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x26</span><span class="token punctuation">,</span> <span class="token number">0xB9</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">;</span>  
+
+    <span class="token keyword">char</span> pdu<span class="token punctuation">[</span><span class="token number">200</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span> <span class="token comment">// 802.11 数据包，后续将包含flag</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>pdu<span class="token punctuation">,</span>ds2ds_pdu<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>ds2ds_pdu<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>pdu<span class="token operator">+</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>ds2ds_pdu<span class="token punctuation">)</span><span class="token punctuation">,</span>network_flag_3<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>network_flag_3<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">while</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>open_next_tasks<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] network task III : send raw 802.11 package contains the third flag\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">esp_wifi_80211_tx</span><span class="token punctuation">(</span>ESP_IF_WIFI_STA<span class="token punctuation">,</span> pdu<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>ds2ds_pdu<span class="token punctuation">)</span><span class="token operator">+</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>network_flag_3<span class="token punctuation">)</span><span class="token punctuation">,</span> true<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">vTaskDelay</span><span class="token punctuation">(</span><span class="token number">5000</span> <span class="token operator">/</span> portTICK_PERIOD_MS<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+
+
+
+
+<h3 id="蓝牙"><a href="#蓝牙" class="headerlink" title="蓝牙"></a>蓝牙</h3><h4 id="task1-2"><a href="#task1-2" class="headerlink" title="task1"></a>task1</h4><p>修改蓝牙名称并设置可被发现即可获得flag</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//启用蓝牙</span>
+<span class="token keyword">void</span> <span class="token function">bt_app_gap_start_up</span><span class="token punctuation">(</span><span class="token keyword">void</span><span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+
+    <span class="token function">get_random</span><span class="token punctuation">(</span>target_name<span class="token punctuation">,</span><span class="token number">8</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//随机蓝牙设备名称</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] bluetooth task I : Please change your bluetooth device name to %s\n"</span><span class="token punctuation">,</span>target_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token class-name">esp_bt_controller_config_t</span> bt_cfg <span class="token operator">=</span> <span class="token function">BT_CONTROLLER_INIT_CONFIG_DEFAULT</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">esp_bt_controller_init</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>bt_cfg<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token function">esp_bt_controller_enable</span><span class="token punctuation">(</span>ESP_BT_MODE_BTDM<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token function">esp_bluedroid_init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">esp_bluedroid_enable</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token function">esp_bt_dev_set_device_name</span><span class="token punctuation">(</span><span class="token string">"THUCTF"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//本设备蓝牙名称</span>
+    <span class="token function">esp_bt_gap_set_scan_mode</span><span class="token punctuation">(</span>ESP_BT_CONNECTABLE<span class="token punctuation">,</span> ESP_BT_GENERAL_DISCOVERABLE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">esp_bt_gap_register_callback</span><span class="token punctuation">(</span>bt_app_gap_cb<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">esp_bt_gap_start_discovery</span><span class="token punctuation">(</span>ESP_BT_INQ_MODE_GENERAL_INQUIRY<span class="token punctuation">,</span> <span class="token number">0x10</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">update_device_info</span><span class="token punctuation">(</span><span class="token class-name">esp_bt_gap_cb_param_t</span> <span class="token operator">*</span>param<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token keyword">char</span> bda_str<span class="token punctuation">[</span><span class="token number">18</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> device_name<span class="token punctuation">[</span><span class="token number">256</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token class-name">uint8_t</span>  device_name_len<span class="token punctuation">;</span>
+    <span class="token class-name">esp_bt_gap_dev_prop_t</span> <span class="token operator">*</span>p<span class="token punctuation">;</span>
+
+    <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GAP_TAG<span class="token punctuation">,</span> <span class="token string">"[+] bluetooth task I : Device found: %s"</span><span class="token punctuation">,</span> <span class="token function">bda2str</span><span class="token punctuation">(</span>param<span class="token operator">-></span>disc_res<span class="token punctuation">.</span>bda<span class="token punctuation">,</span> bda_str<span class="token punctuation">,</span> <span class="token number">18</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> param<span class="token operator">-></span>disc_res<span class="token punctuation">.</span>num_prop<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        p <span class="token operator">=</span> param<span class="token operator">-></span>disc_res<span class="token punctuation">.</span>prop <span class="token operator">+</span> i<span class="token punctuation">;</span>
+        <span class="token keyword">switch</span> <span class="token punctuation">(</span>p<span class="token operator">-></span>type<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">case</span> ESP_BT_GAP_DEV_PROP_EIR<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+            <span class="token function">get_name_from_eir</span><span class="token punctuation">(</span>p<span class="token operator">-></span>val<span class="token punctuation">,</span> device_name<span class="token punctuation">,</span> <span class="token operator">&amp;</span>device_name_len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">check_name</span><span class="token punctuation">(</span>target_name<span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>device_name<span class="token punctuation">)</span><span class="token punctuation">;</span>  <span class="token comment">//验证，打印flag</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GAP_TAG<span class="token punctuation">,</span> <span class="token string">"[+] bluetooth task I : Found a target device, address %s, name %s"</span><span class="token punctuation">,</span> bda_str<span class="token punctuation">,</span> device_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">default</span><span class="token operator">:</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">void</span> <span class="token function">check_name</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span> a<span class="token punctuation">,</span><span class="token keyword">char</span> <span class="token operator">*</span> b<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>a<span class="token punctuation">,</span>b<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"bluetooth task I : %s\n"</span><span class="token punctuation">,</span>bt_flag_1<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">esp_bt_gap_cancel_discovery</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        scan <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token function">next_task</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162310655.png" alt="image-20240316230956881"></p>
+<p>&#x3D;&#x3D;》创建一个该名称的蓝牙</p>
+<p>&#x3D;&#x3D;》获得flag：THUCTF{b1u3t00th_n4me_a1s0_c4n_b3_An_aTT4ck_surfAce}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162312918.png" alt="image-20240316231257888"></p>
+<h4 id="task2-2"><a href="#task2-2" class="headerlink" title="task2"></a>task2</h4><p>flag在空中</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//启动BLE</span>
+<span class="token keyword">void</span> <span class="token function">next_task</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+    <span class="token comment">//包含flag的数据包</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> fmt<span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0x06</span><span class="token punctuation">,</span><span class="token number">0x09</span><span class="token punctuation">,</span><span class="token number">0x68</span><span class="token punctuation">,</span><span class="token number">0x65</span><span class="token punctuation">,</span><span class="token number">0x6C</span><span class="token punctuation">,</span><span class="token number">0x6C</span><span class="token punctuation">,</span><span class="token number">0x6F</span><span class="token punctuation">,</span>
+                          <span class="token keyword">sizeof</span><span class="token punctuation">(</span>bt_flag_2<span class="token punctuation">)</span><span class="token punctuation">,</span><span class="token number">0xFD</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">char</span> client_name<span class="token punctuation">[</span><span class="token number">10</span><span class="token punctuation">]</span><span class="token operator">=</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+    <span class="token function">get_random</span><span class="token punctuation">(</span>client_name<span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] bluetooth task II : BLE device name is %s\n"</span><span class="token punctuation">,</span>client_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] bluetooth task II : Please find the second flag in the ADV package from this BLE device %s\n"</span><span class="token punctuation">,</span>client_name<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">unsigned</span> <span class="token keyword">char</span> data<span class="token punctuation">[</span><span class="token number">100</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>data<span class="token punctuation">,</span>fmt<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>fmt<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>data<span class="token operator">+</span><span class="token number">2</span><span class="token punctuation">,</span>client_name<span class="token punctuation">,</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">memcpy</span><span class="token punctuation">(</span>data<span class="token operator">+</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>fmt<span class="token punctuation">)</span><span class="token punctuation">,</span>bt_flag_2<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>bt_flag_2<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">//配置原始广播数据</span>
+    <span class="token function">esp_ble_gap_config_adv_data_raw</span><span class="token punctuation">(</span>data<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>fmt<span class="token punctuation">)</span><span class="token operator">+</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>bt_flag_2<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//开始广播</span>
+    <span class="token function">esp_ble_gap_start_advertising</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ble_adv_params<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//注册GATT</span>
+    <span class="token function">esp_ble_gatts_register_callback</span><span class="token punctuation">(</span>gatts_event_handler<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">esp_ble_gatts_app_register</span><span class="token punctuation">(</span>PROFILE_A_APP_ID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//设置MTU</span>
+    <span class="token function">esp_ble_gatt_set_local_mtu</span><span class="token punctuation">(</span><span class="token number">500</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》由经典蓝牙转为BLE（低功耗蓝牙）</p>
+<p>&#x3D;&#x3D;》只要能接收到BLE发出的广播数据包就可以拿到flag</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162312918.png" alt="image-20240316231257888"></p>
+<p>&#x3D;&#x3D;》通过nRF connect连接随机生成的BLE设备名，点击raw接收广播数据</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162317533.jpg"></p>
+<p>&#x3D;&#x3D;》将获取到的16进制数据转个ASCII即可获得flag：THUCTF{AdVD47a}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162316292.png" alt="image-20240316231635261"></p>
+<h4 id="task3-2"><a href="#task3-2" class="headerlink" title="task3"></a>task3</h4><p>分析GATT业务并获得flag</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token macro property"><span class="token directive-hash">#</span><span class="token directive keyword">define</span> <span class="token macro-name">GATTS_CHAR_UUID_TEST_A</span>      <span class="token expression"><span class="token number">0xFF01</span></span></span>
+
+<span class="token keyword">static</span> <span class="token keyword">void</span> <span class="token function">gatts_profile_a_event_handler</span><span class="token punctuation">(</span><span class="token class-name">esp_gatts_cb_event_t</span> event<span class="token punctuation">,</span> <span class="token class-name">esp_gatt_if_t</span> gatts_if<span class="token punctuation">,</span> <span class="token class-name">esp_ble_gatts_cb_param_t</span> <span class="token operator">*</span>param<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>event<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">//注册GATT应用程序事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_REG_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"REGISTER_APP_EVT, status %d, app_id %d\n"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>reg<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>reg<span class="token punctuation">.</span>app_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_id<span class="token punctuation">.</span>is_primary <span class="token operator">=</span> true<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_id<span class="token punctuation">.</span>id<span class="token punctuation">.</span>inst_id <span class="token operator">=</span> <span class="token number">0x00</span><span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_id<span class="token punctuation">.</span>id<span class="token punctuation">.</span>uuid<span class="token punctuation">.</span>len <span class="token operator">=</span> ESP_UUID_LEN_16<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_id<span class="token punctuation">.</span>id<span class="token punctuation">.</span>uuid<span class="token punctuation">.</span>uuid<span class="token punctuation">.</span>uuid16 <span class="token operator">=</span> GATTS_SERVICE_UUID_TEST_A<span class="token punctuation">;</span>
+        <span class="token function">esp_ble_gatts_create_service</span><span class="token punctuation">(</span>gatts_if<span class="token punctuation">,</span> <span class="token operator">&amp;</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_id<span class="token punctuation">,</span> GATTS_NUM_HANDLE_TEST_A<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//读取属性事件，当远程设备尝试读取属性值时触发</span>
+    <span class="token keyword">case</span> ESP_GATTS_READ_EVT<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"GATT_READ_EVT, conn_id %d, trans_id %d, handle %d\n"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>trans_id<span class="token punctuation">,</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token class-name">esp_gatt_rsp_t</span> rsp<span class="token punctuation">;</span>
+        <span class="token function">memset</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>rsp<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">esp_gatt_rsp_t</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>handle <span class="token operator">=</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>handle<span class="token punctuation">;</span>
+        
+        <span class="token comment">//根据open_task3提供flag</span>
+        <span class="token keyword">if</span><span class="token punctuation">(</span>open_task3<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>len <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>bt_flag_3<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">memcpy</span><span class="token punctuation">(</span>rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>value<span class="token punctuation">,</span>bt_flag_3<span class="token punctuation">,</span><span class="token keyword">sizeof</span><span class="token punctuation">(</span>bt_flag_3<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token keyword">else</span><span class="token punctuation">&#123;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>len <span class="token operator">=</span> <span class="token number">4</span><span class="token punctuation">;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>value<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0xde</span><span class="token punctuation">;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>value<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0xed</span><span class="token punctuation">;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>value<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0xbe</span><span class="token punctuation">;</span>
+            rsp<span class="token punctuation">.</span>attr_value<span class="token punctuation">.</span>value<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token number">0xef</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">esp_ble_gatts_send_response</span><span class="token punctuation">(</span>gatts_if<span class="token punctuation">,</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span> param<span class="token operator">-></span>read<span class="token punctuation">.</span>trans_id<span class="token punctuation">,</span>
+                                    ESP_GATT_OK<span class="token punctuation">,</span> <span class="token operator">&amp;</span>rsp<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//写入属性事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_WRITE_EVT<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">//打印写入的数据</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"GATT_WRITE_EVT, conn_id %d, trans_id %d, handle %d"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>trans_id<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>param<span class="token operator">-></span>write<span class="token punctuation">.</span>is_prep<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"GATT_WRITE_EVT, value len %d, value :"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">esp_log_buffer_hex</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>value<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] bluetooth task III : %s\n"</span><span class="token punctuation">,</span>param<span class="token operator">-></span>write<span class="token punctuation">.</span>value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">//如果写入的数据为bt_flag_2</span>
+            <span class="token keyword">if</span><span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">strncmp</span><span class="token punctuation">(</span>bt_flag_2<span class="token punctuation">,</span><span class="token punctuation">(</span><span class="token keyword">char</span> <span class="token operator">*</span><span class="token punctuation">)</span>param<span class="token operator">-></span>write<span class="token punctuation">.</span>value<span class="token punctuation">,</span>param<span class="token operator">-></span>write<span class="token punctuation">.</span>len<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+                <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] bluetooth task III : you can read the third flag this time\n"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+                open_task3 <span class="token operator">=</span> <span class="token number">1</span><span class="token punctuation">;</span><span class="token comment">//标志位置1</span>
+            <span class="token punctuation">&#125;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token function">esp_ble_gatts_send_response</span><span class="token punctuation">(</span>gatts_if<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>trans_id<span class="token punctuation">,</span> ESP_GATT_OK<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//执行写入属性事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_EXEC_WRITE_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span><span class="token string">"ESP_GATTS_EXEC_WRITE_EVT"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">esp_ble_gatts_send_response</span><span class="token punctuation">(</span>gatts_if<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span> param<span class="token operator">-></span>write<span class="token punctuation">.</span>trans_id<span class="token punctuation">,</span> ESP_GATT_OK<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//MTU事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_MTU_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ESP_GATTS_MTU_EVT, MTU %d"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>mtu<span class="token punctuation">.</span>mtu<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_UNREG_EVT<span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//创建服务事件</span>
+    <span class="token comment">//保存创建的服务保存，并添加一个特征</span>
+    <span class="token keyword">case</span> ESP_GATTS_CREATE_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"CREATE_SERVICE_EVT, status %d,  service_handle %d\n"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>create<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>create<span class="token punctuation">.</span>service_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_handle <span class="token operator">=</span> param<span class="token operator">-></span>create<span class="token punctuation">.</span>service_handle<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>char_uuid<span class="token punctuation">.</span>len <span class="token operator">=</span> ESP_UUID_LEN_16<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>char_uuid<span class="token punctuation">.</span>uuid<span class="token punctuation">.</span>uuid16 <span class="token operator">=</span> GATTS_CHAR_UUID_TEST_A<span class="token punctuation">;</span>  <span class="token comment">//0xff01</span>
+
+        <span class="token function">esp_ble_gatts_start_service</span><span class="token punctuation">(</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        a_property <span class="token operator">=</span> ESP_GATT_CHAR_PROP_BIT_READ <span class="token operator">|</span> ESP_GATT_CHAR_PROP_BIT_WRITE <span class="token operator">|</span> ESP_GATT_CHAR_PROP_BIT_NOTIFY<span class="token punctuation">;</span>
+        <span class="token class-name">esp_err_t</span> add_char_ret <span class="token operator">=</span> <span class="token function">esp_ble_gatts_add_char</span><span class="token punctuation">(</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_handle<span class="token punctuation">,</span> <span class="token operator">&amp;</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>char_uuid<span class="token punctuation">,</span>
+                                                        ESP_GATT_PERM_READ <span class="token operator">|</span> ESP_GATT_PERM_WRITE<span class="token punctuation">,</span>
+                                                        a_property<span class="token punctuation">,</span>
+                                                        <span class="token operator">&amp;</span>gatts_demo_char1_val<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>add_char_ret<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">ESP_LOGE</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"add char failed, error code =%x"</span><span class="token punctuation">,</span>add_char_ret<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_ADD_INCL_SRVC_EVT<span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//添加特征事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_ADD_CHAR_EVT<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">uint16_t</span> length <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        <span class="token keyword">const</span> <span class="token class-name">uint8_t</span> <span class="token operator">*</span>prf_char<span class="token punctuation">;</span>
+
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ADD_CHAR_EVT, status %d,  attr_handle %d, service_handle %d\n"</span><span class="token punctuation">,</span>
+                param<span class="token operator">-></span>add_char<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>add_char<span class="token punctuation">.</span>attr_handle<span class="token punctuation">,</span> param<span class="token operator">-></span>add_char<span class="token punctuation">.</span>service_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>char_handle <span class="token operator">=</span> param<span class="token operator">-></span>add_char<span class="token punctuation">.</span>attr_handle<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>descr_uuid<span class="token punctuation">.</span>len <span class="token operator">=</span> ESP_UUID_LEN_16<span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>descr_uuid<span class="token punctuation">.</span>uuid<span class="token punctuation">.</span>uuid16 <span class="token operator">=</span> ESP_GATT_UUID_CHAR_CLIENT_CONFIG<span class="token punctuation">;</span>
+        <span class="token class-name">esp_err_t</span> get_attr_ret <span class="token operator">=</span> <span class="token function">esp_ble_gatts_get_attr_value</span><span class="token punctuation">(</span>param<span class="token operator">-></span>add_char<span class="token punctuation">.</span>attr_handle<span class="token punctuation">,</span>  <span class="token operator">&amp;</span>length<span class="token punctuation">,</span> <span class="token operator">&amp;</span>prf_char<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>get_attr_ret <span class="token operator">==</span> ESP_FAIL<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">ESP_LOGE</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ILLEGAL HANDLE"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"the gatts demo char length = %x\n"</span><span class="token punctuation">,</span> length<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">for</span><span class="token punctuation">(</span><span class="token keyword">int</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"prf_char[%x] =%x\n"</span><span class="token punctuation">,</span>i<span class="token punctuation">,</span>prf_char<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token class-name">esp_err_t</span> add_descr_ret <span class="token operator">=</span> <span class="token function">esp_ble_gatts_add_char_descr</span><span class="token punctuation">(</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>service_handle<span class="token punctuation">,</span> <span class="token operator">&amp;</span>gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>descr_uuid<span class="token punctuation">,</span>
+                                                                ESP_GATT_PERM_READ <span class="token operator">|</span> ESP_GATT_PERM_WRITE<span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">,</span> <span class="token constant">NULL</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>add_descr_ret<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">ESP_LOGE</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"add char descr failed, error code =%x"</span><span class="token punctuation">,</span> add_descr_ret<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//添加特征描述符事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_ADD_CHAR_DESCR_EVT<span class="token operator">:</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>descr_handle <span class="token operator">=</span> param<span class="token operator">-></span>add_char_descr<span class="token punctuation">.</span>attr_handle<span class="token punctuation">;</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ADD_DESCR_EVT, status %d, attr_handle %d, service_handle %d\n"</span><span class="token punctuation">,</span>
+                 param<span class="token operator">-></span>add_char_descr<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>add_char_descr<span class="token punctuation">.</span>attr_handle<span class="token punctuation">,</span> param<span class="token operator">-></span>add_char_descr<span class="token punctuation">.</span>service_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_DELETE_EVT<span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_START_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"SERVICE_START_EVT, status %d, service_handle %d\n"</span><span class="token punctuation">,</span>
+                 param<span class="token operator">-></span>start<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>start<span class="token punctuation">.</span>service_handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_STOP_EVT<span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//连接事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_CONNECT_EVT<span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+        <span class="token class-name">esp_ble_conn_update_params_t</span> conn_params <span class="token operator">=</span> <span class="token punctuation">&#123;</span><span class="token number">0</span><span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+        <span class="token function">memcpy</span><span class="token punctuation">(</span>conn_params<span class="token punctuation">.</span>bda<span class="token punctuation">,</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">,</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span><span class="token class-name">esp_bd_addr_t</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token comment">/* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */</span>
+        conn_params<span class="token punctuation">.</span>latency <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+        conn_params<span class="token punctuation">.</span>max_int <span class="token operator">=</span> <span class="token number">0x20</span><span class="token punctuation">;</span>    <span class="token comment">// max_int = 0x20*1.25ms = 40ms</span>
+        conn_params<span class="token punctuation">.</span>min_int <span class="token operator">=</span> <span class="token number">0x10</span><span class="token punctuation">;</span>    <span class="token comment">// min_int = 0x10*1.25ms = 20ms</span>
+        conn_params<span class="token punctuation">.</span>timeout <span class="token operator">=</span> <span class="token number">400</span><span class="token punctuation">;</span>    <span class="token comment">// timeout = 400*10ms = 4000ms</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ESP_GATTS_CONNECT_EVT, conn_id %d, remote %02x:%02x:%02x:%02x:%02x:%02x:"</span><span class="token punctuation">,</span>
+                 param<span class="token operator">-></span>connect<span class="token punctuation">.</span>conn_id<span class="token punctuation">,</span>
+                 param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+                 param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span><span class="token punctuation">,</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">,</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>remote_bda<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        gl_profile_tab<span class="token punctuation">[</span>PROFILE_A_APP_ID<span class="token punctuation">]</span><span class="token punctuation">.</span>conn_id <span class="token operator">=</span> param<span class="token operator">-></span>connect<span class="token punctuation">.</span>conn_id<span class="token punctuation">;</span>
+        <span class="token comment">//start sent the update connection parameters to the peer device.</span>
+        <span class="token function">esp_ble_gap_update_conn_params</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>conn_params<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token comment">//断开连接</span>
+    <span class="token keyword">case</span> ESP_GATTS_DISCONNECT_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ESP_GATTS_DISCONNECT_EVT, disconnect reason 0x%x"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>disconnect<span class="token punctuation">.</span>reason<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">esp_ble_gap_start_advertising</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>ble_adv_params<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token comment">//确认事件</span>
+    <span class="token keyword">case</span> ESP_GATTS_CONF_EVT<span class="token operator">:</span>
+        <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> <span class="token string">"ESP_GATTS_CONF_EVT, status %d attr_handle %d"</span><span class="token punctuation">,</span> param<span class="token operator">-></span>conf<span class="token punctuation">.</span>status<span class="token punctuation">,</span> param<span class="token operator">-></span>conf<span class="token punctuation">.</span>handle<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>param<span class="token operator">-></span>conf<span class="token punctuation">.</span>status <span class="token operator">!=</span> ESP_GATT_OK<span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            <span class="token function">esp_log_buffer_hex</span><span class="token punctuation">(</span>GATTS_TAG<span class="token punctuation">,</span> param<span class="token operator">-></span>conf<span class="token punctuation">.</span>value<span class="token punctuation">,</span> param<span class="token operator">-></span>conf<span class="token punctuation">.</span>len<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> ESP_GATTS_OPEN_EVT<span class="token operator">:</span>
+    <span class="token keyword">case</span> ESP_GATTS_CANCEL_OPEN_EVT<span class="token operator">:</span>
+    <span class="token keyword">case</span> ESP_GATTS_CLOSE_EVT<span class="token operator">:</span>
+    <span class="token keyword">case</span> ESP_GATTS_LISTEN_EVT<span class="token operator">:</span>
+    <span class="token keyword">case</span> ESP_GATTS_CONGEST_EVT<span class="token operator">:</span>
+    <span class="token keyword">default</span><span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p>&#x3D;&#x3D;》创建了一个UUID为0xff01的GATT应用程序</p>
+<p>&#x3D;&#x3D;》当在这个应用程序触发写入事件写入task2中获得的flag，将使得open_task3置1</p>
+<p>&#x3D;&#x3D;》再当触发读取事件时，再根据open_task3为1就可以获取flag的值</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403170023599.png" alt="image-20240317002309497"></p>
+<p>触发写入事件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403170026174.png" alt="image-20240317002653110"></p>
+<p>再触发读取事件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403170029666.png" alt="image-20240317002910615"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403170029559.png"></p>
+<p>最后将获得的十六进制转ASCII就获得flag：THUCTF{WrItE_4_gA7T}</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403162330489.png" alt="image-20240316233040435"></p>
+<h3 id="MQTT"><a href="#MQTT" class="headerlink" title="MQTT"></a>MQTT</h3><p>由于项目中提供的mqtt靶机我访问不到了，我就干脆在本地根据项目提供的Dockerfile搭建一个：</p>
+<pre class="language-docker" data-language="docker"><code class="language-docker"><span class="token instruction"><span class="token keyword">FROM</span> ubuntu:16.04</span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> sed -i <span class="token string">"s/http:\/\/archive.ubuntu.com/http:\/\/mirrors.tuna.tsinghua.edu.cn/g"</span> /etc/apt/sources.list &amp;&amp; <span class="token operator">\</span>
+    apt-get update </span>
+
+<span class="token instruction"><span class="token keyword">RUN</span> apt-get install -y software-properties-common &amp;&amp; <span class="token operator">\</span>
+    apt-add-repository ppa:mosquitto-dev/mosquitto-ppa &amp;&amp; <span class="token operator">\</span>
+    apt-get install -y mosquitto </span>
+    
+<span class="token instruction"><span class="token keyword">CMD</span> [<span class="token string">"/bin/sh"</span>,<span class="token string">"-c"</span>,<span class="token string">"service mosquitto start; while true ; do sleep 10; done"</span>]</span>
+
+<span class="token comment"># docker build -t mqtt:v1 .</span>
+<span class="token comment"># docker run -p 1883:1883 -d mqtt:v1 </span></code></pre>
+
+<p>本地采用ubuntu16.04</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> update
+
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> software-properties-common
+<span class="token function">sudo</span> apt-add-repository <span class="token parameter variable">-y</span> ppa:mosquitto-dev/mosquitto-ppa
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">-y</span> mosquitto
+
+<span class="token function">sudo</span> <span class="token function">service</span> mosquitto start
+<span class="token function">sudo</span> <span class="token function">service</span> mosquitto status</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171443264.png" alt="image-20240317144308217"></p>
+<p>使用MQTT工具测试一下：MQTTX，注意MQTT版本</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171432443.png"></p>
+<p>靶机服务没问题，因为我的靶机是虚拟机，还需要再做一个端口转发：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#管理员运行</span>
+<span class="token comment">#netsh interface portproxy add v4tov4 listenaddress=本地IP listenport=本地端口 connectaddress=虚拟机IP connectport=虚拟机端口</span>
+netsh interface portproxy <span class="token function">add</span> v4tov4 <span class="token assign-left variable">listenaddress</span><span class="token operator">=</span><span class="token number">192.168</span>.182.170 <span class="token assign-left variable">listenport</span><span class="token operator">=</span><span class="token number">1883</span> <span class="token assign-left variable">connectaddress</span><span class="token operator">=</span><span class="token number">192.168</span>.121.142 <span class="token assign-left variable">connectport</span><span class="token operator">=</span><span class="token number">1883</span>
+
+<span class="token comment">#关闭端口转发</span>
+netsh interface portproxy delete v4tov4 <span class="token assign-left variable">listenaddress</span><span class="token operator">=</span><span class="token number">192.168</span>.182.170 <span class="token assign-left variable">listenport</span><span class="token operator">=</span><span class="token number">1883</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171520057.png" alt="image-20240317152058951"></p>
+<p>测试完毕，修改一下代码：main.c</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171522054.png" alt="image-20240317152230989"></p>
+<p>最后重新编译，烧录即可</p>
+<h4 id="task1-3"><a href="#task1-3" class="headerlink" title="task1"></a>task1</h4><p>你知道MQTT的上帝是谁么</p>
+<pre class="language-c" data-language="c"><code class="language-c"><span class="token comment">//MQTT事件处理器回调函数</span>
+<span class="token comment">//event包含事件的详细信息</span>
+<span class="token keyword">static</span> <span class="token class-name">esp_err_t</span> <span class="token function">mqtt_event_handler_cb</span><span class="token punctuation">(</span><span class="token class-name">esp_mqtt_event_handle_t</span> event<span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+    <span class="token comment">//从事件中获取MQTT客户端的句柄</span>
+    <span class="token class-name">esp_mqtt_client_handle_t</span> client <span class="token operator">=</span> event<span class="token operator">-></span>client<span class="token punctuation">;</span>
+    <span class="token keyword">int</span> msg_id<span class="token punctuation">;</span>
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>event<span class="token operator">-></span>event_id<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token comment">//当MQTT客户端与代理连接时</span>
+        <span class="token keyword">case</span> MQTT_EVENT_CONNECTED<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_CONNECTED"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token comment">//向主题（/topic/flag1）发布消息（mqtt_flag_1）</span>
+            msg_id <span class="token operator">=</span> <span class="token function">esp_mqtt_client_publish</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> <span class="token string">"/topic/flag1"</span><span class="token punctuation">,</span> mqtt_flag_1<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] MQTT task I: publish successful, msg_id=%d\n"</span><span class="token punctuation">,</span> msg_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            
+            <span class="token comment">//订阅主题（topic_2）</span>
+            msg_id <span class="token operator">=</span> <span class="token function">esp_mqtt_client_subscribe</span><span class="token punctuation">(</span>client<span class="token punctuation">,</span> topic_2<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] MQTT task II: subscribe successful, msg_id=%d\n"</span><span class="token punctuation">,</span> msg_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//断开连接触发</span>
+        <span class="token keyword">case</span> MQTT_EVENT_DISCONNECTED<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_DISCONNECTED"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//当MQTT客户端成功订阅主题时触发</span>
+        <span class="token keyword">case</span> MQTT_EVENT_SUBSCRIBED<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_SUBSCRIBED, msg_id=%d"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>msg_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//当MQTT客户端取消订阅主题时触发</span>
+        <span class="token keyword">case</span> MQTT_EVENT_UNSUBSCRIBED<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_UNSUBSCRIBED, msg_id=%d"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>msg_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//MQTT客户端成功发布消息时触发</span>
+        <span class="token keyword">case</span> MQTT_EVENT_PUBLISHED<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_PUBLISHED, msg_id=%d"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>msg_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//MQTT接收订阅的消息时触发</span>
+        <span class="token keyword">case</span> MQTT_EVENT_DATA<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_DATA"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] MQTT task II: topic ->  %.*s\r\n"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>topic_len<span class="token punctuation">,</span> event<span class="token operator">-></span>topic<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"[+] MQTT task II: data -> %.*s\r\n"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>data_len<span class="token punctuation">,</span> event<span class="token operator">-></span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token function">mqtt_data_hander</span><span class="token punctuation">(</span>event<span class="token operator">-></span>data_len<span class="token punctuation">,</span>event<span class="token operator">-></span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token comment">//错误</span>
+        <span class="token keyword">case</span> MQTT_EVENT_ERROR<span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"MQTT_EVENT_ERROR"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+        <span class="token keyword">default</span><span class="token operator">:</span>
+            <span class="token function">ESP_LOGI</span><span class="token punctuation">(</span><span class="token string">"mqtt"</span><span class="token punctuation">,</span> <span class="token string">"Other event id:%d"</span><span class="token punctuation">,</span> event<span class="token operator">-></span>event_id<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+    <span class="token keyword">return</span> ESP_OK<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202403171529617.png" alt="image-20240317152901594"></p>
+<p>&#x3D;&#x3D;》程序将flag发布到主题&#x2F;topic&#x2F;flag1上，订阅主题就可以接收到flag</p>
+<p>&#x3D;&#x3D;》我这里使用#订阅所有主题，就可以接收到flag：THUCTF</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/03/03/BLE-CTF/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2024-03-17 21:04:17
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT-BLE-MQTT/" title="IOT BLE MQTT">
+                        #IOT BLE MQTT
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#esp32ctf-thu"><span class="toc-text">esp32ctf_thu</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E6%8C%91%E6%88%98"><span class="toc-text">开始挑战</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E8%AF%B4%E6%98%8E"><span class="toc-text">题目说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-text">硬件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C"><span class="toc-text">网络</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-1"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-1"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-1"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%93%9D%E7%89%99"><span class="toc-text">蓝牙</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-2"><span class="toc-text">task1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task2-2"><span class="toc-text">task2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#task3-2"><span class="toc-text">task3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MQTT"><span class="toc-text">MQTT</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#task1-3"><span class="toc-text">task1</span></a></li></ol></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2024 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + esp32ctf_thu + '&url=' + http%3A%2F%2Fexample.com%2F2024%2F03%2F17%2Fesp32ctf-thu%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2024/03/17/esp32ctf-thu/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
