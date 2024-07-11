@@ -186,7 +186,7 @@
 <td>反编译</td>
 </tr>
 <tr>
-<td>ctrl + x</td>
+<td>x</td>
 <td>查看交叉引用</td>
 </tr>
 <tr>
@@ -194,12 +194,12 @@
 <td>重命名函数</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
+<td>shift+f12</td>
+<td>查看字符串</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
+<td>G</td>
+<td>跳转地址</td>
 </tr>
 <tr>
 <td></td>
@@ -222,6 +222,11 @@
 <p>在path &#x3D; IDA&#x2F;dbgsrv&#x2F; 中存放这各个系统架构的IDA server，将这些server传入待调试程序所在的系统，赋予执行权限，即可进行远程调试；在IDA中选择Debugger中选择remote，并填写远程调试的IP:PORT即可</p>
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202310232330004.png" alt="image-20231023232824191"></p>
 <p>提取数据：</p>
+<h2 id="环境变量设置"><a href="#环境变量设置" class="headerlink" title="环境变量设置"></a>环境变量设置</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">LD_LIBRARY_PATH</span><span class="token operator">=</span>./lib:<span class="token variable">$LD_LIBRARY_PATH</span>  <span class="token comment">#设置动态链接库路径，只对当前终端生效</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">D5000_HOME</span><span class="token operator">=</span>/home/closure/Desktop/tj/D5000  <span class="token comment">#设置环境变量D5000_HOME，用于程序获取该环境变量</span></code></pre>
+
+
+
 <h2 id="python"><a href="#python" class="headerlink" title="python"></a>python</h2><p>多版本安装切换：</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">update-alternatives <span class="token parameter variable">--install</span> /usr/bin/python python /usr/bin/python2.7 <span class="token number">1</span>
 update-alternatives <span class="token parameter variable">--install</span> /usr/bin/python python /usr/bin/python3.10 <span class="token number">2</span>
@@ -240,19 +245,103 @@ update-alternatives <span class="token parameter variable">--config</span> pytho
 <p>process&#x2F;remote：读写接口</p>
 <p>常用：</p>
 <p>获取字符串：接口.search(‘字符串’).next()</p>
+<p>模板：</p>
+<pre class="language-python" data-language="python"><code class="language-python"></code></pre>
+
+
+
 <h2 id="pwncli"><a href="#pwncli" class="headerlink" title="pwncli"></a>pwncli</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">git</span> clone https://github.com/RoderickChan/pwncli.git
 <span class="token builtin class-name">cd</span> ./pwncli
 python3 <span class="token parameter variable">-m</span> pip <span class="token function">install</span> <span class="token parameter variable">--editable</span></code></pre>
 
 
 
-<h2 id="GDB-x2F-pwndbg-x2F-peda"><a href="#GDB-x2F-pwndbg-x2F-peda" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda"></a>GDB&#x2F;pwndbg&#x2F;peda</h2><p>安装：</p>
-<pre class="language-none"><code class="language-none"></code></pre>
+<h2 id="交叉编译"><a href="#交叉编译" class="headerlink" title="交叉编译"></a>交叉编译</h2><p>信息获取</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#内核版本</span>
+<span class="token function">cat</span> /proc/version
+<span class="token function">uname</span> <span class="token parameter variable">-a</span>
+<span class="token function">uname</span> <span class="token parameter variable">-r</span>
+
+<span class="token comment">#Linux版本信息</span>
+lsb_release <span class="token parameter variable">-a</span>
+<span class="token function">cat</span> /etc/issue
+
+<span class="token comment">#系统位数</span>
+getconf LONG_BIT
+<span class="token function">file</span> /bin/ls
+
+<span class="token comment">#系统架构</span>
+arch
+dpkg --print-architecture
+<span class="token function">file</span> /lib/systemd/systemd</code></pre>
+
+<p>环境搭建：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#32位库安装</span>
+<span class="token function">sudo</span> dpkg --add-architecture i386
+<span class="token function">sudo</span> <span class="token function">apt</span> update
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> libncurses5-dev lib32z1
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> libc6:i386 libstdc++6:i386
+
+<span class="token comment">#arm</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> gcc-arm-linux-gnueabihf
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> g++-arm-linux-gnueabihf
+
+<span class="token comment">#MIPS</span>
+<span class="token comment">#依赖</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> linux-libc-dev-mips-cross libc6-mips-cross libc6-dev-mips-cross binutils-mips-linux-gnu
+<span class="token comment"># 安装 32 位编译器</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> gcc-mips-linux-gnu
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> g++-mips-linux-gnu
+<span class="token comment"># 安装 64 位编译器</span>
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> gcc-multilib-mips-linux-gnu
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> g++-multilib-mips-linux-gnu</code></pre>
+
+
+
+<h2 id="GDB-x2F-pwndbg-x2F-peda-x2F-gef"><a href="#GDB-x2F-pwndbg-x2F-peda-x2F-gef" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef"></a>GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef</h2><p>安装：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#gdb</span>
+<span class="token comment"># https://ftp.gnu.org/gnu/gdb/</span></code></pre>
 
 
 
 <p>调试其他架构：</p>
-<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gdb-multiarch</code></pre>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> gdb-multiarch
+
+gdb-multiarch
+<span class="token comment">#设置架构</span>
+<span class="token builtin class-name">set</span> architecture arm
+<span class="token builtin class-name">set</span> architecture mips
+<span class="token comment">#大小端序</span>
+<span class="token builtin class-name">set</span> endian little
+<span class="token builtin class-name">set</span> endian big
+<span class="token comment">#连接</span>
+target remote <span class="token punctuation">[</span>IP<span class="token punctuation">]</span>:<span class="token punctuation">[</span>PORT<span class="token punctuation">]</span></code></pre>
+
+
+
+<h2 id="Gdbserver"><a href="#Gdbserver" class="headerlink" title="Gdbserver"></a>Gdbserver</h2><p>获取并解压GDB源码：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://ftp.gnu.org/gnu/gdb/gdb-12.1.tar.gz
+<span class="token function">tar</span> zxvf gdb-12.1.tar.gz</code></pre>
+
+
+
+<p>编译：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">cd</span> gdb-12.1
+<span class="token function">mkdir</span> gdb-12.1_arm <span class="token comment">#存放编译后文件</span>
+
+<span class="token builtin class-name">cd</span> gdbserver/
+<span class="token comment">#armv7l  arm架构第7版 小端序</span>
+<span class="token assign-left variable">CC</span><span class="token operator">=</span><span class="token string">"arm-linux-gnueabihf-gcc"</span> <span class="token assign-left variable">CXX</span><span class="token operator">=</span><span class="token string">"arm-linux-gnueabihf-g++"</span> ./configure <span class="token parameter variable">--target</span><span class="token operator">=</span><span class="token string">"arm-linux-gnueabihf"</span> <span class="token parameter variable">--host</span><span class="token operator">=</span><span class="token string">"arm-linux-gnueabihf"</span> <span class="token parameter variable">--prefix</span><span class="token operator">=</span>/home/closure/Desktop/tools/gdb-12.1/gdb-12.1_arm <span class="token assign-left variable">LDFLAGS</span><span class="token operator">=</span><span class="token string">"-static"</span>
+<span class="token function">sudo</span> <span class="token function">make</span> -j<span class="token variable"><span class="token variable">$(</span>nproc<span class="token variable">)</span></span>
+<span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span></code></pre>
+
+
+
+<p>使用：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#程序</span>
+./gdbserver :1234 <span class="token punctuation">[</span>程序<span class="token punctuation">]</span>
+<span class="token comment">#进程</span>
+./gdbserver :1234 <span class="token parameter variable">--attach</span> <span class="token punctuation">[</span>PID<span class="token punctuation">]</span></code></pre>
 
 
 
@@ -297,7 +386,7 @@ python3 <span class="token parameter variable">-m</span> pip <span class="token 
 </tr>
 <tr>
 <td>info &lt;*b&gt;</td>
-<td>i</td>
+<td>i b</td>
 <td>查看程序的状态&#x2F;*查看断点</td>
 </tr>
 <tr>
@@ -531,10 +620,19 @@ python3 <span class="token parameter variable">-m</span> pip <span class="token 
 <p>‘f’：用来表示设定处处长度，b(byte),h(halfword),w(word),giant(8bytes)</p>
 <p>‘u’：指定单位内存单元的字节数（默认dword），可用b(byte),h(halfword),w(word),giant(8bytes)替代</p>
 <p>切换调试：</p>
-<pre class="language-none"><code class="language-none">sudo vim ~&#x2F;.gdbinit</code></pre>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> <span class="token function">vim</span> ~/.gdbinit</code></pre>
 
 
 
+<p>PIE下断点：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">b *<span class="token variable">$rebase</span><span class="token punctuation">(</span>0x100<span class="token punctuation">)</span></code></pre>
+
+
+
+<p>打印结构体内容：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">p *<span class="token punctuation">[</span>结构体名称<span class="token punctuation">]</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081015019.png" alt="image-20240708101548884"></p>
 <h2 id="GDB-amp-pwntools"><a href="#GDB-amp-pwntools" class="headerlink" title="GDB&amp;pwntools"></a>GDB&amp;pwntools</h2><pre class="language-python" data-language="python"><code class="language-python"><span class="token comment">#断点</span>
 gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>io<span class="token punctuation">,</span><span class="token string">'b *'</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>rax_addr<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
 
@@ -655,6 +753,21 @@ xclibc <span class="token parameter variable">-r</span> ./main
 <p>安装时尽量选择安装在IDA目录中&#x3D;&#x3D;》将会给IDA添加一个插件</p>
 <p>在使用时首先创建工程，再在设置中选择IDA目录</p>
 <p>分析的双方都为IDA分析后的数据文件</p>
+<h2 id="数据包处理"><a href="#数据包处理" class="headerlink" title="数据包处理"></a>数据包处理</h2><h3 id="捕获"><a href="#捕获" class="headerlink" title="捕获"></a>捕获</h3><p>wireshark</p>
+<p>tcpdump</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> tcpdump <span class="token parameter variable">-i</span> ens33 udp <span class="token parameter variable">-w</span> test.pcap <span class="token comment">#捕获基于ens33网卡的udp数据</span></code></pre>
+
+
+
+<h3 id="处理"><a href="#处理" class="headerlink" title="处理"></a>处理</h3><p>UDP数据包source IP欺骗</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> iptables <span class="token parameter variable">-t</span> nat <span class="token parameter variable">-A</span> POSTROUTING <span class="token parameter variable">-p</span> udp <span class="token parameter variable">-j</span> SNAT --to-source <span class="token punctuation">[</span>IP<span class="token punctuation">]</span> <span class="token comment">#添加udp出站规则</span>
+
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-t</span> nat <span class="token parameter variable">-L</span> <span class="token parameter variable">-n</span> <span class="token parameter variable">-v</span> <span class="token comment">#查看iptables所有规则</span>
+
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-t</span> nat <span class="token parameter variable">-D</span> POSTROUTING <span class="token parameter variable">-p</span> udp <span class="token parameter variable">-j</span> SNAT --to-source <span class="token punctuation">[</span>IP<span class="token punctuation">]</span> <span class="token comment">#删除特定udp规则</span></code></pre>
+
+
+
 <h2 id="搜索引擎"><a href="#搜索引擎" class="headerlink" title="搜索引擎"></a>搜索引擎</h2><p>知风</p>
 <pre class="language-URL" data-language="URL"><code class="language-URL">https:&#x2F;&#x2F;zhifeng.io&#x2F;web&#x2F;new&#x2F;</code></pre>
 
@@ -747,10 +860,17 @@ xclibc <span class="token parameter variable">-r</span> ./main
 <span class="token function">docker</span> <span class="token function">import</span> URL<span class="token comment">#通过URL或者某个目录来导入</span>
 
 <span class="token comment">#指定映射端口运行WBE容器</span>
-<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">-p</span> 宿主机端口:容器端口 镜像 python web.py</code></pre>
+<span class="token function">docker</span> run <span class="token parameter variable">-d</span> <span class="token parameter variable">-p</span> 宿主机端口:容器端口 镜像 python web.py
+
+<span class="token comment">#宿主机查看容器IP</span>
+<span class="token function">docker</span> inspect <span class="token parameter variable">-f</span> <span class="token string">'&#123;&#123;range .NetworkSettings.Networks&#125;&#125;&#123;&#123;.IPAddress&#125;&#125;&#123;&#123;end&#125;&#125;'</span> <span class="token operator">&lt;</span>容器名称或ID<span class="token operator">></span>
+
+<span class="token comment">#查看所有容器IP</span>
+<span class="token function">docker</span> inspect <span class="token parameter variable">-f</span> <span class="token string">'&#123;&#123;.Name&#125;&#125; - &#123;&#123;range .NetworkSettings.Networks&#125;&#125;&#123;&#123;.IPAddress&#125;&#125;&#123;&#123;end&#125;&#125;'</span> <span class="token variable"><span class="token variable">$(</span><span class="token function">docker</span> <span class="token function">ps</span> <span class="token parameter variable">-aq</span><span class="token variable">)</span></span></code></pre>
 
 
 
+<h2 id="Nodejs"><a href="#Nodejs" class="headerlink" title="Nodejs"></a>Nodejs</h2><p>nvm：管理nodejs版本</p>
 <h2 id="Git"><a href="#Git" class="headerlink" title="Git"></a>Git</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#拉取仓库</span>
 <span class="token function">git</span> clone <span class="token operator">&lt;</span>仓库URL<span class="token operator">></span>
 
@@ -819,7 +939,7 @@ hexo s</code></pre>
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2024/03/17/esp32ctf-thu/" target="_self">
+              <a href="/2024/07/12/%E9%80%9A%E8%BF%87Frida-Labs%E5%85%A5%E9%97%A8Frida/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -857,7 +977,7 @@ hexo s</code></pre>
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu"><span class="toc-text">Qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MIPS"><span class="toc-text">MIPS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E8%AE%BE%E7%BD%AE"><span class="toc-text">环境变量设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91"><span class="toc-text">交叉编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda-x2F-gef"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gdbserver"><span class="toc-text">Gdbserver</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu"><span class="toc-text">Qemu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MIPS"><span class="toc-text">MIPS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%85%E5%A4%84%E7%90%86"><span class="toc-text">数据包处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8D%95%E8%8E%B7"><span class="toc-text">捕获</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86"><span class="toc-text">处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">Ubuntu防火墙</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nodejs"><span class="toc-text">Nodejs</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP%E7%9B%B8%E5%85%B3"><span class="toc-text">APP相关</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>

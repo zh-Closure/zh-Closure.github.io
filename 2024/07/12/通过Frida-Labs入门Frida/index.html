@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      通过Frida-Labs入门Frida 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">通过Frida-Labs入门Frida</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2024-07-12 00:37:19
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Android/" title="Android">
+                    #Android
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Frida/" title="Frida">
+                    #Frida
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Frida-Labs"><a href="#Frida-Labs" class="headerlink" title="Frida-Labs"></a>Frida-Labs</h1><p>项目地址：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;DERE-ad2001&#x2F;Frida-Labs&#x2F;tree&#x2F;main</code></pre>
+
+
+
+<p>请确保你已正确下载Frida和在设备（模拟器）上传对应版本的Frida-server</p>
+<p>例：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">pip list</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081853035.png" alt="image-20240708185307993"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081802165.png" alt="image-20240708180201125"></p>
+<p>请确保已经获取root权限，并且frida-server具有执行权限</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081800822.png" alt="image-20240708180046775"></p>
+<p>模板：</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">//声明变量表示目标Android应用程序中的JAVA类</span>
+    <span class="token comment">//&lt;package_name> Android应用程序包名</span>
+    <span class="token comment">//&lt;class> 目标方法所在类</span>
+  <span class="token keyword">var</span> <span class="token operator">&lt;</span>class_reference<span class="token operator">></span> <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"&lt;package_name>.&lt;class>"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token comment">//&lt;class_reference> 代表类的变量名</span>
+    <span class="token comment">//&lt;method_to_hook> 要hook的方法名</span>
+    <span class="token comment">//&lt;args> 参数</span>
+  <span class="token operator">&lt;</span>class_reference<span class="token operator">></span><span class="token punctuation">.</span><span class="token operator">&lt;</span>method_to_hook<span class="token operator">></span><span class="token punctuation">.</span><span class="token function-variable function">implementation</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter"><span class="token operator">&lt;</span>args<span class="token operator">></span></span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span></code></pre>
+
+<p>包名获取：</p>
+<p>运行frida-server</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407082120926.png" alt="image-20240708212030897"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida-ps <span class="token parameter variable">-Uai</span></code></pre>
+
+<p>frida-ps：显示有关 Android 设备上运行的进程的信息。<br>-U：此选项用于列出USB连接设备（物理设备或模拟器）上的进程。<br>-a：此选项用于列出所有进程，而不仅仅是当前用户拥有的进程。<br>-i：此选项用于包含有关每个进程的详细信息，例如进程 ID（PID）和进程名称。</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407082121968.png" alt="image-20240708212153921"></p>
+<p>类名获取例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407082124911.png" alt="image-20240708212428894"></p>
+<h2 id="Frida-0x1"><a href="#Frida-0x1" class="headerlink" title="Frida 0x1"></a>Frida 0x1</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081717795.png" alt="image-20240708171735710" style="zoom: 50%;" />
+
+<p>填写空值点击提交按钮将退出程序</p>
+<p>填写无法通过验证的值点击提交按钮提示try again</p>
+<p>JEB反编译：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081752856.png" alt="image-20240708175207784"></p>
+<p>程序注册了一个按钮，并为这个按钮添加了一个点击事件监听器，当按钮被点击时，将会调用onClick()方法，在方法中先是获取了输入的文本，并进行数字验证，如果输入的是有效的数字，就调用check()方法进行验证，该方法传入了两个参数，一个应该是获取随机数，一个是输入的数字；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081756553.png" alt="image-20240708175613532"></p>
+<p>获取0 到 99 之间的随机整数；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407081757485.png" alt="image-20240708175745415"></p>
+<p>验证输入的数字和随机数之间是否符合（随机数 * 2 + 4 &#x3D;&#x3D; 输入），符合条件将打印正确的flag；</p>
+<p>为此，我们有多种绕过验证方法：</p>
+<p>1、获取随机数生成的值；</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">var</span> <span class="token constant">MA</span> <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x1.MainActivity"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token constant">MA</span><span class="token punctuation">.</span>get_random<span class="token punctuation">.</span><span class="token function-variable function">implementation</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+        <span class="token keyword">var</span> ran_ret <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">get_random</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//获取get_random值</span>
+        console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"get_random: "</span><span class="token punctuation">,</span>ran_ret<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//打印获取的值</span>
+        <span class="token keyword">return</span> ran_ret<span class="token punctuation">;</span> <span class="token comment">//由于get_random是有返回值的，拦截了总得给它还回去</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span></code></pre>
+
+<p>运行：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> .<span class="token punctuation">\</span>frida0x1.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090010951.png" alt="image-20240709001033890"></p>
+<p>但是并没有任何的输出，原因是什么呢？因为获取随机数的方法是在程序启动时已经加载完毕，我们现在去hook当然是什么都看不懂，所以需要在程序加载的同时注入脚本</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-f</span> com.ad2001.frida0x1 <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x1.js --no-pause</code></pre>
+
+<p>–no-pause：确保应用在启动后不会暂停</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090013471.png" alt="image-20240709001335405"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090012140.png" alt="image-20240709001226076" style="zoom:50%;" />
+
+<p>2、hook get_random()之类的方法，返回一个我们指定的数值</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+
+    <span class="token keyword">var</span> a<span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x1.MainActivity"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    a<span class="token punctuation">.</span>get_random<span class="token punctuation">.</span><span class="token function-variable function">implementation</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+        <span class="token keyword">return</span> <span class="token number">1</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-f</span> com.ad2001.frida0x1 <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x1.js --no-pause</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090016885.png" alt="image-20240709001656821"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090015755.png" alt="image-20240709001547704" style="zoom:50%;" />
+
+<p>3、直接hook check的两个参数，变成我们指定的值</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x1.MainActivity"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  a<span class="token punctuation">.</span>check<span class="token punctuation">.</span><span class="token function">overload</span><span class="token punctuation">(</span><span class="token string">'int'</span><span class="token punctuation">,</span> <span class="token string">'int'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function-variable function">implementation</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span> b</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">check</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>check方法就不是在程序初始化就调用了，而是点击事件调用的，就不用在加载时注入了</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x1.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090022322.png" alt="image-20240709002250264"></p>
+<p>随便在框里输入数据，点击按钮触发check方法即可</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090020998.png" alt="image-20240709002050933" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0x2"><a href="#Frida-0x2" class="headerlink" title="Frida 0x2"></a>Frida 0x2</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090930776.png" alt="image-20240709092926408" style="zoom:50%;" />
+
+<p>没有按钮也没有输入之类的，直接反编译看看：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090931915.png" alt="image-20240709093132828"></p>
+<p>程序存在一个静态方法get_flag，用于在屏幕上显示flag，但是并没有任何关于它的调用，也就是说我们需要在注入脚本中去手动去调用这个静态方法，并且这个方法有一个参数a，需要让a&#x3D;&#x3D;4919才能通过验证</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x2.MainActivity"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    a<span class="token punctuation">.</span><span class="token function">get_flag</span><span class="token punctuation">(</span><span class="token number">4919</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//调用</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x2.js</code></pre>
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090936431.png" alt="image-20240709093617398" style="zoom:50%;" />
+
+<h2 id="Frida-0x3"><a href="#Frida-0x3" class="headerlink" title="Frida 0x3"></a>Frida 0x3</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090939445.png" alt="image-20240709093953409" style="zoom:50%;" />
+
+<p>程序存在一个按钮，猜测是点击进行一些校验，校验成功就将flag显示；</p>
+<p>反编译：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407090939466.png" alt="image-20240709093941383"></p>
+<p>程序注册了一个点击事件，需要经过校验Checker.code &#x3D;&#x3D; 0x200通过时就可以显示flag，注意这个Checker是一个类</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091603935.png" alt="image-20240709160343903" style="zoom:50%;" />
+
+<p>这个类有一个静态的变量code，为0，还存在一个静态方法increase，它能使code+2，但是在程序中并没有对这个方法进行任何形式的调用；</p>
+<p>为此，我们大致有两个方向，一个是hook Checker类中的code变量，让它直接等于0x200就可以通过条件；另外一个方向是主动去调用increase方法0x100次让code累加成0x200也可以通过校验；</p>
+<p>请注意此时我们的目标类已经是 Checker了</p>
+<p>1、</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x3.Checker"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    a<span class="token punctuation">.</span>code<span class="token punctuation">.</span>value <span class="token operator">=</span> <span class="token number">0x200</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x3.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091613943.png" alt="image-20240709161331887"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091612238.png" alt="image-20240709161241186" style="zoom:50%;" />
+
+<p>2、</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x3.Checker"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">var</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">0x100</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      a<span class="token punctuation">.</span><span class="token function">increase</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+      console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"code: "</span><span class="token punctuation">,</span>a<span class="token punctuation">.</span>code<span class="token punctuation">.</span>value<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x3.js</code></pre>
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091618093.png" alt="image-20240709161848031" style="zoom:80%;" />
+
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091618457.png" alt="image-20240709161858419" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0x4"><a href="#Frida-0x4" class="headerlink" title="Frida 0x4"></a>Frida 0x4</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091620691.png" alt="image-20240709162058654" style="zoom:50%;" />
+
+<p>依旧是啥也没有，那就直接反编译吧</p>
+<p>反编译后还是啥都没有</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091624731.png" alt="image-20240709162410674"></p>
+<p>存在check类，类中有一个方法get_flag，当a &#x3D;&#x3D; 0x539通过校验后将能返回flag值，但是程序中并没有对这个方法进行调用，并且它不是静态方法，需要先将对象实例化，再通过这个实例去调用这个方法返回flag；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091624613.png" alt="image-20240709162446557"></p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x4.Check"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">var</span> check <span class="token operator">=</span> a<span class="token punctuation">.</span>$<span class="token keyword">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//手动创建实例</span>
+    <span class="token keyword">var</span> flag <span class="token operator">=</span> check<span class="token punctuation">.</span><span class="token function">get_flag</span><span class="token punctuation">(</span><span class="token number">0x539</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//调用获得返回值flag</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"flag: "</span><span class="token punctuation">,</span>flag<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x4.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091710220.png" alt="image-20240709171045180"></p>
+<h2 id="Frida-0x5"><a href="#Frida-0x5" class="headerlink" title="Frida 0x5"></a>Frida 0x5</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091712973.png" alt="image-20240709171216913" style="zoom:50%;" />
+
+<p>依旧是啥没没有。。上JEB反编译看看：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091721827.png" alt="image-20240709172136772"></p>
+<p>与上一题类似，只是现在获取flag的方法在MainActivity里，与上一题不同的是，这一题MainActivity已经在应用程序启动的时候实例化了，所以我们只需要获取这个实例再进行调用就可以了</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">//运行时枚举指定JAVA类的实例</span>
+    Java<span class="token punctuation">.</span><span class="token function">choose</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x5.MainActivity"</span><span class="token punctuation">,</span><span class="token punctuation">&#123;</span>
+        <span class="token comment">//onMatch对于发现的每个实例都执行回调函数Java.choose</span>
+        <span class="token comment">//M_NEW为匹配到的实例</span>
+        <span class="token function-variable function">onMatch</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter"><span class="token constant">M_NEW</span></span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"找到实例"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token constant">M_NEW</span><span class="token punctuation">.</span><span class="token function">flag</span><span class="token punctuation">(</span><span class="token number">0x539</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token comment">//onComplete可选，为操作完成后任务</span>
+        <span class="token function-variable function">onComplete</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x5.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091757855.png" alt="image-20240709175726787"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091744014.png" alt="image-20240709174429976" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0x6"><a href="#Frida-0x6" class="headerlink" title="Frida 0x6"></a>Frida 0x6</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091751597.png" alt="image-20240709175149561" style="zoom:50%;" />
+
+<p>又又又是啥也没有，直接反编译吧</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091750672.png" alt="image-20240709175035602"></p>
+<p>这次依旧是在MainActivity中存在一个能获取flag的方法，与上一题不一样的是校验条件，这一题将接收一个checker实例作为参数，再根据实例中的num1和num2校验；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407091750916.png" alt="image-20240709175054897"></p>
+<p>手动创建一个符合条件的实例，传递给get_flag即可：</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">//运行时枚举指定JAVA类的实例</span>
+    Java<span class="token punctuation">.</span><span class="token function">choose</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x6.MainActivity"</span><span class="token punctuation">,</span><span class="token punctuation">&#123;</span>
+        <span class="token function-variable function">onMatch</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">M_New</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"找到实例M_New"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">var</span> checker <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x6.Checker"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">var</span> C_New <span class="token operator">=</span> checker<span class="token punctuation">.</span>$<span class="token keyword">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            C_New<span class="token punctuation">.</span>num1<span class="token punctuation">.</span>value <span class="token operator">=</span> <span class="token number">0x4D2</span><span class="token punctuation">;</span>
+            C_New<span class="token punctuation">.</span>num2<span class="token punctuation">.</span>value <span class="token operator">=</span> <span class="token number">0x10E1</span><span class="token punctuation">;</span>
+
+            M_New<span class="token punctuation">.</span><span class="token function">get_flag</span><span class="token punctuation">(</span>C_New<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token function-variable function">onComplete</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x6.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092226464.png" alt="image-20240709222623393"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092223170.png" alt="image-20240709222355082" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0x7"><a href="#Frida-0x7" class="headerlink" title="Frida 0x7"></a>Frida 0x7</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092226390.png" alt="image-20240709222656351" style="zoom:50%;" />
+
+<p>反编译吧~</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092243312.png" alt="image-20240709224304230"></p>
+<p>可以看到程序创建了一个checker的实例ch，并将它作为参数传入了flag函数中</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092244664.png" alt="image-20240709224439625"></p>
+<p>并且在Checker类中通过构造函数去赋值，原程序中赋的值并不能通过校验条件</p>
+<p>&#x3D;&#x3D;》有两种方法</p>
+<p>1、跟上一题一样，自己创建一个checker的实例，在调用flag传入实例通过验证，区别是需要通过构造函数传参</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">//运行时枚举指定JAVA类的实例</span>
+    Java<span class="token punctuation">.</span><span class="token function">choose</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x7.MainActivity"</span><span class="token punctuation">,</span><span class="token punctuation">&#123;</span>
+        <span class="token function-variable function">onMatch</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">M_New</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"找到实例M_New"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            <span class="token keyword">var</span> checker <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x7.Checker"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token keyword">var</span> C_New <span class="token operator">=</span> checker<span class="token punctuation">.</span>$<span class="token keyword">new</span><span class="token punctuation">(</span><span class="token number">0x201</span><span class="token punctuation">,</span><span class="token number">0x201</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+            M_New<span class="token punctuation">.</span><span class="token function">flag</span><span class="token punctuation">(</span>C_New<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token function-variable function">onComplete</span><span class="token operator">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x7.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092300647.png" alt="image-20240709230039572"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092301488.png" alt="image-20240709230108452" style="zoom:50%;" />
+
+<p>2、checker类不是有构造函数吗，我们直接hook掉，让他直接可以赋值为我们想要的值</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript">Java<span class="token punctuation">.</span><span class="token function">perform</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">var</span> a <span class="token operator">=</span> Java<span class="token punctuation">.</span><span class="token function">use</span><span class="token punctuation">(</span><span class="token string">"com.ad2001.frida0x7.Checker"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    a<span class="token punctuation">.</span>$init<span class="token punctuation">.</span><span class="token function-variable function">implementation</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token parameter">param</span><span class="token punctuation">)</span><span class="token punctuation">&#123;</span> <span class="token comment">//通过$init即可hook构造函数</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">$init</span><span class="token punctuation">(</span><span class="token number">0x201</span><span class="token punctuation">,</span><span class="token number">0x201</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>当然，由于创建Checker实例位于onCreate中，我们将要随着程序加载注入</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-f</span> com.ad2001.frida0x7 <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x7.js --no-pause</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092312732.png" alt="image-20240709231250656"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092312151.png" alt="image-20240709231231095" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0x8"><a href="#Frida-0x8" class="headerlink" title="Frida 0x8"></a>Frida 0x8</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092314704.png" alt="image-20240709231459663" style="zoom:50%;" />
+
+<p>终于是有一个输入框和按钮了，反编译看看吧</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092321703.png" alt="image-20240709232118624"></p>
+<p>可以看到调用了cmpstr函数处理了我们的输入，当校验通过时多半会输出flag</p>
+<p>接下来看看cmpstr：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092346588.png" alt="image-20240709234631549"></p>
+<p>可以看到程序加载了一个名为frida0x8的库（.so）；</p>
+<p>通过native关键字声明了一个本地方法cmpstr，所以这个方法将在so层实现；</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092348213.png" alt="image-20240709234850188"></p>
+<p>在JEB中就可以看到所有的lib文件，包含4种架构，选择适合你的架构，在IDA中反编译一下：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092350810.png" alt="image-20240709235044765"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092351016.png" alt="image-20240709235111994"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407092353932.png" alt="image-20240709235326840"></p>
+<p>可以看到Java_com_ad2001_frida0x8_MainActivity_cmpstr中获取了我们的输入，并将这段输入使用strcmp函数与一段密文s2进行比较，当它们相等时，将会返回0，从而返回0 &#x3D;&#x3D; 0 &#x3D;&#x3D;》1通过校验条件</p>
+<p>所以我们可以直接hook strcmp函数，输出他的两个参数，第二个参数就是密文了，或者直接让strcmp返回0即可，但是这样是拿不到flag，只能通过这个校验条件：</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">//枚举所有导出函数</span>
+<span class="token keyword">var</span> all_0x8_exp <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">enumerateExports</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so 所有导出函数：\n"</span><span class="token punctuation">,</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>all_0x8_exp<span class="token punctuation">,</span> <span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//从lib中寻找指定函数的地址，若不知道lib名称可以传NULL，找不到会抛出异常</span>
+<span class="token keyword">var</span> cmpstr_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getExportByName</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">,</span><span class="token string">"Java_com_ad2001_frida0x8_MainActivity_cmpstr"</span><span class="token punctuation">)</span>
+<span class="token keyword">var</span> strcmp_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getExportByName</span><span class="token punctuation">(</span><span class="token string">"libc.so"</span><span class="token punctuation">,</span> <span class="token string">"strcmp"</span><span class="token punctuation">)</span>
+<span class="token keyword">var</span> strcmp_null_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getExportByName</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token string">"strcmp"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"\ncmpstr_addr:"</span><span class="token punctuation">,</span>cmpstr_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"strcmp_addr:"</span><span class="token punctuation">,</span>strcmp_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"strcmp_null_addr:"</span><span class="token punctuation">,</span>strcmp_null_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//功能与getExportByName相同，找不到返回null</span>
+<span class="token keyword">var</span> Closure_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">findExportByName</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">,</span><span class="token string">"Closure"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Closure_addr:"</span><span class="token punctuation">,</span>Closure_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//获取基地址</span>
+<span class="token keyword">var</span> libc_base <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libc_base:"</span><span class="token punctuation">,</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> libc_base_add_cmpstr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0x8c0</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libc_base_add_cmpstr:"</span><span class="token punctuation">,</span>libc_base_add_cmpstr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//获取所有导入</span>
+<span class="token keyword">var</span> all_0x8_imp <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">enumerateImports</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libfrida0x8.so 所有导入函数：\n"</span><span class="token punctuation">,</span><span class="token constant">JSON</span><span class="token punctuation">.</span><span class="token function">stringify</span><span class="token punctuation">(</span>all_0x8_imp<span class="token punctuation">,</span> <span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">var</span> strcmp_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">findExportByName</span><span class="token punctuation">(</span><span class="token string">"libc.so"</span><span class="token punctuation">,</span> <span class="token string">"strcmp"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> out_put<span class="token punctuation">;</span> <span class="token comment">//全局变量，接收第一个参数</span>
+Interceptor<span class="token punctuation">.</span><span class="token function">attach</span><span class="token punctuation">(</span>strcmp_addr<span class="token punctuation">,</span> <span class="token punctuation">&#123;</span> <span class="token comment">//将回调附加到指定的函数地址</span>
+    <span class="token function-variable function">onEnter</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">args</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//进入回调函数时调用</span>
+        <span class="token keyword">var</span> arg0 <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readUtf8String</span><span class="token punctuation">(</span>args<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> 
+        <span class="token keyword">var</span> flag <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readUtf8String</span><span class="token punctuation">(</span>args<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        out_put <span class="token operator">=</span> arg0<span class="token punctuation">;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>arg0<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token string">"Closure"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//过滤器</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"args[0]: "</span><span class="token punctuation">,</span>arg0<span class="token punctuation">)</span><span class="token punctuation">;</span>
+            console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"args[1]: "</span><span class="token punctuation">,</span>flag<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">&#125;</span>
+                
+    <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">onLeave</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">retval</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//退出后调用</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>out_put<span class="token punctuation">.</span><span class="token function">includes</span><span class="token punctuation">(</span><span class="token string">"Closure"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//过滤器，根据第一个参数的值，防止修改所有的strcmp</span>
+            retval<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//返回0</span>
+        <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x8.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102316804.png" alt="image-20240710231650568"></p>
+<p>接下来只需要在程序输入框中输入Closure提交即可</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102317233.png" alt="image-20240710231745193" style="zoom:50%;" />
+
+<p>可以看到通过了条件，但是并没有flag，但是已经在frida中获得flag了：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102318760.png" alt="image-20240710231839675"></p>
+<p>再将正确的flag提交试试，此时的flag不是Closure是无法触发将strcmp的返回值置为0的</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102320100.png" alt="image-20240710232004037" style="zoom:50%;" />
+
+<p>照样通过</p>
+<h2 id="Frida-0x9"><a href="#Frida-0x9" class="headerlink" title="Frida 0x9"></a>Frida 0x9</h2><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102321704.png" alt="image-20240710232110664" style="zoom:50%;" />
+
+<p>存在一个提交按钮，应该有校验之类的，JEB启动：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102324572.png" alt="image-20240710232417476"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102324655.png" alt="image-20240710232441611"></p>
+<p>可以看到程序调用了一个库函数check_flag，并且没有参数，那就直接IDA启动看看这个库函数</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102325129.png" alt="image-20240710232519090"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102328500.png" alt="image-20240710232845457"></p>
+<p>可以看到这个函数只返回1，并不能通过校验，这边直接hook，将返回值改为0x539就行了</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">var</span> flag_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">findExportByName</span><span class="token punctuation">(</span><span class="token string">"liba0x9.so"</span><span class="token punctuation">,</span> <span class="token string">"Java_com_ad2001_a0x9_MainActivity_check_1flag"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+Interceptor<span class="token punctuation">.</span><span class="token function">attach</span><span class="token punctuation">(</span>flag_addr<span class="token punctuation">,</span> <span class="token punctuation">&#123;</span> <span class="token comment">//将回调附加到指定的函数地址</span>
+    <span class="token function-variable function">onEnter</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">args</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//进入回调函数时调用</span>
+                
+    <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">onLeave</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">retval</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//退出后调用</span>
+        retval<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token number">0x539</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//返回0x539</span>
+    <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0x9.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102332601.png" alt="image-20240710233232120"></p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102332010.png" alt="image-20240710233208934" style="zoom:50%;" />
+
+
+
+<h2 id="Frida-0xA"><a href="#Frida-0xA" class="headerlink" title="Frida 0xA"></a>Frida 0xA</h2><p>程序一打开就闪退，直接上JEB看看</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102342075.png" alt="image-20240710234251974"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102344723.png" alt="image-20240710234446695"></p>
+<p>可以看到是可以正常打开显示内容的，内容应该是从库函数stringFromJNI中返回的</p>
+<p>并没有做任何退出关闭操作，换个Android 11的模拟器试试：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102344008.png" alt="image-20240710234412937"></p>
+<p>可以了，接下来就是IDA分析一下库了，定位一下函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102346460.png" alt="image-20240710234615419"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102348171.png" alt="image-20240710234805119"></p>
+<p>可以看到就是返回一串字符串而已，并没有其他操作了，再找找和flag相关函数看看：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407102349995.png" alt="image-20240710234919916"></p>
+<p>ok，还真有，那这题就是一个手动调用库函数了，注意get_flag需要两个参数，并且需要满足a2 + a1 &#x3D;&#x3D; 3</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110003046.png" alt="image-20240711000333017"></p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">var</span> get_flag_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">findExportByName</span><span class="token punctuation">(</span><span class="token string">"libfrida0xa.so"</span><span class="token punctuation">,</span><span class="token string">"get_flag"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"get_flag_addr:"</span><span class="token punctuation">,</span>get_flag_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">//主动调用一个没有被导入的函数需要通过基地址+偏移的方式</span>
+<span class="token keyword">var</span> get_flag_addr <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">findBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0xa.so"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0x206B0</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"get_flag_addr:"</span><span class="token punctuation">,</span>get_flag_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//创建NativePointer对象</span>
+<span class="token keyword">var</span> get_flag_ptr <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">NativePointer</span><span class="token punctuation">(</span>get_flag_addr<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">//创建NativeFunction对象，参数为NativePointer对象，返回类型，原函数参数</span>
+<span class="token keyword">const</span> get_flag <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">NativeFunction</span><span class="token punctuation">(</span>get_flag_ptr<span class="token punctuation">,</span> <span class="token string">'void'</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token string">'int'</span><span class="token punctuation">,</span> <span class="token string">'int'</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">get_flag</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//主动调用</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0xA.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110017420.png" alt="image-20240711001731062"></p>
+<p>可以看到没有输出，是正常的，毕竟程序是通过日志输出flag的</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110018500.png" alt="image-20240711001857470"></p>
+<p>根据日志TAG FLAG捕获一下日志：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">adb <span class="token parameter variable">-s</span> <span class="token number">127.0</span>.0.1:5555 logcat <span class="token parameter variable">-s</span> FLAG</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110019444.png" alt="image-20240711001936367"></p>
+<h2 id="Frida-0xB"><a href="#Frida-0xB" class="headerlink" title="Frida 0xB"></a>Frida 0xB</h2><p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407111711508.png" alt="image-20240711171109405"></p>
+<p>程序带有一个按钮，JEB查看反编译结果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110022461.png" alt="image-20240711002259358"></p>
+<p>程序加载了frida0xb库，引用了getFlag函数，点击按钮将调用getFlag函数，IDA反编译看看getFlag函数：</p>
+<img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110023469.png" alt="image-20240711002350380" style="zoom:50%;" />
+
+<p>可以看到伪代码什么都没有，看看汇编&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407110026148.png" alt="image-20240711002603103"></p>
+<p>能看到在汇编中对比了0xDEADBEEF和0x539，这当然是不相等的，自然也就不会跳转至关于flag的函数地址&#x3D;&#x3D;》IDA将省略这段不会跳转的代码</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407111716390.png" alt="image-20240711171617357"></p>
+<p>程序将会直接返回，所以我们的目的也很明显，让getFlag执行关于flag的相关代码，通过0xDEADBEEF和0x539的校验（将JNZ改为JMP或者修改0xDEADBEEF为0x539）或者去掉这层校验，去掉这层校验代码（NOP）将继续顺序执行至处理flag部分，也能达成我们的目的；</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">var</span> libc_base <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0xb.so"</span><span class="token punctuation">)</span> <span class="token comment">//libc基地址</span>
+<span class="token keyword">var</span> jnz <span class="token operator">=</span> libc_base<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0x170CE</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//JNZ所在偏移</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libc_base : "</span><span class="token punctuation">,</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"jnz : "</span><span class="token punctuation">,</span>jnz<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Memory<span class="token punctuation">.</span><span class="token function">protect</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token string">"rwx"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//赋予rwx权限</span>
+<span class="token keyword">var</span> writer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">X86Writer</span><span class="token punctuation">(</span>jnz<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取内存范围内的指令</span>
+<span class="token keyword">var</span> size <span class="token operator">=</span> <span class="token number">0x30</span><span class="token punctuation">;</span> <span class="token comment">// 读取的字节数</span>
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">var</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">0x170D4</span><span class="token operator">-</span><span class="token number">0x170CE</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span> <span class="token comment">//填充6个NOP</span>
+        writer<span class="token punctuation">.</span><span class="token function">putNop</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span>
+    writer<span class="token punctuation">.</span><span class="token function">flush</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// 刷新指令缓存</span>
+<span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+
+  writer<span class="token punctuation">.</span><span class="token function">dispose</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// 释放writer对象</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<pre class="language-bash" data-language="bash"><code class="language-bash">frida <span class="token parameter variable">-U</span> <span class="token parameter variable">-F</span> <span class="token parameter variable">-l</span> .<span class="token punctuation">\</span>frida0xB.js</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120014272.png" alt="image-20240712001435934"></p>
+<p>可以看到我们成功修改为NOP，接下来只需要去程序上触发一下getFlag函数&#x3D;&#x3D;》</p>
+<p>捕获日志，注意此处日志的TAG为“FLAG :”</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120018110.png" alt="image-20240712001816067"></p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">adb logcat <span class="token operator">|</span> Select-String <span class="token string">"FLAG :"</span>
+<span class="token comment">#或者adb shell下执行</span>
+logcat <span class="token operator">|</span><span class="token function">grep</span> <span class="token parameter variable">-i</span> <span class="token string">"FLAG :"</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120019830.png" alt="image-20240712001943773"></p>
+<p>当然，我们可以修改JNZ为JMP：</p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">var</span> libc_base <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0xb.so"</span><span class="token punctuation">)</span> <span class="token comment">//libc基地址</span>
+<span class="token keyword">var</span> jnz <span class="token operator">=</span> libc_base<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0x170CE</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//JNZ所在偏移</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libc_base : "</span><span class="token punctuation">,</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"jnz : "</span><span class="token punctuation">,</span>jnz<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Memory<span class="token punctuation">.</span><span class="token function">protect</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token string">"rwx"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//赋予rwx权限</span>
+<span class="token keyword">var</span> writer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">X86Writer</span><span class="token punctuation">(</span>jnz<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取内存范围内的指令</span>
+<span class="token keyword">var</span> size <span class="token operator">=</span> <span class="token number">0x30</span><span class="token punctuation">;</span> <span class="token comment">// 读取的字节数</span>
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+    writer<span class="token punctuation">.</span><span class="token function">putBytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0xEB</span><span class="token punctuation">,</span> <span class="token number">0x0A</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//替换为JMP，0x0A为条件不满足则跳转</span>
+    writer<span class="token punctuation">.</span><span class="token function">flush</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+
+  writer<span class="token punctuation">.</span><span class="token function">dispose</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span>jnz<span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120025097.png" alt="image-20240712002538938"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120025144.png" alt="image-20240712002509088"></p>
+<p>或者修改0xDEADBEEF为0x539，一般是长度长的可以改为小的，小的改长的在有些时候可能会出现溢出：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120031882.png" alt="image-20240712003148859"></p>
+<pre class="language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">var</span> libc_base <span class="token operator">=</span> Module<span class="token punctuation">.</span><span class="token function">getBaseAddress</span><span class="token punctuation">(</span><span class="token string">"libfrida0xb.so"</span><span class="token punctuation">)</span> <span class="token comment">//libc基地址</span>
+<span class="token keyword">var</span> <span class="token constant">DEADBEEF</span> <span class="token operator">=</span> libc_base<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span><span class="token number">0x170C0</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//0xDEADBEEF所在偏移</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"libc_base : "</span><span class="token punctuation">,</span>libc_base<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"DEADBEEF : "</span><span class="token punctuation">,</span><span class="token constant">DEADBEEF</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+Memory<span class="token punctuation">.</span><span class="token function">protect</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token string">"rwx"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//赋予rwx权限</span>
+<span class="token keyword">var</span> writer <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">X86Writer</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment">// 读取内存范围内的指令</span>
+<span class="token keyword">var</span> size <span class="token operator">=</span> <span class="token number">0x30</span><span class="token punctuation">;</span> <span class="token comment">// 读取的字节数</span>
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">try</span> <span class="token punctuation">&#123;</span>
+    writer<span class="token punctuation">.</span><span class="token function">putBytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token number">0xC7</span><span class="token punctuation">,</span> <span class="token number">0x45</span><span class="token punctuation">,</span> <span class="token number">0xDC</span><span class="token punctuation">,</span> <span class="token number">0x39</span><span class="token punctuation">,</span> <span class="token number">0x05</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">,</span> <span class="token number">0x00</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">//修改为0x539</span>
+    writer<span class="token punctuation">.</span><span class="token function">flush</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span> <span class="token keyword">finally</span> <span class="token punctuation">&#123;</span>
+
+  writer<span class="token punctuation">.</span><span class="token function">dispose</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+
+<span class="token keyword">var</span> instructionBytes <span class="token operator">=</span> Memory<span class="token punctuation">.</span><span class="token function">readByteArray</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">,</span> size<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructionBytes ："</span><span class="token punctuation">,</span>instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 解析并输出汇编指令</span>
+<span class="token keyword">var</span> instructions <span class="token operator">=</span> Instruction<span class="token punctuation">.</span><span class="token function">parse</span><span class="token punctuation">(</span><span class="token constant">DEADBEEF</span><span class="token punctuation">,</span> instructionBytes<span class="token punctuation">)</span><span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"new instructions ："</span><span class="token punctuation">,</span>instructions<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120033636.png" alt="image-20240712003329449"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407120033638.png" alt="image-20240712003342575"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/03/17/esp32ctf-thu/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2024-07-12 00:37:19
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Android/" title="Android">
+                        #Android
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Frida/" title="Frida">
+                        #Frida
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Frida-Labs"><span class="toc-text">Frida-Labs</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x1"><span class="toc-text">Frida 0x1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x2"><span class="toc-text">Frida 0x2</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x3"><span class="toc-text">Frida 0x3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x4"><span class="toc-text">Frida 0x4</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x5"><span class="toc-text">Frida 0x5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x6"><span class="toc-text">Frida 0x6</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x7"><span class="toc-text">Frida 0x7</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x8"><span class="toc-text">Frida 0x8</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0x9"><span class="toc-text">Frida 0x9</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0xA"><span class="toc-text">Frida 0xA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Frida-0xB"><span class="toc-text">Frida 0xB</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2024 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E9%80%9A%E8%BF%87Frida-Labs%E5%85%A5%E9%97%A8Frida + '&url=' + http%3A%2F%2Fexample.com%2F2024%2F07%2F12%2F%25E9%2580%259A%25E8%25BF%2587Frida-Labs%25E5%2585%25A5%25E9%2597%25A8Frida%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2024/07/12/%E9%80%9A%E8%BF%87Frida-Labs%E5%85%A5%E9%97%A8Frida/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
