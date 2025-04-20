@@ -174,8 +174,18 @@
           
       </div>
       <div class="markdown-body">
-        <h1 id="工具使用-长期更新-："><a href="#工具使用-长期更新-：" class="headerlink" title="工具使用(长期更新)："></a>工具使用(长期更新)：</h1><h2 id="编程开发"><a href="#编程开发" class="headerlink" title="编程开发"></a>编程开发</h2><h3 id="环境变量设置"><a href="#环境变量设置" class="headerlink" title="环境变量设置"></a>环境变量设置</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">LD_LIBRARY_PATH</span><span class="token operator">=</span>./lib:<span class="token variable">$LD_LIBRARY_PATH</span>  <span class="token comment">#设置动态链接库路径，只对当前终端生效</span>
-<span class="token builtin class-name">export</span> <span class="token assign-left variable">D5000_HOME</span><span class="token operator">=</span>/home/closure/Desktop/tj/D5000  <span class="token comment">#设置环境变量D5000_HOME，用于程序获取该环境变量</span></code></pre>
+        <h1 id="工具使用-长期更新-："><a href="#工具使用-长期更新-：" class="headerlink" title="工具使用(长期更新)："></a>工具使用(长期更新)：</h1><h2 id="编程开发"><a href="#编程开发" class="headerlink" title="编程开发"></a>编程开发</h2><h3 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token builtin class-name">export</span> <span class="token assign-left variable">LD_LIBRARY_PATH</span><span class="token operator">=</span>./lib:<span class="token variable">$LD_LIBRARY_PATH</span>  <span class="token comment">#设置动态链接库路径，只对当前终端生效</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">D5000_HOME</span><span class="token operator">=</span>/home/closure/Desktop/tj/D5000  <span class="token comment">#设置环境变量D5000_HOME，用于程序获取该环境变量</span>
+
+<span class="token comment">#代理</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">http_proxy</span><span class="token operator">=</span><span class="token string">"http://proxy-ip:proxy-port"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">https_proxy</span><span class="token operator">=</span><span class="token string">"http://proxy-ip:proxy-port"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">ftp_proxy</span><span class="token operator">=</span><span class="token string">"http://proxy-ip:proxy-port"</span>
+<span class="token builtin class-name">export</span> <span class="token assign-left variable">all_proxy</span><span class="token operator">=</span><span class="token string">"socks5://proxy-ip:proxy-port"</span>
+
+<span class="token function">printenv</span>
+<span class="token function">env</span>
+</code></pre>
 
 
 
@@ -306,6 +316,25 @@ hexo s</code></pre>
 
 
 <h3 id="Nodejs"><a href="#Nodejs" class="headerlink" title="Nodejs"></a>Nodejs</h3><p>nvm：管理nodejs版本</p>
+<h2 id="Linux-x2F-Android"><a href="#Linux-x2F-Android" class="headerlink" title="Linux&#x2F;Android"></a>Linux&#x2F;Android</h2><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#Linux基础命令</span>
+<span class="token comment">#系统信息/架构</span>
+<span class="token function">cat</span> /proc/cpuinfo
+<span class="token function">cat</span> /proc/version 
+
+<span class="token function">mount</span> <span class="token comment">#查看文件系统信息</span>
+
+<span class="token comment">#找内容，忽略大小写</span>
+<span class="token function">sudo</span> <span class="token function">grep</span> <span class="token parameter variable">-rni</span> <span class="token string">"helloword"</span> /
+
+<span class="token comment">#systemctl配置</span>
+systemctl list-units <span class="token parameter variable">--type</span><span class="token operator">=</span>service
+systemctl list-sockets <span class="token comment">#socket</span>
+
+
+<span class="token comment">#ADB基础命令</span></code></pre>
+
+
+
 <h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><h3 id="GDB-x2F-pwndbg-x2F-peda-x2F-gef"><a href="#GDB-x2F-pwndbg-x2F-peda-x2F-gef" class="headerlink" title="GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef"></a>GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef</h3><p>安装：</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#gdb</span>
 <span class="token comment"># https://ftp.gnu.org/gnu/gdb/</span></code></pre>
@@ -762,7 +791,13 @@ patterns <span class="token operator">=</span> <span class="token punctuation">[
 
 
 
-<h2 id="通信"><a href="#通信" class="headerlink" title="通信"></a>通信</h2><h3 id="数据包处理"><a href="#数据包处理" class="headerlink" title="数据包处理"></a>数据包处理</h3><h4 id="捕获"><a href="#捕获" class="headerlink" title="捕获"></a>捕获</h4><h5 id="wireshark"><a href="#wireshark" class="headerlink" title="wireshark"></a>wireshark</h5><p>tcpdump</p>
+<h2 id="通信"><a href="#通信" class="headerlink" title="通信"></a>通信</h2><h4 id="查IP"><a href="#查IP" class="headerlink" title="查IP"></a>查IP</h4><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#找系统内可能出现的IP字样</span>
+<span class="token comment">#更多请参考 https://github.com/craigz28/firmwalker</span>
+<span class="token function">grep</span> <span class="token parameter variable">-rEo</span> <span class="token string">'([0-9]&#123;1,3&#125;\.)&#123;3&#125;[0-9]&#123;1,3&#125;'</span> /etc /var /home <span class="token operator"><span class="token file-descriptor important">2</span>></span>/dev/null <span class="token operator">|</span> <span class="token function">sort</span> <span class="token parameter variable">-u</span> <span class="token operator">>></span> test.txt</code></pre>
+
+
+
+<h3 id="数据包处理"><a href="#数据包处理" class="headerlink" title="数据包处理"></a>数据包处理</h3><h4 id="捕获"><a href="#捕获" class="headerlink" title="捕获"></a>捕获</h4><h5 id="wireshark"><a href="#wireshark" class="headerlink" title="wireshark"></a>wireshark</h5><p>tcpdump</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token function">sudo</span> tcpdump <span class="token parameter variable">-i</span> ens33 udp <span class="token parameter variable">-w</span> test.pcap <span class="token comment">#捕获基于ens33网卡的udp数据</span></code></pre>
 
 
@@ -791,7 +826,81 @@ patterns <span class="token operator">=</span> <span class="token punctuation">[
 <p>常用：</p>
 <p>获取字符串：接口.search(‘字符串’).next()</p>
 <p>模板：</p>
-<pre class="language-python" data-language="python"><code class="language-python"></code></pre>
+<pre class="language-python" data-language="python"><code class="language-python"><span class="token keyword">from</span> pwn <span class="token keyword">import</span> <span class="token operator">*</span>
+<span class="token keyword">import</span> sys
+
+context<span class="token punctuation">.</span>log_level <span class="token operator">=</span> <span class="token string">"debug"</span>
+elf <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"./pwn"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"process"</span><span class="token punctuation">:</span>
+   p <span class="token operator">=</span> process<span class="token punctuation">(</span><span class="token string">"./pwn"</span><span class="token punctuation">)</span>
+   libc <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"/lib/x86_64-linux-gnu/libc.so.6"</span><span class="token punctuation">)</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+   p <span class="token operator">=</span> remote<span class="token punctuation">(</span><span class="token string">"chall.pwnable.tw"</span><span class="token punctuation">,</span><span class="token number">10302</span><span class="token punctuation">)</span>
+   libc <span class="token operator">=</span> ELF<span class="token punctuation">(</span><span class="token string">"./libc_64.so.6"</span><span class="token punctuation">)</span>
+
+DEBUG <span class="token operator">=</span> <span class="token number">0</span>
+<span class="token keyword">if</span> DEBUG<span class="token punctuation">:</span>
+	gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>p<span class="token punctuation">,</span> 
+	<span class="token triple-quoted-string string">'''	
+	b *0x08048935
+	c
+	'''</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">dbg</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    gdb<span class="token punctuation">.</span>attach<span class="token punctuation">(</span>p<span class="token punctuation">)</span>
+    pause<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+se      <span class="token operator">=</span> <span class="token keyword">lambda</span> data               <span class="token punctuation">:</span>p<span class="token punctuation">.</span>send<span class="token punctuation">(</span>data<span class="token punctuation">)</span> 
+sa      <span class="token operator">=</span> <span class="token keyword">lambda</span> delim<span class="token punctuation">,</span>data         <span class="token punctuation">:</span>p<span class="token punctuation">.</span>sendafter<span class="token punctuation">(</span>delim<span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+sl      <span class="token operator">=</span> <span class="token keyword">lambda</span> data               <span class="token punctuation">:</span>p<span class="token punctuation">.</span>sendline<span class="token punctuation">(</span>data<span class="token punctuation">)</span>
+sla     <span class="token operator">=</span> <span class="token keyword">lambda</span> delim<span class="token punctuation">,</span>data         <span class="token punctuation">:</span>p<span class="token punctuation">.</span>sendlineafter<span class="token punctuation">(</span>delim<span class="token punctuation">,</span> data<span class="token punctuation">)</span>
+rc      <span class="token operator">=</span> <span class="token keyword">lambda</span> num          		<span class="token punctuation">:</span>p<span class="token punctuation">.</span>recv<span class="token punctuation">(</span>num<span class="token punctuation">)</span>
+rl      <span class="token operator">=</span> <span class="token keyword">lambda</span>                    <span class="token punctuation">:</span>p<span class="token punctuation">.</span>recvline<span class="token punctuation">(</span><span class="token punctuation">)</span>
+ru      <span class="token operator">=</span> <span class="token keyword">lambda</span> delims             <span class="token punctuation">:</span>p<span class="token punctuation">.</span>recvuntil<span class="token punctuation">(</span>delims<span class="token punctuation">)</span>
+uu32    <span class="token operator">=</span> <span class="token keyword">lambda</span> data               <span class="token punctuation">:</span>u32<span class="token punctuation">(</span>data<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>	
+uu64    <span class="token operator">=</span> <span class="token keyword">lambda</span> data               <span class="token punctuation">:</span>u64<span class="token punctuation">(</span>data<span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+info    <span class="token operator">=</span> <span class="token keyword">lambda</span> tag<span class="token punctuation">,</span> addr          <span class="token punctuation">:</span>log<span class="token punctuation">.</span>info<span class="token punctuation">(</span>tag <span class="token operator">+</span> <span class="token string">" -> "</span> <span class="token operator">+</span> <span class="token builtin">hex</span><span class="token punctuation">(</span>addr<span class="token punctuation">)</span><span class="token punctuation">)</span>
+ia		<span class="token operator">=</span> <span class="token keyword">lambda</span>                    <span class="token punctuation">:</span>p<span class="token punctuation">.</span>interactive<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+libc_base <span class="token operator">=</span> u64<span class="token punctuation">(</span>ru<span class="token punctuation">(</span><span class="token string">"\x7f"</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token operator">-</span><span class="token number">6</span><span class="token punctuation">:</span><span class="token punctuation">]</span><span class="token punctuation">.</span>ljust<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">,</span> <span class="token string">'\x00'</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">-</span> <span class="token number">0x68</span> <span class="token operator">-</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'__malloc_hook'</span><span class="token punctuation">]</span>
+info<span class="token punctuation">(</span><span class="token string">"libc_base"</span><span class="token punctuation">,</span> libc_base<span class="token punctuation">)</span>
+malloc_hook <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'__malloc_hook'</span><span class="token punctuation">]</span>
+free_hook <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'__free_hook'</span><span class="token punctuation">]</span>
+system <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>symbols<span class="token punctuation">[</span><span class="token string">'system'</span><span class="token punctuation">]</span>
+bin_sh <span class="token operator">=</span> libc_base <span class="token operator">+</span> libc<span class="token punctuation">.</span>search<span class="token punctuation">(</span><span class="token string">"/bin/sh"</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token builtin">next</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+menu <span class="token operator">=</span> <span class="token string">"Your choice : "</span>
+<span class="token keyword">def</span> <span class="token function">cmd</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	ru<span class="token punctuation">(</span>menu<span class="token punctuation">)</span>
+	sl<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	
+<span class="token keyword">def</span> <span class="token function">add</span><span class="token punctuation">(</span>length<span class="token punctuation">,</span> name<span class="token punctuation">,</span> color<span class="token operator">=</span><span class="token string">'blue'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	cmd<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>
+	ru<span class="token punctuation">(</span><span class="token string">"Length of the name :"</span><span class="token punctuation">)</span>
+	sl<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>length<span class="token punctuation">)</span><span class="token punctuation">)</span>
+	ru<span class="token punctuation">(</span><span class="token string">"The name of flower :"</span><span class="token punctuation">)</span>
+	se<span class="token punctuation">(</span>name<span class="token punctuation">)</span>
+	ru<span class="token punctuation">(</span><span class="token string">"The color of the flower :"</span><span class="token punctuation">)</span>
+	sl<span class="token punctuation">(</span>color<span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">show</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	cmd<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">remove</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">:</span>
+	cmd<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>
+	ru<span class="token punctuation">(</span><span class="token string">"remove from the garden:"</span><span class="token punctuation">)</span>
+	sl<span class="token punctuation">(</span><span class="token builtin">str</span><span class="token punctuation">(</span>idx<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">clear</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+	cmd<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>
+
+<span class="token keyword">if</span> sys<span class="token punctuation">.</span>argv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"process"</span><span class="token punctuation">:</span>
+   one_gadget <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xf02a4</span>
+<span class="token keyword">else</span><span class="token punctuation">:</span>
+   one_gadget <span class="token operator">=</span> libc_base <span class="token operator">+</span> <span class="token number">0xef6c4</span>
+   
+ia<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
 
 
 
@@ -847,7 +956,16 @@ binsh<span class="token operator">=</span>libcbase<span class="token operator">+
 
 
 
-<h2 id="虚拟环境"><a href="#虚拟环境" class="headerlink" title="虚拟环境"></a>虚拟环境</h2><h3 id="glibc-all-in-one"><a href="#glibc-all-in-one" class="headerlink" title="glibc-all-in-one"></a>glibc-all-in-one</h3><p><a target="_blank" rel="noopener" href="https://github.com/matrix1001/glibc-all-in-one">https://github.com/matrix1001/glibc-all-in-one</a></p>
+<h2 id="虚拟环境"><a href="#虚拟环境" class="headerlink" title="虚拟环境"></a>虚拟环境</h2><h3 id="VM虚拟机"><a href="#VM虚拟机" class="headerlink" title="VM虚拟机"></a>VM虚拟机</h3><p>出现USB设备无法连接&#x2F;灰色问题&#x3D;&#x3D;》VMX记事本打开</p>
+<pre class="language-bash" data-language="bash"><code class="language-bash">usb.restrictions.defaultAllow <span class="token operator">=</span> <span class="token string">"FALSE"</span>
+<span class="token comment">#修改为</span>
+TRUE</code></pre>
+
+
+
+
+
+<h3 id="glibc-all-in-one"><a href="#glibc-all-in-one" class="headerlink" title="glibc-all-in-one"></a>glibc-all-in-one</h3><p><a target="_blank" rel="noopener" href="https://github.com/matrix1001/glibc-all-in-one">https://github.com/matrix1001/glibc-all-in-one</a></p>
 <p>获取glibc：</p>
 <pre class="language-bash" data-language="bash"><code class="language-bash">./update_list <span class="token comment">#获取可以下载的glibc</span>
 <span class="token function">cat</span> list <span class="token comment">#list中存放着从./update_list获得的glibc名</span>
@@ -1046,6 +1164,31 @@ https://people.debian.org/~aurel32/qemu/</code></pre>
 <h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="ELF"><a href="#ELF" class="headerlink" title="ELF"></a>ELF</h3><h4 id="checksec"><a href="#checksec" class="headerlink" title="checksec"></a>checksec</h4><p>检查文件保护</p>
 <p>checksec &lt;file&gt; 或者</p>
 <p>checksec –file&#x3D;filename</p>
+<h4 id="防御"><a href="#防御" class="headerlink" title="防御"></a>防御</h4><pre class="language-bash" data-language="bash"><code class="language-bash">Usage: python evilPatcher.py elfFile sandboxFile
+       python evilPatcher.py elfFile sandboxFile <span class="token number">1</span> <span class="token punctuation">(</span>more detailed process message<span class="token punctuation">)</span><span class="token comment">#更多中间过程</span></code></pre>
+
+
+
+<h4 id="自动化PWN"><a href="#自动化PWN" class="headerlink" title="自动化PWN"></a>自动化PWN</h4><pre class="language-bash" data-language="bash"><code class="language-bash">https://github.com/hexian2001/HRP-Nnepnep-auto-pwn
+python3 HRP-FUZZ-2.0.py ./filepath <span class="token parameter variable">--callback</span> target_addr<span class="token punctuation">(</span>HEX<span class="token punctuation">)</span> <span class="token comment">#指定地址回调到主函数</span>
+
+python3 HRP-FUZZ-2.0.py ./filepath auto <span class="token comment">#自动化分析出EXP</span>
+
+python3 HRP-FUZZ-2.0.py ./filepath <span class="token comment">#单独提供利用模板</span>
+
+python3 remote_auto.py <span class="token function">ip</span> port <span class="token comment">#适用于比赛远程攻击详情</span>
+
+
+https://github.com/heimao-box/pwnpasi
+<span class="token comment">#基本使用</span>
+python pwnsipa.py <span class="token parameter variable">-l</span> <span class="token punctuation">[</span>file<span class="token punctuation">]</span>
+<span class="token comment">#指定造成溢出的字符数 / 动态链接库</span>
+python pwnsipa.py <span class="token parameter variable">-l</span> level3_x64 <span class="token parameter variable">-libc</span> /lib/i386-linux-gnu/libc.so.6 <span class="token parameter variable">-f</span> <span class="token number">112</span>
+<span class="token comment">#远程连接</span>
+python pwnsipa.py <span class="token parameter variable">-l</span> level3_x64 <span class="token parameter variable">-libc</span> /lib/i386-linux-gnu/libc.so.6 <span class="token parameter variable">-ip</span> <span class="token number">192.168</span>.0.1 <span class="token parameter variable">-p</span> <span class="token number">33333</span></code></pre>
+
+
+
 <h3 id="Android"><a href="#Android" class="headerlink" title="Android"></a>Android</h3><h4 id="AppinfoScanner"><a href="#AppinfoScanner" class="headerlink" title="AppinfoScanner"></a>AppinfoScanner</h4><h3 id="BLE"><a href="#BLE" class="headerlink" title="BLE"></a>BLE</h3><h4 id="BlueToolkit"><a href="#BlueToolkit" class="headerlink" title="BlueToolkit"></a>BlueToolkit</h4><pre class="language-none"><code class="language-none">https:&#x2F;&#x2F;github.com&#x2F;sgxgsx&#x2F;BlueToolkit</code></pre>
 
 
@@ -1056,7 +1199,18 @@ https://people.debian.org/~aurel32/qemu/</code></pre>
 <span class="token function">scp</span> <span class="token punctuation">[</span>-r<span class="token punctuation">]</span> <span class="token punctuation">[</span>local_file_path<span class="token punctuation">]</span> <span class="token punctuation">[</span>username<span class="token punctuation">]</span>@<span class="token punctuation">[</span>remote_IP<span class="token punctuation">]</span>:/remote_path
 
 <span class="token comment">#远程->本地</span>
-<span class="token function">scp</span> user@remote_host:/path/to/remote/file /path/to/local/directory</code></pre>
+<span class="token function">scp</span> user@remote_host:/path/to/remote/file /path/to/local/directory
+<span class="token parameter variable">-O</span> <span class="token comment">#强制使用SCP传输</span>
+<span class="token parameter variable">-i</span> MACS <span class="token comment">#使用指定MAC算法</span></code></pre>
+
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202503181027352.png" alt="image-20250318102737282"></p>
+<h3 id="打包解包"><a href="#打包解包" class="headerlink" title="打包解包"></a>打包解包</h3><pre class="language-bash" data-language="bash"><code class="language-bash"><span class="token comment">#打包</span>
+<span class="token function">tar</span> <span class="token parameter variable">-czvf</span> file.tar.gz /path/to/directory
+<span class="token comment">#跳过log目录压缩</span>
+<span class="token function">tar</span> <span class="token parameter variable">--exclude</span><span class="token operator">=</span><span class="token string">'/var/log'</span> <span class="token parameter variable">-czvf</span> file.tar.gz  /var
+
+<span class="token comment">#解包</span>
+<span class="token function">tar</span> <span class="token parameter variable">-xzvf</span> file.tar.gz</code></pre>
 
 
 
@@ -1092,7 +1246,7 @@ https://people.debian.org/~aurel32/qemu/</code></pre>
         <div class="prev-or-next">
           <div class="post-foot-next">
             
-              <a href="/2025/02/12/U%E7%9B%98%E8%B7%AF%E5%BE%84%E7%A9%BF%E8%B6%8A%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/" target="_self">
+              <a href="/2025/04/20/Hackrf-GPS/" target="_self">
                 <i class="iconfont icon-chevronleft"></i>
                 <span>上一页</span>
               </a>
@@ -1130,7 +1284,7 @@ https://people.debian.org/~aurel32/qemu/</code></pre>
     <div class="title">目录</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E7%A8%8B%E5%BC%80%E5%8F%91"><span class="toc-text">编程开发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E8%AE%BE%E7%BD%AE"><span class="toc-text">环境变量设置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91"><span class="toc-text">交叉编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Nodejs"><span class="toc-text">Nodejs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95"><span class="toc-text">调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda-x2F-gef"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Gdbserver"><span class="toc-text">Gdbserver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text">快捷键</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="toc-text">远程调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%90%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="toc-text">提取数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%81%A2%E5%A4%8D"><span class="toc-text">函数恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ADB"><span class="toc-text">ADB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E4%BF%A1"><span class="toc-text">通信</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%85%E5%A4%84%E7%90%86"><span class="toc-text">数据包处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8D%95%E8%8E%B7"><span class="toc-text">捕获</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#wireshark"><span class="toc-text">wireshark</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%84%E7%90%86"><span class="toc-text">处理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ROP"><span class="toc-text">ROP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1"><span class="toc-text">服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ubuntu"><span class="toc-text">Ubuntu</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ssh"><span class="toc-text">ssh</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">防火墙</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="toc-text">虚拟环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu"><span class="toc-text">Qemu</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%9C%E5%83%8F"><span class="toc-text">镜像</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96"><span class="toc-text">获取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD"><span class="toc-text">挂载</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-text">测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ELF"><span class="toc-text">ELF</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android"><span class="toc-text">Android</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BLE"><span class="toc-text">BLE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BlueToolkit"><span class="toc-text">BlueToolkit</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93"><span class="toc-text">文件传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text"></span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8-%E9%95%BF%E6%9C%9F%E6%9B%B4%E6%96%B0-%EF%BC%9A"><span class="toc-text">工具使用(长期更新)：</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%96%E7%A8%8B%E5%BC%80%E5%8F%91"><span class="toc-text">编程开发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="toc-text">环境变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#python"><span class="toc-text">python</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91"><span class="toc-text">交叉编译</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gcc"><span class="toc-text">gcc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Git"><span class="toc-text">Git</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Hexo"><span class="toc-text">Hexo</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Nodejs"><span class="toc-text">Nodejs</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-x2F-Android"><span class="toc-text">Linux&#x2F;Android</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B0%83%E8%AF%95"><span class="toc-text">调试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB-x2F-pwndbg-x2F-peda-x2F-gef"><span class="toc-text">GDB&#x2F;pwndbg&#x2F;peda&#x2F;gef</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Gdbserver"><span class="toc-text">Gdbserver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GDB-amp-pwntools"><span class="toc-text">GDB&amp;pwntools</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDA"><span class="toc-text">IDA</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="toc-text">快捷键</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95"><span class="toc-text">远程调试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%90%E5%8F%96%E6%95%B0%E6%8D%AE"><span class="toc-text">提取数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%81%A2%E5%A4%8D"><span class="toc-text">函数恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ADB"><span class="toc-text">ADB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E4%BF%A1"><span class="toc-text">通信</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5IP"><span class="toc-text">查IP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%8C%85%E5%A4%84%E7%90%86"><span class="toc-text">数据包处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8D%95%E8%8E%B7"><span class="toc-text">捕获</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#wireshark"><span class="toc-text">wireshark</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Charles"><span class="toc-text">Charles</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%84%E7%90%86"><span class="toc-text">处理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pwntools"><span class="toc-text">pwntools</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pwncli"><span class="toc-text">pwncli</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ROP"><span class="toc-text">ROP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ROPgadget"><span class="toc-text">ROPgadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#one-gadget"><span class="toc-text">one_gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LibcSearcher"><span class="toc-text">LibcSearcher</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1"><span class="toc-text">服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#deb%E5%8C%85%E5%AE%89%E8%A3%85%E6%9C%8D%E5%8A%A1"><span class="toc-text">deb包安装服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ubuntu"><span class="toc-text">Ubuntu</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ssh"><span class="toc-text">ssh</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99"><span class="toc-text">防火墙</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="toc-text">虚拟环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VM%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">VM虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#glibc-all-in-one"><span class="toc-text">glibc-all-in-one</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#patchelf"><span class="toc-text">patchelf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#xclibc"><span class="toc-text">xclibc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker"><span class="toc-text">Docker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu"><span class="toc-text">Qemu</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%9C%E5%83%8F"><span class="toc-text">镜像</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96"><span class="toc-text">获取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD"><span class="toc-text">挂载</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-text">测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ELF"><span class="toc-text">ELF</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#checksec"><span class="toc-text">checksec</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1"><span class="toc-text">防御</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96PWN"><span class="toc-text">自动化PWN</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android"><span class="toc-text">Android</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AppinfoScanner"><span class="toc-text">AppinfoScanner</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BLE"><span class="toc-text">BLE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BlueToolkit"><span class="toc-text">BlueToolkit</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IOT"><span class="toc-text">IOT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93"><span class="toc-text">文件传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E8%A7%A3%E5%8C%85"><span class="toc-text">打包解包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Qemu-img"><span class="toc-text">Qemu-img</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BinDiff"><span class="toc-text">BinDiff</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E"><span class="toc-text">搜索引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text"></span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
