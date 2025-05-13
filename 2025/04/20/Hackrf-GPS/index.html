@@ -217,7 +217,13 @@ gcc gpssim.c <span class="token parameter variable">-lm</span> <span class="toke
 <h3 id="发射信号-1"><a href="#发射信号-1" class="headerlink" title="发射信号"></a>发射信号</h3><pre class="language-bash" data-language="bash"><code class="language-bash">hackrf_transfer <span class="token parameter variable">-t</span> staticgpssim.bin <span class="token parameter variable">-f</span> <span class="token number">1575420000</span> <span class="token parameter variable">-s</span> <span class="token number">2600000</span> <span class="token parameter variable">-a</span> <span class="token number">1</span> <span class="token parameter variable">-x</span> <span class="token number">20</span> <span class="token parameter variable">-R</span></code></pre>
 
 <p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202504150915418.png" alt="image-20250415091508310"></p>
-<h2 id="GPS信号干扰"><a href="#GPS信号干扰" class="headerlink" title="GPS信号干扰"></a>GPS信号干扰</h2><p>GNU radio（GRC）：</p>
+<h2 id="GPS信号干扰"><a href="#GPS信号干扰" class="headerlink" title="GPS信号干扰"></a>GPS信号干扰</h2><p>GPS常用频段为L1频段，中心频率为1575.42MHz（载波频率），常用调试方式为BPSK（载波相移键控）–&gt; 它使用两个相位状态（0度和180度）来表示数字位，通常用于传输导航数据。在BPSK 调制中，0 和1被映射到正弦波载波的相位变化。如果输入数据是0，则相位不变；如果输入数据是1，则相位反转180度。</p>
+<p>GRC：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202505131015436.png" alt="image-20250513095940641"></p>
+<p>效果：</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202505131015654.png" alt="image-20250513101112091"></p>
+<p>URH效果：持续收到1575.42MHz频率的信号</p>
+<p><img src="https://raw.githubusercontent.com/zh-Closure/images/main/202505131016526.png" alt="image-20250513101122693"></p>
 
       </div>
       
